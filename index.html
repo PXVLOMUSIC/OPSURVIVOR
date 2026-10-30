@@ -782,6 +782,7 @@
             <button class="map-btn" onclick="showAchievements()"><span class="op-slot" data-ico="hat"></span> LOGROS</button>
             <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="clock"></span> REGISTRO MARINO</button>
             <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
+            <button class="map-btn" id="btn-menu-music" onclick="toggleMenuMusic()"><span class="op-slot" id="menu-music-ico" data-ico="sound"></span> MÚSICA: <span id="menu-music-label">ON</span></button>
         </div>
         <button class="btn-start" onclick="startGame()">☠ ¡ZARPAR AL COMBATE! ☠</button>
         <button class="btn-start" style="margin-top: 10px;" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Beli: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
@@ -1076,6 +1077,18 @@ function applyRunCurse() {
     player.curse += 0.25 * runCurseRank;
     player.runBeliMult = 1 + 0.25 * runCurseRank;
 }
+// toggle de solo la musica del menu (batalla sigue con su propio slider en OPCIONES)
+function toggleMenuMusic() {
+    windowOpts.menuMusicMuted = !windowOpts.menuMusicMuted;
+    saveOpts(); // saveOpts llama a updateMusic via applyOpts->setVolume
+    updateMenuMusicBtn();
+}
+function updateMenuMusicBtn() {
+    const ico = document.getElementById('menu-music-ico');
+    if (ico) ico.innerHTML = windowOpts.menuMusicMuted ? ICONS.muted : ICONS.sound;
+    const l = document.getElementById('menu-music-label');
+    if (l) l.innerText = windowOpts.menuMusicMuted ? 'OFF' : 'ON';
+}
 const CHAR_SKILLS = {
     luffy: ['pistol','gatling','bazooka','gear2','muchi','ono'],
     zoro: ['santoryu','onigiri','flyingslash','tatsumaki','poundho'],
@@ -1169,6 +1182,8 @@ function updateMusic() {
     const vol = masterVolume * (windowOpts ? windowOpts.music : 1) * 0.5;
     if (gameState === 'START' || gameState === 'SHOP') {
         battleMusic.pause();
+        // toggle del menu: silencia solo la musica del menu (la batalla sigue su slider)
+        if (windowOpts && windowOpts.menuMusicMuted) { menuMusic.pause(); return; }
         menuMusic.volume = vol;
         menuMusic.play().catch(() => {});
     } else if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'GAMEOVER' || gameState === 'VICTORY') {
@@ -2186,7 +2201,7 @@ function renderBestiary() {
     document.getElementById('bestiary-subtitle').innerText = 'AVISTADOS: ' + found + '/' + types.length + ' — GRAND LINE';
 }
 // === OPCIONES (persistente, VS-style sliders) ===
-let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false };
+let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, menuMusicMuted: false };
 function loadOpts() {
     try {
         const raw = JSON.parse(localStorage.getItem('op_survivor_opts'));
@@ -2232,6 +2247,7 @@ updateMetaUI();
 selectMap('baratie');
 selectCharacter('luffy');
 selectCurse(0);
+updateMenuMusicBtn();
 
 function restartGame() {
     document.getElementById('gameover-screen').style.display = 'none';

@@ -833,7 +833,18 @@ const SPRITE_PATHS = {
     zoro: 'assets/sprites/zoro.png',
     sanji: 'assets/sprites/sanji.png',
     objetos: 'assets/sprites/objetos.png',
-    baratieMap: 'assets/maps/baratie.png'
+    baratieMap: 'assets/maps/baratie.png',
+    saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
+    saber_poundho: 'assets/extracted/objetos_gba/sprite_025.png',
+    bomb: 'assets/extracted/objetos_gba/sprite_034.png',
+    money: 'assets/extracted/objetos_gba/sprite_023.png',
+    food: 'assets/extracted/objetos_gba/sprite_012.png',
+    conch: 'assets/extracted/objetos_gba/sprite_021.png',
+    tornado: 'assets/extracted/objetos_gba/sprite_039.png',
+    strawhat: 'assets/extracted/objetos_gba/sprite_035.png',
+    chest_t0: 'assets/sprites/chests/chest_t0.png',
+    chest_t1: 'assets/sprites/chests/chest_t1.png',
+    chest_t2: 'assets/sprites/chests/chest_gold_t2.png'
 };
 let assetsLoaded = false;
 let assetsToLoad = Object.keys(SPRITE_PATHS).length;
@@ -2185,6 +2196,9 @@ function update(dt) {
                     atk.hitEnemies.add(e);
                     spawnDamageText(endX, endY, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    // VFX: impacto de puño de goma — destello + chispas de goma
+                    fxOrb(endX, endY, '#ffffff', 7, 0.18);
+                    fxSpark(endX, endY, skills.pistol.evolved ? '#f43f5e' : '#ffdbac', 2, 90, 0.25, 2, 80);
                     if (e.hp <= 0) killEnemy(e);
                 }
             }
@@ -2203,6 +2217,12 @@ function update(dt) {
                     if (Math.random() < 0.12) spawnDamageText(e.x, e.y, dmgInfo);
                     if (e.hp <= 0) killEnemy(e);
                 }
+            }
+            // VFX: puños de goma disparados en ráfaga al derredor
+            if (Math.random() < dt * 30) {
+                const ang = Math.random() * Math.PI * 2;
+                const rr = atk.radius * (0.4 + Math.random() * 0.6);
+                particles.push({ x: player.x + Math.cos(ang) * rr, y: player.y + Math.sin(ang) * rr, vx: Math.cos(ang) * 70, vy: Math.sin(ang) * 70, life: 0.22, maxLife: 0.22, color: '#ffdbac', shape: 'spark', size: 2, grav: 0 });
             }
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'bazooka') {
@@ -2348,6 +2368,37 @@ function update(dt) {
             d.y += Math.sin(ang) * 60 * dt;
         }
         const dist = Math.hypot(player.x - d.x, player.y - d.y);
+        if (d.type === 'chest') {
+            // VS: el cofre queda en el suelo hasta pisarlo — no lo atrae el iman ni el vacuum
+            if (d.opened) {
+                d.openTimer -= dt;
+                if (d.openTimer <= 0) {
+                    // recompensa al terminar la animacion de apertura
+                    const luck = player.luckBonus;
+                    const roll = Math.random();
+                    const count = roll < 0.05 * luck ? 5 : (roll < 0.20 * luck ? 3 : 1);
+                    const tierBase = d.tier === 2 ? 500 : (d.tier === 1 ? 300 : 100);
+                    const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus);
+                    scoreBeli += beliVal;
+                    if (d.canEvolve) checkEvolutions();
+                    gameState = 'UPGRADE';
+                    showUpgradeScreen(count, true);
+                    updateUI();
+                    drops.splice(i, 1);
+                }
+            } else if (dist < 28) {
+                // abierto al pisarlo: brillo, sonido y burst dorado — luego la recompensa
+                d.opened = true; d.openTimer = 0.45;
+                playSound('levelup');
+                cameraShake = 1.2;
+                fxStars(d.x, d.y - 6, 12);
+                fxRing(d.x, d.y, '#ffd24a', 18, 0.4);
+            }
+            // chispea mientras espera en el suelo
+            if (d.opened && Math.random() < dt * 30) fxStars(d.x, d.y - 10, 1);
+            else if (!d.opened && Math.random() < dt * 3) particles.push({ x: d.x + (Math.random()*16-8), y: d.y - 6, vx: 0, vy: -14, life: 0.5, maxLife: 0.5, color: d.tier === 2 ? '#ffd700' : (d.tier === 1 ? '#dbe4f0' : '#fbbf24'), shape: 'star', size: 2, grav: 0 });
+            continue;
+        }
         if (window.vacuumTimer > 0 && d.type === 'xp' && dist > 0) {
             // Iman Magico (VS Vacuum): las gemas vuelan hacia el jugador
             d.x += ((player.x - d.x) / dist) * 420 * dt;
@@ -2387,20 +2438,6 @@ function update(dt) {
                 // Iman Magico (VS Vacuum): atrae todas las gemas de XP hacia el jugador
                 window.vacuumTimer = 2.0;
                 playSound('coin');
-            } else if (d.type === 'chest') {
-                playSound('levelup');
-                gameState = 'UPGRADE';
-                // VS: la calidad del cofre mejora con la Suerte; 1, 3 o 5 mejoras
-                const luck = player.luckBonus;
-                const roll = Math.random();
-                const count = roll < 0.05 * luck ? 5 : (roll < 0.20 * luck ? 3 : 1);
-                // VS: Beli del cofre por tier (100-200 / 300-600 / 500-1000) multiplicado por Avaricia
-                const tierBase = d.tier === 2 ? 500 : (d.tier === 1 ? 300 : 100);
-                const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus);
-                scoreBeli += beliVal;
-                // VS: la evolución se dispara al abrir un cofre capaz de evolucionar
-                if (d.canEvolve) checkEvolutions();
-                showUpgradeScreen(count, true);
             }
             updateUI(); drops.splice(i, 1);
         }
@@ -2414,14 +2451,19 @@ function update(dt) {
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.life -= dt;
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.vx *= 0.92;
-        p.vy *= 0.92;
+        if (p.shape === 'ring') {
+            p.size += 150 * dt;
+        } else {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vx *= 0.92;
+            p.vy *= 0.92;
+            if (p.grav) p.vy += p.grav * dt;
+        }
         if (p.life <= 0) particles.splice(i, 1);
     }
     // cap de partículas (VS usa pooling: evita acumulación en partidas largas)
-    if (particles.length > 500) particles.splice(0, particles.length - 500);
+    if (particles.length > 600) particles.splice(0, particles.length - 600);
 
     document.getElementById('time-txt').innerText = formatTime(gameTime);
 }
@@ -2472,6 +2514,11 @@ function handleAttacks(dt) {
                 life: 0.4, maxLife: 0.4,
                 baseDamage: skills.bazooka.baseDamage
             });
+            // VFX: detonación — doble onda + metralla cálida
+            fxRing(bx, by, '#f43f5e', 26, 0.45);
+            fxRing(bx, by, '#fb923c', 14, 0.35);
+            fxSpark(bx, by, '#fb923c', 10, 140, 0.4, 2.5, 90);
+            fxOrb(bx, by, '#fff1c0', 16, 0.3);
             player.attackTimer = 0.2;
         }
     }
@@ -2497,6 +2544,9 @@ function handleAttacks(dt) {
                 baseDamage: skills.santoryu.baseDamage,
                 hitEnemies: new Set()
             });
+            // VFX: triple tajo — destello blanco cruzado
+            fxRing(player.x, player.y, '#ffffff', 20, 0.28);
+            fxSpark(player.x, player.y, '#ffe9e0', 9, 130, 0.3, 2, 30);
             player.attackTimer = 0.2;
         }
     }
@@ -2508,8 +2558,12 @@ function handleAttacks(dt) {
             let target = getNearestEnemy();
             if (target) {
                 const ang = Math.atan2(target.y - player.y, target.x - player.x);
+                const px0 = player.x, py0 = player.y;
                 player.x += Math.cos(ang) * skills.onigiri.dash;
                 player.y += Math.sin(ang) * skills.onigiri.dash;
+                // VFX: estelas del sprite a lo largo del tajo (Oni Giri)
+                for (let g = 1; g <= 3; g++) fxGhost(px0 + (player.x - px0) * (g / 4), py0 + (player.y - py0) * (g / 4), player.facing);
+                fxRing(player.x, player.y, '#e2e8f0', 16, 0.3);
                 activeAttacks.push({
                     type: 'onigiri', x: player.x, y: player.y,
                     radius: 40 * player.areaBonus,
@@ -2536,6 +2590,8 @@ function handleAttacks(dt) {
                 baseDamage: skills.flyingslash.baseDamage,
                 hitEnemies: new Set()
             });
+            // VFX: chispazo celeste al desenvainar
+            fxOrb(player.x + Math.cos(angle) * 18, player.y + Math.sin(angle) * 18, '#7dd3fc', 6, 0.2);
             player.attackTimer = 0.2;
         }
     }
@@ -2550,6 +2606,11 @@ function handleAttacks(dt) {
                 life: 0.3, maxLife: 0.3,
                 baseDamage: skills.diablejambe.baseDamage
             });
+            // VFX: pie en llamas + brasas ascendentes
+            fxOrb(player.x, player.y + 12, '#fb923c', 9, 0.3);
+            for (let k = 0; k < 6; k++) {
+                particles.push({ x: player.x + (Math.random() * 20 - 10), y: player.y + 10, vx: (Math.random() - 0.5) * 24, vy: -60 - Math.random() * 50, life: 0.5, maxLife: 0.5, color: Math.random() < 0.5 ? '#f43f5e' : '#fb923c', shape: 'orb', size: 4, grav: 0 });
+            }
             player.attackTimer = 0.2;
         }
     }
@@ -2605,6 +2666,9 @@ function handleAttacks(dt) {
                 baseDamage: skills.muchi.baseDamage,
                 hitEnemies: new Set()
             });
+            // VFX: chispazo dorado en la punta del látigo
+            fxStars(player.x + Math.cos(angle) * skills.muchi.radius * player.areaBonus * 0.75,
+                    player.y + Math.sin(angle) * skills.muchi.radius * player.areaBonus * 0.75, 5);
             player.attackTimer = 0.25;
         }
     }
@@ -2616,13 +2680,17 @@ function handleAttacks(dt) {
             skills.ono.timer = 0;
             const inRange = enemies.filter(e => Math.hypot(e.x - player.x, e.y - player.y) < 340);
             const target = inRange.length ? inRange[Math.floor(Math.random() * inRange.length)] : null;
+            const ox = target ? target.x : player.x, oy = target ? target.y : player.y;
             activeAttacks.push({
-                type: 'ono', x: target ? target.x : player.x, y: target ? target.y : player.y,
+                type: 'ono', x: ox, y: oy,
                 radius: skills.ono.radius * player.areaBonus,
                 life: 0.35, maxLife: 0.35,
                 baseDamage: skills.ono.baseDamage,
                 hitEnemies: new Set()
             });
+            // VFX: hacha de goma cae a plomo — onda de impacto
+            fxRing(ox, oy, '#ffe4c4', 20, 0.35);
+            fxSpark(ox, oy, '#ffe4c4', 7, 110, 0.35, 2, 100);
             player.attackTimer = 0.2;
         }
     }
@@ -2658,6 +2726,9 @@ function handleAttacks(dt) {
                 baseDamage: skills.poundho.baseDamage,
                 hitEnemies: new Set()
             });
+            // VFX: retroceso del cañón de viento — anillo de aire comprimido
+            fxRing(player.x, player.y, '#9cc3e8', 18, 0.3);
+            fxSpark(player.x + Math.cos(angle) * 10, player.y + Math.sin(angle) * 10, '#dbeafe', 6, 80, 0.3, 2, 0);
             player.attackTimer = 0.2;
         }
     }
@@ -2669,13 +2740,17 @@ function handleAttacks(dt) {
             skills.concasse.timer = 0;
             const inRange = enemies.filter(e => Math.hypot(e.x - player.x, e.y - player.y) < 320);
             const target = inRange.length ? inRange[Math.floor(Math.random() * inRange.length)] : null;
+            const cx = target ? target.x : player.x, cy = target ? target.y : player.y;
             activeAttacks.push({
-                type: 'concasse', x: target ? target.x : player.x, y: target ? target.y : player.y,
+                type: 'concasse', x: cx, y: cy,
                 radius: skills.concasse.radius * player.areaBonus,
                 life: 0.45, maxLife: 0.45,
                 baseDamage: skills.concasse.baseDamage,
                 hitEnemies: new Set()
             });
+            // VFX: talonazo demoledor — onda naranja + destellos
+            fxRing(cx, cy, '#f97316', 22, 0.4);
+            fxStars(cx, cy, 6);
             player.attackTimer = 0.25;
         }
     }
@@ -2692,6 +2767,8 @@ function handleAttacks(dt) {
                 baseDamage: skills.partycourse.baseDamage,
                 spin: 0
             });
+            // VFX: chispazo naranja giratorio
+            fxSpark(player.x, player.y, '#f97316', 8, 120, 0.35, 2, 20);
             player.attackTimer = 0.2;
         }
     }
@@ -2848,10 +2925,11 @@ function killEnemy(e) {
     const xpVal = e.isBoss ? 200 : (e.isMiniboss ? 80 : (e.isElite ? 40 : (e.type === 'pacifista' ? 40 : 6)));
     drops.push({ x: e.x, y: e.y, type: 'xp', value: xpVal });
     if (e.isElite || e.isMiniboss || e.isBoss) {
-        // VS: bronce (élites, no evoluciona) / plata (minibosses y boss, sí evoluciona)
-        drops.push({ x: e.x + (Math.random()*10-5), y: e.y + (Math.random()*10-5), type: 'chest', value: 1,
-            tier: e.isBoss ? 2 : (e.isMiniboss ? 1 : 0),
-            canEvolve: e.isBoss || e.isMiniboss });
+        // VS: bronce (élites, no evoluciona, NO siempre cae) / plata (minibosses) / oro (boss) — queda en el suelo hasta pisarlo
+        const chestTier = e.isBoss ? 2 : (e.isMiniboss ? 1 : 0);
+        const dropChest = e.isBoss || e.isMiniboss || (Math.random() < 0.3 * player.luckBonus);
+        if (dropChest) drops.push({ x: e.x, y: e.y, type: 'chest', tier: chestTier,
+            canEvolve: chestTier >= 1, ground: true, opened: false, openTimer: 0, value: 1 });
     }
     if (Math.random() < 0.35) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(20 * player.greedBonus) });
     // Pickups estilo VS con lore One Piece (drop raro escalado por Suerte):
@@ -2862,10 +2940,13 @@ function killEnemy(e) {
     else if (pk < 0.010 * player.luckBonus) drops.push({ x: e.x, y: e.y, type: 'vacuum' });
     // VS: cada miniboss derrotado otorga una Voluntad de D a mitad de partida
     if (e.isMiniboss) player._arcanaPending = (player._arcanaPending || 0) + 1;
-    for (let k = 0; k < 8; k++) {
+    // VS: nube de muerte — destello + chispas del color del enemigo
+    fxOrb(e.x, e.y - 6, '#ffffff', 10, 0.22);
+    fxRing(e.x, e.y, e.isBoss ? '#facc15' : (e.isElite ? '#ffd700' : '#ffffff'), 12, 0.28);
+    for (let k = 0; k < 7; k++) {
         const ang = Math.random() * Math.PI * 2;
-        const sp = 40 + Math.random() * 60;
-        particles.push({ x: e.x, y: e.y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 0.4, color: e.isElite ? '#ffd700' : '#fff' });
+        const sp = 60 + Math.random() * 90;
+        particles.push({ x: e.x, y: e.y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 0.45, maxLife: 0.45, color: e.isBoss ? '#facc15' : (e.isElite ? '#ffd700' : '#f8fafc'), shape: 'spark', size: 2.5, grav: 140 });
     }
     if (Math.random() < 0.08) drops.push({ x: e.x, y: e.y, type: 'meat' });
     // Boss derrotado = victoria (estilo Vampire Survivors)
@@ -2880,6 +2961,42 @@ function spawnDamageText(x, y, dmgInfo) {
         isOvercrit: dmgInfo.isOvercrit,
         life: 0.6
     });
+}
+
+// === Sistema de particulas pulido (estilo VS: formas con proposito) ===
+// shape: 'spark' (chispa con gravedad) | 'orb' (destello que se encoge)
+// | 'ring' (onda expansiva que crece) | 'star' (destello dorado con parpadeo)
+// | 'ghost' (estela de sprite del jugador, para dashes)
+function fxSpark(x, y, color, n, speed, life = 0.45, size = 2.5, grav = 120) {
+    for (let k = 0; k < n; k++) {
+        const ang = Math.random() * Math.PI * 2;
+        const sp = speed * (0.5 + Math.random() * 0.7);
+        particles.push({ x: x, y: y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: life * (0.7 + Math.random() * 0.5), maxLife: life, color: color, shape: 'spark', size: size, grav: grav });
+    }
+}
+function fxRing(x, y, color, size = 20, life = 0.35) {
+    particles.push({ x: x, y: y, vx: 0, vy: 0, life: life, maxLife: life, color: color, shape: 'ring', size: size });
+}
+function fxOrb(x, y, color, size = 8, life = 0.25) {
+    particles.push({ x: x, y: y, vx: 0, vy: 0, life: life, maxLife: life, color: color, shape: 'orb', size: size });
+}
+function fxStars(x, y, n = 8) {
+    for (let k = 0; k < n; k++) {
+        const ang = (Math.PI * 2 * k) / n + Math.random() * 0.4;
+        const sp = 55 + Math.random() * 70;
+        particles.push({ x: x, y: y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 30, life: 0.6, maxLife: 0.6, color: Math.random() < 0.5 ? '#ffd700' : '#fff2c0', shape: 'star', size: 3 + Math.random() * 3, grav: 90 });
+    }
+}
+function fxGhost(x, y, facing) {
+    // estela del sprite del jugador actual (para Oni Giri / evoluciones con dash)
+    const set = CHAR_IMG[selectedCharacter];
+    let img = null;
+    if (set) {
+        const arr = set[player.animState] && set[player.animState].length ? set[player.animState] : set.idle;
+        if (arr && arr.length) img = arr[player.animIndex % arr.length];
+    }
+    if (!img) return;
+    particles.push({ x: x, y: y, img: img, facing: facing, life: 0.32, maxLife: 0.32, shape: 'ghost', color: '#fff', size: 48 });
 }
 
 function getNearestEnemy() {
@@ -3359,15 +3476,74 @@ function render() {
         ctx.fillRect(MAP_BOUNDS.minX - 400, MAP_BOUNDS.minY - 400, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 800, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 800);
     }
 
-    // Drops with Glow Effect
+    // Drops (VS: los cofres son modelos en el suelo; el resto con glow)
     for (let d of drops) {
         ctx.save();
-        ctx.translate(d.x, d.y + Math.sin(gameTime * 6 + d.x) * 3);
-        const dCol = d.type === 'xp' ? '#38bdf8' : (d.type === 'beli' ? '#facc15' : (d.type === 'denden' ? '#fde047' : (d.type === 'bell' ? '#67e8f9' : (d.type === 'vacuum' ? '#a78bfa' : '#ef4444'))));
-        const glowImg = getGlow(dCol, 20);
-        ctx.drawImage(glowImg, -20, -20);
-        ctx.fillStyle = dCol;
-        ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+        if (d.type === 'chest') {
+            const img = IMG['chest_t' + d.tier];
+            if (img && img.complete) {
+                const bob = d.opened ? 0 : Math.sin(gameTime * 3 + d.x) * 1.5;
+                ctx.translate(d.x, d.y + bob);
+                // sombra en el suelo
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath(); ctx.ellipse(0, 8, 16, 6, 0, 0, Math.PI * 2); ctx.fill();
+                // glow pulsante del tier mientras espera
+                if (!d.opened) {
+                    const pulse = 0.4 + Math.sin(gameTime * 5 + d.x) * 0.2;
+                    const g = getGlow(d.tier === 2 ? '#ffd700' : (d.tier === 1 ? '#dbe4f0' : '#b45309'), 30);
+                    ctx.globalAlpha = pulse * 0.7;
+                    ctx.drawImage(g, -22, -24);
+                    ctx.globalAlpha = 1;
+                }
+                // frames: 0 cerrado, 1 abriendo, 2 abierto
+                let frame = 0;
+                if (d.opened) {
+                    const progress = 1 - d.openTimer / 0.45;
+                    frame = progress < 0.5 ? 1 : 2;
+                    // destello blanco al abrirse
+                    if (progress < 0.55) {
+                        ctx.globalAlpha = 0.8 * (1 - progress / 0.55);
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath(); ctx.arc(0, -2, 14, 0, Math.PI * 2); ctx.fill();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+                const iw = img.width / 3, ih = img.height;
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(img, frame * iw, 0, iw, ih, -18, -22, 36, 36);
+                ctx.imageSmoothingEnabled = true;
+            } else {
+                // fallback mientras carga
+                ctx.translate(d.x, d.y);
+                ctx.fillStyle = '#8b5e3c';
+                ctx.fillRect(-9, -8, 18, 13);
+                ctx.fillStyle = '#ffd700';
+                ctx.fillRect(-9, -8, 18, 4);
+            }
+        } else {
+            ctx.translate(d.x, d.y + Math.sin(gameTime * 6 + d.x) * 3);
+            // Pickups con sprite del propio lore (GBA): monedas, comida, Den Den, tornado
+            const spriteMap = { beli: 'money', meat: 'food', denden: 'conch', vacuum: 'tornado' };
+            const spriteKey = spriteMap[d.type];
+            if (spriteKey && IMG[spriteKey] && IMG[spriteKey].complete) {
+                const glowCol = d.type === 'beli' ? '#facc15' : (d.type === 'meat' ? '#f87171' : (d.type === 'denden' ? '#fde047' : '#a78bfa'));
+                ctx.globalAlpha = 0.5 + Math.sin(gameTime * 6 + d.x) * 0.15;
+                ctx.drawImage(getGlow(glowCol, 20), -20, -20);
+                ctx.globalAlpha = 1;
+                const img = IMG[spriteKey];
+                const s = d.type === 'meat' ? 16 : 14;
+                const iw = s * (img.width / img.height);
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(img, -iw / 2, -s / 2, iw, s);
+                ctx.imageSmoothingEnabled = true;
+            } else {
+                const dCol = d.type === 'xp' ? '#38bdf8' : (d.type === 'beli' ? '#facc15' : (d.type === 'denden' ? '#fde047' : (d.type === 'bell' ? '#67e8f9' : (d.type === 'vacuum' ? '#a78bfa' : '#ef4444'))));
+                const glowImg = getGlow(dCol, 20);
+                ctx.drawImage(glowImg, -20, -20);
+                ctx.fillStyle = dCol;
+                ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+            }
+        }
         ctx.restore();
     }
 
@@ -3450,6 +3626,18 @@ function render() {
             ctx.strokeStyle = skills.poundho.evolved ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)';
             ctx.lineWidth = 6;
             ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
+            // VFX: sable de Ryuma al frente del cañón de viento
+            const sab = IMG.saber_poundho;
+            if (sab && sab.complete) {
+                ctx.save();
+                ctx.translate(endX + Math.cos(atk.angle) * 10, endY + Math.sin(atk.angle) * 10);
+                ctx.rotate(atk.angle + Math.PI * 0.7);
+                const s = 30, iw = s * (sab.width / sab.height);
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(sab, -iw / 2, -s / 2, iw, s);
+                ctx.imageSmoothingEnabled = true;
+                ctx.restore();
+            }
             ctx.shadowBlur = 0;
         } else if (atk.type === 'partycourse') {
             // tanda de patadas 360: aro rotatorio doble
@@ -3507,9 +3695,26 @@ function render() {
         } else if (atk.type === 'flyingslash') {
             const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
             const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 10;
-            ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 12;
+            // estela translúcida detrás del sable volador
+            ctx.strokeStyle = 'rgba(56, 189, 235, 0.3)'; ctx.lineWidth = 8; ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
+            ctx.lineCap = 'butt';
+            // VFX: sable GBA girando en la punta del corte
+            const saber = IMG.saber_flyingslash;
+            ctx.save();
+            ctx.translate(endX, endY);
+            ctx.rotate(atk.angle + Math.PI * 0.7 + gameTime * 14);
+            ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 12;
+            if (saber && saber.complete) {
+                const s = 28, iw = s * (saber.width / saber.height);
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(saber, -iw / 2, -s / 2, iw, s);
+                ctx.imageSmoothingEnabled = true;
+            } else {
+                ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 10;
+                ctx.beginPath(); ctx.moveTo(-24, 0); ctx.lineTo(24, 0); ctx.stroke();
+            }
+            ctx.restore();
             ctx.shadowBlur = 0;
         } else if (atk.type === 'collier') {
             const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
@@ -3677,11 +3882,45 @@ function render() {
     }
     ctx.restore();
 
-    // Particles
+    // Particles (formas: spark / orb / ring / star / ghost)
     for (let p of particles) {
-        ctx.globalAlpha = Math.max(0, p.life / 0.4);
-        ctx.fillStyle = p.color;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill();
+        const a = Math.max(0, p.life / (p.maxLife || 0.4));
+        if (p.shape === 'ring') {
+            ctx.globalAlpha = a * 0.85;
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.5, p.size), 0, Math.PI * 2); ctx.stroke();
+        } else if (p.shape === 'orb') {
+            ctx.globalAlpha = a * 0.9;
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color; ctx.shadowBlur = 12;
+            ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.8, p.size * a), 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+        } else if (p.shape === 'star') {
+            ctx.globalAlpha = a;
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color; ctx.shadowBlur = 8;
+            const s = Math.max(0.6, p.size * a);
+            // destello de 4 puntas con parpadeo
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.life * 6);
+            ctx.fillRect(-s, -s * 0.22, s * 2, s * 0.44);
+            ctx.fillRect(-s * 0.22, -s, s * 0.44, s * 2);
+            ctx.restore();
+            ctx.shadowBlur = 0;
+        } else if (p.shape === 'ghost' && p.img && p.img.complete) {
+            ctx.globalAlpha = a * 0.45;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            if (p.facing === 1) ctx.scale(-1, 1);
+            const ph = p.size || 48;
+            const pw = ph * (p.img.width / p.img.height);
+            ctx.drawImage(p.img, -pw/2, -ph/2, pw, ph);
+            ctx.restore();
+        } else {
+            ctx.globalAlpha = a;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.7, (p.size || 2) * a), 0, Math.PI * 2); ctx.fill();
+        }
     }
     ctx.globalAlpha = 1;
 

@@ -1,0 +1,18 @@
+{
+  "name": "One Piece: Grand Line Survivor - Sea of Stars Edition",
+  "short_name": "OP SURVIVOR",
+  "description": "Survivor pirata fan-made de One Piece: sobrevive 10 minutos al caos del Grand Line, forja tu build y derrota al boss del mapa.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#030712",
+  "theme_color": "#0b1220",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

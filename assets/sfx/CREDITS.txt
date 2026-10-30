@@ -1,0 +1,6 @@
+Sonidos de efectos (assets/sfx/*.wav):
+"The Essential Retro Video Game Sound Effects Collection [512 sounds]"
+por Juhani Junkala (SubspaceAudio / TurboCharger)
+Fuente: https://opengameart.org/content/512-sound-effects-8-bit-style
+Licencia: CC0 (dominio publico) — uso libre, atribucion no requerida.
+Solo se incluyo una seleccion de 30 efectos renombrados para este proyecto fan-made sin animo de lucro.

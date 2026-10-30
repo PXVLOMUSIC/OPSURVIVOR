@@ -1372,7 +1372,7 @@ const META_UPGRADES = [
 ];
 let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false }, wins: { baratie: 0, alabasta: 0, skypiea: 0 }, curseUnlocked: 0,
     achievements: {},
-    stats: { kills: 0, elites: 0, evolves: 0, beliTotal: 0, maxTime: { baratie: 0, alabasta: 0, skypiea: 0 }, winsByChar: { luffy: 0, zoro: 0, sanji: 0 }, killsByType: {} } };
+    stats: { kills: 0, elites: 0, evolves: 0, beliTotal: 0, maxTime: { baratie: 0, alabasta: 0, skypiea: 0 }, winsByChar: { luffy: 0, zoro: 0, sanji: 0 }, winsByCurse: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 }, killsByType: {} } };
 META_UPGRADES.forEach(u => meta.upgrades[u.id] = 0);
 function loadMeta() {
     try {
@@ -1389,6 +1389,7 @@ function loadMeta() {
             if (parsed.stats) meta.stats = { ...meta.stats, ...parsed.stats,
                 maxTime: { ...meta.stats.maxTime, ...(parsed.stats.maxTime || {}) },
                 winsByChar: { ...meta.stats.winsByChar, ...(parsed.stats.winsByChar || {}) },
+                winsByCurse: { 0:0,1:0,2:0,3:0,4:0, ...(parsed.stats.winsByCurse || {}) },
                 killsByType: { ...(parsed.stats.killsByType || {}) } };
         }
     } catch (e) {}
@@ -2059,7 +2060,10 @@ const ACHIEVEMENTS = [
     { id: 'gold_20k',     name: 'Sueño del Gold Roger', desc: 'Acumula 20,000 Beli en total.',                check: s => s.beliTotal >= 20000, reward: 2000 },
     { id: 'win_luffy',    name: 'Hay Que Ser Leyenda', desc: 'Conquista una isla con Luffy, el Hombre-Goma.', check: s => s.winsByChar.luffy >= 1, reward: 2000, unlock: 'zoro' },
     { id: 'win_zoro',     name: 'El Mejor Espadachín del Mundo', desc: 'Conquista una isla con Zoro.',        check: s => s.winsByChar.zoro >= 1, reward: 2000, unlock: 'sanji' },
-    { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 3000 }
+    { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 3000 },
+    { id: 'win_curse4',   name: 'Rey del Mar Peligroso', desc: 'Conquista una isla con el Clima Peligroso 4.', check: s => (s.winsByCurse[4] || 0) >= 1, reward: 5000 },
+    { id: 'endless_30',   name: 'Leyenda del Grand Line', desc: 'Navega el Modo Infinito hasta el minuto 30.', check: s => Math.max(...Object.values(s.maxTime)) >= 1800, reward: 5000 },
+    { id: 'dual_shichibukai', name: 'Doble Ejecución', desc: 'Derrota a los 2 Shichibukai en una misma singladura.', check: s => s.moriaThis && s.kumaThis, reward: 2500 }
 ];
 function mergeRunStats() {
     // VS: acumula las estadisticas de la run al terminar (evita saveMeta por kill)
@@ -2083,7 +2087,10 @@ function checkAchievements() {
         kills: st.kills + (rs ? rs.kills : 0),
         elites: st.elites + (rs ? rs.elites : 0),
         evolves: st.evolves + (rs ? rs.evolves : 0),
-        killsByType: st.killsByType };
+        killsByType: st.killsByType,
+        // Doble Ejecucion: SOLO la singlatura actual (no sobrevive al merge)
+        moriaThis: !!(rs && rs.moriaThis),
+        kumaThis: !!(rs && rs.kumaThis) };
     for (const a of ACHIEVEMENTS) {
         if (meta.achievements[a.id]) continue;
         let ok = false;
@@ -3438,6 +3445,23 @@ function killEnemy(e) {
         const sp = 60 + Math.random() * 90;
         particles.push({ x: e.x, y: e.y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 0.45, maxLife: 0.45, color: e.isBoss ? '#facc15' : (e.isElite ? '#ffd700' : '#f8fafc'), shape: 'spark', size: 2.5, grav: 140 });
     }
+    // VS: Mini flag de Doble Ejecucion (2 Shichibukai en la misma singladura)
+    if (e.isMiniboss) {
+        if (e.type === 'moria' && window.runStats) window.runStats.moriaThis = true;
+        if (e.type === 'kuma' && window.runStats) window.runStats.kumaThis = true;
+    }
+    // VS: AVALANCHA DE BELI al caer un Shichibukai/boss — monedas doradas en arco
+    if (e.isMiniboss || e.isBoss) {
+        const qty = e.isBoss ? 22 : 14;
+        for (let k = 0; k < qty; k++) {
+            const ang = Math.random() * Math.PI * 2;
+            const sp = 40 + Math.random() * 130;
+            drops.push({ x: e.x + Math.cos(ang) * sp, y: e.y + Math.sin(ang) * sp, type: 'beli',
+                value: Math.round((60 + Math.random() * 70) * player.greedBonus * (player.runBeliMult || 1)) });
+        }
+        if (!e.isBoss) window.spawnBanner = { text: '¡AVALANCHA DE BELI!', life: 1.2, color: '#ffd700' };
+        fxStars(e.x, e.y, 18);
+    }
     if (Math.random() < 0.08) drops.push({ x: e.x, y: e.y, type: 'meat' });
     // Boss derrotado = victoria (estilo Vampire Survivors) — salvo Modo Infinito
     if (e.isBoss) {
@@ -3926,6 +3950,7 @@ function triggerVictory() {
     mergeRunStats();
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
+    meta.stats.winsByCurse[runCurseRank] = (meta.stats.winsByCurse[runCurseRank] || 0) + 1;
     // VS: vencer con el clima N desbloquea el N+1 (una vez)
     if (runCurseRank === meta.curseUnlocked && meta.curseUnlocked < 4) {
         meta.curseUnlocked++;

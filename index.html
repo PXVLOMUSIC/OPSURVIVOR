@@ -1076,12 +1076,20 @@ function selectCurse(n) {
     runCurseRank = n;
     document.querySelectorAll('#curse-select .curse-btn').forEach(b => b.classList.toggle('selected', b.dataset.curse === String(n)));
     const desc = document.getElementById('curse-desc');
-    if (desc) desc.innerText = '+' + (n * 25) + '% Beli · +' + (n * 25) + '% peligro';
+    if (desc) {
+        const extras = [];
+        if (n >= 2) extras.push('oleadas frecuentes');
+        if (n >= 3) extras.push('2º Shichibukai');
+        if (n >= 4) extras.push('boss doble');
+        desc.innerText = '+' + (n * 25) + '% Beli · +' + (n * 25) + '% peligro' + (extras.length ? ' · ' + extras.join(' · ') : '');
+    }
 }
 function applyRunCurse() {
     if (!player) return;
     player.curse += 0.25 * runCurseRank;
     player.runBeliMult = 1 + 0.25 * runCurseRank;
+    // Clima 2+: las oleadas sorpresa empiezan antes
+    window.nextEventAt = (runCurseRank >= 2) ? 55 : 70;
 }
 // toggle de solo la musica del menu (batalla sigue con su propio slider en OPCIONES)
 function toggleMenuMusic() {
@@ -2412,7 +2420,7 @@ function resetGame() {
 
     enemies = []; enemyBullets = []; drops = []; particles = []; damageTexts = []; activeAttacks = [];
     gameTime = 0; scoreBeli = 0; bossSpawned = false;
-    window.moriaSpawned = false; window.kumaSpawned = false; window.morganSpawned = false;
+    window.moriaSpawned = false; window.kumaSpawned = false; window.morganSpawned = false; window.mirrorMinibossSpawned = false;
     window.spawnBanner = null;
     updateUI();
 }
@@ -3311,6 +3319,14 @@ function handleSpawning(dt) {
             window.spawnBanner = { text: MINIBOSS_INFO.kuma, life: 2.0, color: '#ffa500' };
             playSound('boss');
         }
+        // Clima 3+: con los Shichibukai llega una segunda bestia espejo (80% HP)
+        if (runCurseRank >= 3 && minutes >= 5 && !window.mirrorMinibossSpawned) {
+            window.mirrorMinibossSpawned = true;
+            const mhp = Math.round(700 * hpScale * 0.8);
+            enemies.push({ x: ex - 120, y: ey - 60, type: 'moria', hp: mhp, maxHp: mhp, speed: 35, damage: 30, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isMiniboss: true, name: MINIBOSS_INFO.moria });
+            window.spawnBanner = { text: '¡SEGUNDO SHICHIBUKAI APARECE!', life: 2.0, color: '#ffa500' };
+            playSound('boss');
+        }
     }
 }
 
@@ -3323,8 +3339,13 @@ function spawnBoss() {
     // Modo Infinito: cada boss nuevo es un 60% mas fuerte que el anterior
     if (window.endlessMode) hpv = Math.round(hpv * (1 + 0.6 * (window.endlessBossKills || 0)));
     enemies.push({ x: player.x + 250, y: player.y + 250, type: bossType, hp: hpv, maxHp: hpv, speed: 55, damage: 50, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isBoss: true, name: BOSS_INFO[bossType] });
+    // Clima 4: doble caza mayor (VS: etapas con dos bosses a la vez)
+    if (runCurseRank >= 4) {
+        const hp2 = Math.round(hpv * 0.6);
+        enemies.push({ x: player.x - 250, y: player.y - 250, type: bossType, hp: hp2, maxHp: hp2, speed: 55, damage: 44, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isBoss: true, name: BOSS_INFO[bossType] });
+    }
     // VS: anuncio de boss con banner + shake + fanfarria
-    window.spawnBanner = { text: BOSS_INFO[bossType], life: 2.2, color: '#facc15' };
+    window.spawnBanner = { text: (runCurseRank >= 4 ? 'DOBLES CAZAMAYORES: ' : '') + BOSS_INFO[bossType], life: 2.2, color: '#facc15' };
     cameraShake = 2.5;
     playSound('boss');
     updateUI();
@@ -3334,7 +3355,7 @@ function spawnBoss() {
 function updateEvents(dt) {
     if (!window.nextEventAt) window.nextEventAt = 70;
     if (gameTime < window.nextEventAt) return;
-    window.nextEventAt = gameTime + 85 + Math.random() * 25;
+    window.nextEventAt = gameTime + (runCurseRank >= 2 ? 60 + Math.random() * 18 : 85 + Math.random() * 25);
     const minutes = Math.floor(gameTime / 60);
     const hpScale = Math.pow(1.28, minutes) * player.curse;
     const kind = Math.random() < 0.5 ? 'ring' : 'charge';
@@ -3426,7 +3447,12 @@ function killEnemy(e) {
             scoreBeli += Math.round(3000 * (player.runBeliMult || 1));
             window.spawnBanner = { text: '¡BRIGADA CAÍDA — EL MAR ENVÍA OTRA MÁS FUERTE!', life: 2.0, color: '#f87171' };
             playSound('boss');
-        } else triggerVictory();
+        } else {
+            // Clima 4 puede traer 2 bosses: solo hay victoria cuando cae el ULTIMO vivo
+            if (enemies.some(en => en !== e && en.isBoss && !en._dead)) {
+                window.spawnBanner = { text: '¡AÚN QUEDA OTRO CAZAMAYOR!', life: 2.0, color: '#fbbf24' };
+            } else triggerVictory();
+        }
     }
     checkAchievements();
 }

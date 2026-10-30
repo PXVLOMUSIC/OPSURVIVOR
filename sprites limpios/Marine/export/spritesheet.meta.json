@@ -1,0 +1,135 @@
+{
+  "version": 2,
+  "columns": 1,
+  "negativeSpacingEnabled": false,
+  "backgroundColor": "transparent",
+  "manualCellSizeEnabled": false,
+  "manualCellWidth": 64,
+  "manualCellHeight": 64,
+  "hueShift": 0,
+  "saturationShift": 0,
+  "brightnessShift": 0,
+  "contrastShift": 0,
+  "sepiaAmount": 0,
+  "invertEnabled": false,
+  "layers": [
+    {
+      "id": "27681f88-8c49-4830-a6ee-bdec34e91fd1",
+      "name": "Base",
+      "visible": true,
+      "locked": false,
+      "sprites": [
+        {
+          "id": "7dc6fb99-20a6-477a-b002-f8c7879b440f",
+          "width": 204,
+          "height": 71,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-2.png"
+        },
+        {
+          "id": "5fbea638-f866-452a-a4b8-a8efc06a2d71",
+          "width": 350,
+          "height": 78,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-6.png"
+        },
+        {
+          "id": "1ae29fcc-4259-471c-910c-3f1e9c28b7fe",
+          "width": 296,
+          "height": 78,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-12.png"
+        },
+        {
+          "id": "bf124f27-fa61-4b80-a086-6e69bc98ac3c",
+          "width": 295,
+          "height": 77,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-17.png"
+        },
+        {
+          "id": "6fd99068-ef09-42f1-bbc8-5735d2cf98dd",
+          "width": 218,
+          "height": 70,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-22.png"
+        },
+        {
+          "id": "e09154f6-3246-460c-ba22-e0adc349b35a",
+          "width": 7,
+          "height": 7,
+          "x": 188,
+          "y": 439,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-47.png"
+        },
+        {
+          "id": "b47d879c-47b8-41af-b94f-bdca4f868d61",
+          "width": 4,
+          "height": 5,
+          "x": 151,
+          "y": 441,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-48.png"
+        },
+        {
+          "id": "0f251c4b-8538-46fc-9437-b3478be51a7e",
+          "width": 3,
+          "height": 5,
+          "x": 157,
+          "y": 441,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-49.png"
+        },
+        {
+          "id": "7e8496c1-5806-4fc6-bd98-fb70ebc9713d",
+          "width": 4,
+          "height": 5,
+          "x": 197,
+          "y": 441,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-50.png"
+        },
+        {
+          "id": "73a0bbbc-953b-49af-9b15-83e8de1d1123",
+          "width": 4,
+          "height": 7,
+          "x": 206,
+          "y": 441,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-51.png"
+        }
+      ]
+    }
+  ]
+}

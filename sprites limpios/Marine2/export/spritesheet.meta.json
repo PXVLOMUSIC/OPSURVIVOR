@@ -1,0 +1,80 @@
+{
+  "version": 2,
+  "columns": 1,
+  "negativeSpacingEnabled": false,
+  "backgroundColor": "transparent",
+  "manualCellSizeEnabled": false,
+  "manualCellWidth": 64,
+  "manualCellHeight": 64,
+  "hueShift": 0,
+  "saturationShift": 0,
+  "brightnessShift": 0,
+  "contrastShift": 0,
+  "sepiaAmount": 0,
+  "invertEnabled": false,
+  "layers": [
+    {
+      "id": "f40dbc47-2d4f-4240-900e-b9c135ef7335",
+      "name": "Base",
+      "visible": true,
+      "locked": false,
+      "sprites": [
+        {
+          "id": "45f55648-beb7-4b5f-bc84-056ba03f1e8e",
+          "width": 401,
+          "height": 76,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-2.png"
+        },
+        {
+          "id": "d85abc8e-114a-4f26-968b-e221427ca4f1",
+          "width": 251,
+          "height": 77,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-9.png"
+        },
+        {
+          "id": "30fdd2f8-732c-4f32-a554-7e8878c3e441",
+          "width": 220,
+          "height": 77,
+          "x": 0,
+          "y": 0,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-41.png"
+        },
+        {
+          "id": "7e04ff14-eb45-458c-8b06-45a27f71f1d0",
+          "width": 50,
+          "height": 19,
+          "x": 84,
+          "y": 212,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-53.png"
+        },
+        {
+          "id": "c5fae761-7a39-44de-a056-181e44ce34d1",
+          "width": 51,
+          "height": 17,
+          "x": 152,
+          "y": 214,
+          "rotation": 0,
+          "flipX": false,
+          "flipY": false,
+          "name": "region-54.png"
+        }
+      ]
+    }
+  ]
+}

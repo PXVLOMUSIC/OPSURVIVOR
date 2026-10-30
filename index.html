@@ -624,6 +624,8 @@
         @keyframes hpPulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.7); } }
         #hp-text.warn { color: #fbbf24; }
         #hp-text.danger { color: #f87171; text-shadow: 0 0 6px rgba(239, 68, 68, 0.7); }
+        /* OPCIONES "menos destellos": sin parpadeos de barra de vida */
+        body.opt-calm .bar-inner-hp.hp-low { animation: none; }
         .stats-panel b { color: #f6e2b8; }
         .stat-item { color: #fde68a; text-shadow: 0 1px 2px #000; font-family: 'Segoe UI', Tahoma, sans-serif; letter-spacing: 0.3px; font-size: 13px; }
         .stat-item b { color: #fff; }
@@ -840,6 +842,7 @@
     <div id="victory-screen" class="overlay-screen" style="display: none;">
         <h1 style="font-size: 52px; color: #facc15; text-shadow: 0 4px 20px rgba(250,204,21,0.5);">¡VICTORIA PIRATA!</h1>
         <div id="victory-stats" style="color: #cbd5e1; font-size: 15px; margin-bottom: 8px; font-family:'Segoe UI',sans-serif;"></div>
+        <div id="victory-summary" style="margin-bottom: 12px;"></div>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px; font-family:'Segoe UI',sans-serif;">El mar sigue traicionero... ¿seguís navegando?</p>
         <button class="btn-start" onclick="startEndless()">☠ MODO INFINITO — SEGUIR NAVEGANDO</button>
         <button class="btn-start" style="margin-top: 10px;" onclick="restartGame()">VOLVER A JUGAR</button>
@@ -849,7 +852,8 @@
     <!-- Game Over Screen -->
     <div id="gameover-screen" class="overlay-screen" style="display: none;">
         <h1 style="font-size: 48px; color: #f43f5e; text-shadow: 0 4px 20px rgba(244,63,94,0.5);">DERROTADO</h1>
-        <div id="gameover-stats" style="color: #cbd5e1; font-size: 15px; margin-bottom: 25px; font-family:'Segoe UI',sans-serif;"></div>
+        <div id="gameover-stats" style="color: #cbd5e1; font-size: 15px; margin-bottom: 8px; font-family:'Segoe UI',sans-serif;"></div>
+        <div id="gameover-summary" style="margin-bottom: 20px;"></div>
         <button class="btn-start" onclick="restartGame()">REINTENTAR</button>
         <button class="btn-start" style="background: linear-gradient(135deg, #94a3b8, #475569); margin-top: 8px;" onclick="backToMenu()">VOLVER AL MENÚ</button>
     </div>
@@ -886,6 +890,9 @@
                 <input type="range" id="opt-sfx" min="0" max="100" value="80" style="width:100%;">
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-shake" checked> Sacudida de cámara</label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-particles"> Partículas reducidas (dispositivos lentos)</label>
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-flashes"> Menos destellos (fotosensibilidad)</label>
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-dmgnums" checked> Mostrar números de daño</label>
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-autopause" checked> Auto-pausa al cambiar de pestaña</label>
             </div>
             <button class="btn-start" onclick="closeOptions()">VOLVER</button>
         </div>
@@ -2144,17 +2151,79 @@ function mergeRunStats() {
     // VS: acumula las estadisticas de la run al terminar (evita saveMeta por kill)
     if (!window.runStats) return;
     const st = meta.stats;
-    st.kills += window.runStats.kills;
-    st.elites += window.runStats.elites;
-    st.evolves += window.runStats.evolves;
-    st.beliTotal += scoreBeli;
-    for (const k in window.runStats.killsByType) st.killsByType[k] = (st.killsByType[k] || 0) + window.runStats.killsByType[k];
+    // VS: snapshot de la Ficha de Singladura (resumen estilo WANTED) — ANTES del merge
+    const pool = window.UPGRADE_POOL_MAP || {};
+    // fallback si todavia paso por ninguna pantalla de mejoras (nivel bajo)
+    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gear 2', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte' };
+    const charNames = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji' };
+    const mapNames = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea' };
+    window.lastRun = {
+        time: gameTime,
+        endless: !!window.endlessMode,
+        curse: runCurseRank,
+        char: charNames[selectedCharacter] || selectedCharacter,
+        map: mapNames[selectedMap] || selectedMap,
+        level: player.level,
+        kills: window.runStats.kills,
+        beli: scoreBeli,
+        weapons: Object.keys(skills).filter(k => skills[k].level > 0).map(k => {
+            const sk = skills[k], p = pool[k] || {};
+            const ev = EVOLUTIONS[k];
+            return { title: p.title || FALLBACK_NAMES[k] || k, icon: p.icon || '', level: sk.level,
+                evolved: !!sk.evolved, evoName: ev ? ev.name : '' };
+        }),
+        passives: Object.keys(player.passives || {}).filter(id => player.passives[id] > 0)
+            .map(id => ({ title: (pool[id] || {}).title || FALLBACK_NAMES[id] || id, icon: (pool[id] || {}).icon || '', n: player.passives[id] }))
+    };
+    const st2 = meta.stats;
+    st2.kills += window.runStats.kills;
+    st2.elites += window.runStats.elites;
+    st2.evolves += window.runStats.evolves;
+    st2.beliTotal += scoreBeli;
+    for (const k in window.runStats.killsByType) st2.killsByType[k] = (st2.killsByType[k] || 0) + window.runStats.killsByType[k];
     // tiempo maximo por mapa
-    if (gameTime > (st.maxTime[selectedMap] || 0)) st.maxTime[selectedMap] = gameTime;
+    if (gameTime > (st2.maxTime[selectedMap] || 0)) st2.maxTime[selectedMap] = gameTime;
     delete window.runStats;
 }
+// VS: Ficha de Singladura — resumen estilo WANTED con build final de la run
+function renderRunSummary(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const r = window.lastRun;
+    if (!r || !r.weapons) { el.innerHTML = ''; return; }
+    const curseLbl = r.curse === 0 ? 'MAR EN CALMA' : 'CLIMA PELIGROSO ' + r.curse;
+    let html = '<div class="wanted-board" style="max-width:640px; padding:16px 20px; max-height:44vh; overflow-y:auto;">';
+    html += '<div class="wanted-title" style="font-size:26px; letter-spacing:6px !important;">FICHA DE SINGLADURA</div>';
+    html += '<div class="wanted-subtitle" style="margin:8px 0;">' + (r.endless ? 'MODO INFINITO · ' : '') + r.char + ' · RÉCORD DE ' + r.map.toUpperCase() + '</div>';
+    // fila de cifras (Bangers, tinta marron)
+    html += '<div style="display:flex; justify-content:center; gap:26px; flex-wrap:wrap; font-family:Bangers,sans-serif; letter-spacing:2px; color:#241508; font-size:18px; margin:10px 0;">';
+    html += '<span>MINUTOS ' + formatTime(r.time) + '</span><span>NIVEL ' + r.level + '</span><span>' + r.kills + ' DERROTADOS</span><span style="color:#7a4a1e;">฿' + fmtBeli(r.beli) + '</span><span>' + curseLbl + '</span></div>';
+    // armas
+    html += '<h3 style="text-align:center; margin:6px 0 4px;">ARMAS DE LA SINGLADURA</h3>';
+    html += '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px;">';
+    for (const w of r.weapons) {
+        html += '<div class="upgrade-card" style="display:flex; align-items:center; gap:8px; padding:6px 10px; text-align:left;">';
+        html += '<div class="upgrade-icon" style="font-size:20px;">' + (w.icon || '') + '</div>';
+        html += '<div style="font-size:14px; line-height:1.15; color:#241508;">' + w.title;
+        if (w.evolved) html += '<br><span style="color:#b45309; font-size:12px;">◆ ' + (w.evoName || 'EVOLUCIONADA') + ' ✔</span>';
+        else html += '<br><span style="font-size:12px; color:#5c3a21;">NV ' + w.level + '</span>';
+        html += '</div></div>';
+    }
+    html += '</div>';
+    // pasivas (chips compactos)
+    if (r.passives.length) {
+        html += '<h3 style="text-align:center; margin:10px 0 4px;">HAKIS Y PASIVAS</h3>';
+        html += '<div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">';
+        for (const p of r.passives) {
+            html += '<div class="upgrade-card" style="display:inline-flex; align-items:center; gap:5px; padding:4px 9px; font-size:13px; color:#241508;">'
+                + (p.icon || '') + ' ' + p.title + (p.n > 1 ? ' <b style="color:#7a4a1e;">×' + p.n + '</b>' : '') + '</div>';
+        }
+        html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+}
 function checkAchievements() {
-    // vista temporal que une el acumulado del perfil con lo de la singlatura:
     // permite que first_blood / evolve_one etc. se sellen EN la partida (como en VS)
     const st = meta.stats;
     const rs = window.runStats || null;
@@ -2298,7 +2367,7 @@ function renderBestiary() {
     document.getElementById('bestiary-subtitle').innerText = 'AVISTADOS: ' + found + '/' + types.length + ' — GRAND LINE';
 }
 // === OPCIONES (persistente, VS-style sliders) ===
-let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, menuMusicMuted: false };
+let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, fewerFlashes: false, showDamageNumbers: true, autoPause: true, menuMusicMuted: false };
 function loadOpts() {
     try {
         const raw = JSON.parse(localStorage.getItem('op_survivor_opts'));
@@ -2312,10 +2381,14 @@ function saveOpts() {
 function applyOpts() {
     const sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
     const checkSh = document.getElementById('opt-shake'), checkP = document.getElementById('opt-particles');
+    const checkF = document.getElementById('opt-flashes'), checkD = document.getElementById('opt-dmgnums'), checkA = document.getElementById('opt-autopause');
     if (sliderM) { sliderM.value = Math.round(windowOpts.music * 100); document.getElementById('opt-music-val').innerText = Math.round(windowOpts.music * 100); }
     if (sliderS) { sliderS.value = Math.round(windowOpts.sfx * 100); document.getElementById('opt-sfx-val').innerText = Math.round(windowOpts.sfx * 100); }
     if (checkSh) checkSh.checked = windowOpts.shake;
     if (checkP) checkP.checked = windowOpts.fewerParticles;
+    if (checkF) checkF.checked = windowOpts.fewerFlashes;
+    if (checkD) checkD.checked = windowOpts.showDamageNumbers;
+    if (checkA) checkA.checked = windowOpts.autoPause;
     setVolume(Math.round(windowOpts.music * 100));
 }
 function showOptions() { document.getElementById('start-screen').style.display = 'none'; document.getElementById('options-screen').style.display = 'flex'; }
@@ -2326,6 +2399,11 @@ function closeOptions() {
     if (sliderS) windowOpts.sfx = sliderS.value / 100;
     if (checkSh) windowOpts.shake = checkSh.checked;
     if (checkP) windowOpts.fewerParticles = checkP.checked;
+    const checkF = document.getElementById('opt-flashes'), checkD = document.getElementById('opt-dmgnums'), checkA = document.getElementById('opt-autopause');
+    if (checkF) windowOpts.fewerFlashes = checkF.checked;
+    if (checkD) windowOpts.showDamageNumbers = checkD.checked;
+    if (checkA) windowOpts.autoPause = checkA.checked;
+    document.body.classList.toggle('opt-calm', !!windowOpts.fewerFlashes);
     saveOpts();
     document.getElementById('options-screen').style.display = 'none';
     document.getElementById('start-screen').style.display = 'flex';
@@ -2374,6 +2452,10 @@ function togglePause() {
     document.getElementById('pause-screen').style.display = 'flex';
     renderPauseWeapons();
 }
+// VS: auto-pausa al cambiar de pestaña/minimizar — nadie muere por cambiar de ventana
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && gameState === 'PLAYING' && windowOpts && windowOpts.autoPause !== false) togglePause();
+});
 function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
@@ -2915,7 +2997,7 @@ function update(dt) {
                 d.opened = true; d.openTimer = 0.45;
                 playSound('chest');
                 cameraShake = 1.2;
-                fxStars(d.x, d.y - 6, 12);
+                fxStars(d.x, d.y - 6, (windowOpts && windowOpts.fewerFlashes) ? 4 : 12);
                 fxRing(d.x, d.y, '#ffd24a', 18, 0.4);
             }
             // chispea mientras espera en el suelo
@@ -3563,7 +3645,7 @@ function killEnemy(e) {
         }
         if (!e.isBoss) window.spawnBanner = { text: '¡AVALANCHA DE BELI!', life: 1.2, color: '#ffd700' };
         playSound('beli_rush');
-        fxStars(e.x, e.y, 18);
+        fxStars(e.x, e.y, (windowOpts && windowOpts.fewerFlashes) ? 6 : 18);
     }
     if (Math.random() < 0.08) drops.push({ x: e.x, y: e.y, type: 'meat' });
     // Boss derrotado = victoria (estilo Vampire Survivors) — salvo Modo Infinito
@@ -3585,6 +3667,8 @@ function killEnemy(e) {
 }
 
 function spawnDamageText(x, y, dmgInfo) {
+    // OPCIONES: se pueden silenciar los numeros de dano (reduccion de ruido visual)
+    if (windowOpts && windowOpts.showDamageNumbers === false) return;
     damageTexts.push({
         x: x + (Math.random()*16 - 8), y: y - 10,
         text: dmgInfo.amount,
@@ -3802,7 +3886,11 @@ function showUpgradeScreen(count, isChest) {
         { id: 'pickup', type: 'passive', chars: 'all', title: 'Recogida', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida de drops.' },
         { id: 'growth', type: 'passive', chars: 'all', title: 'Crecimiento', icon: ICONS.growth, desc: 'Aumenta la XP ganada +8%.' },
         { id: 'luck', type: 'passive', chars: 'all', title: 'Suerte', icon: ICONS.luck, desc: 'Mejora la calidad de los cofres y el Beli; +5% crítico.' }
-    ].filter(u => {
+    ];
+    // snapshot del pool completo (titulo + icono) — la Ficha de Singladura lo usa
+    window.UPGRADE_POOL_MAP = window.UPGRADE_POOL_MAP || {};
+    for (let _u of possibleUpgrades) window.UPGRADE_POOL_MAP[_u.id] = { title: _u.title, icon: _u.icon };
+    const possible = possibleUpgrades.filter(u => {
         if (u.chars !== 'all' && !u.chars.includes(selectedCharacter)) return false;
         if (player.banished && player.banished[u.id]) return false; // VS: Banish retira el ítem de la partida
         const sk = skills[u.id];
@@ -3823,11 +3911,11 @@ function showUpgradeScreen(count, isChest) {
         return true;
     });
 
-    possibleUpgrades.sort(() => 0.5 - Math.random()).slice(0, count).forEach(up => {
+    possible.sort(() => 0.5 - Math.random()).slice(0, count).forEach(up => {
         let desc = up.desc;
         if (up.type === 'weapon' && EVOLUTIONS[up.id]) {
             const ev = EVOLUTIONS[up.id];
-            const pname = (possibleUpgrades.find(x => x.id === ev.passive) || {}).title || ev.passive;
+            const pname = (possible.find(x => x.id === ev.passive) || {}).title || ev.passive;
             desc += skills[up.id].evolved ? `<span style="color:#b45309">◆ EVOLUCIONADA — ${ev.name} ✔</span>` : `<span style="color:#1d4ed8">◆ Evolución: ${ev.name}</span> <span style="color:#7a4a28">(requiere: ${pname})</span>`;
         }
         const card = document.createElement('div');
@@ -4047,6 +4135,7 @@ function triggerGameOver() {
     document.getElementById('gameover-stats').innerText =
         'Tiempo: ' + formatTime(gameTime) + ' · Enemigos derrotados esta singladura: ' + endKills +
         ' · Beli conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0);
+    renderRunSummary('gameover-summary');
     document.getElementById('gameover-screen').style.display = 'flex';
 }
 
@@ -4073,6 +4162,7 @@ function triggerVictory() {
     document.getElementById('victory-stats').innerText =
         'Tiempo: ' + formatTime(gameTime) + ' · Beli conseguido: ' + fmtBeli(scoreBeli) +
         ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0) + record;
+    renderRunSummary('victory-summary');
     document.getElementById('victory-screen').style.display = 'flex';
 }
 
@@ -4649,15 +4739,17 @@ function render() {
 
     // VS: vignette rojo de dano — "estas herido" (pulso breve 0.3s por golpe)
     // Y a partir de 30% de vida: latido suave permanente para ver el limite
+    // OPCIONES "menos destellos": alphas reducidos al 35%
+    const flashMult = (windowOpts && windowOpts.fewerFlashes) ? 0.35 : 1;
     const hpPctNow = Math.max(0, player.hp / player.maxHp);
     let vignetteAlpha = 0;
     if (player._hurtFlash > 0) {
         const fa = Math.max(0, Math.min(1, player._hurtFlash / 0.35));
-        vignetteAlpha += 0.26 * fa;
+        vignetteAlpha += 0.26 * fa * flashMult;
     }
     if (hpPctNow > 0 && hpPctNow <= 0.3) {
         // latido suave ~1Hz entre alpha 0.09 y 0.15
-        const beat = 0.09 + 0.06 * (0.5 + 0.5 * Math.sin(gameTime * 6.3));
+        const beat = (0.09 + 0.06 * (0.5 + 0.5 * Math.sin(gameTime * 6.3))) * flashMult;
         vignetteAlpha = Math.max(vignetteAlpha, beat);
     }
     if (vignetteAlpha > 0.001) {

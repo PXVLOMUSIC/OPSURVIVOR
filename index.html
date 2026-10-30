@@ -353,6 +353,19 @@
             backdrop-filter: blur(6px);
         }
 
+        /* --- Toast de logros (VS: aparece en medio de la partida) --- */
+        #ach-toast {
+            position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #fef3c7, #fcd34d);
+            color: #3d2314; font-family: 'Bangers', 'Impact', sans-serif; font-size: 18px; letter-spacing: 1px;
+            padding: 10px 22px; border-radius: 10px; border: 2px solid #78350f;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.45); z-index: 1000;
+            opacity: 0; transition: opacity 0.5s; pointer-events: none; display: none; white-space: nowrap;
+        }
+        @media (max-width: 700px) {
+            #ach-toast { font-size: 14px; padding: 8px 14px; max-width: 92vw; white-space: normal; text-align: center; }
+        }
+
         /* --- Cartel WANTED: pergamino envejecido + marco de madera --- */
         .wanted-board {
             font-family: 'Bangers', 'Impact', sans-serif;
@@ -755,7 +768,21 @@
             <button class="map-btn" data-map="alabasta" onclick="selectMap('alabasta')"><span class="op-slot" data-ico="dune"></span> Alabasta</button>
             <button class="map-btn" data-map="skypiea" onclick="selectMap('skypiea')"><span class="op-slot" data-ico="cloud"></span> Skypiea</button>
         </div>
-        <div id="map-selected" style="color:#dcc596; font-size:14px; margin-bottom:12px;">Mapa: Baratie</div>
+        <div id="map-selected" style="color:#dcc596; font-size:14px; margin-bottom:6px;">Mapa: Baratie</div>
+        <div id="curse-select" style="display:flex; gap:8px; margin: 2px 0 10px; flex-wrap:wrap; justify-content:center; align-items:center;">
+            <span style="color:#dcc596; letter-spacing:2px; font-size:13px;">CLIMA PELIGROSO:</span>
+            <button class="map-btn curse-btn" data-curse="0" onclick="selectCurse(0)">0</button>
+            <button class="map-btn curse-btn" data-curse="1" onclick="selectCurse(1)">1</button>
+            <button class="map-btn curse-btn" data-curse="2" onclick="selectCurse(2)">2</button>
+            <button class="map-btn curse-btn" data-curse="3" onclick="selectCurse(3)">3</button>
+            <button class="map-btn curse-btn" data-curse="4" onclick="selectCurse(4)">4</button>
+            <span id="curse-desc" style="color:#cbd5e1; font-size:12px; font-family:Segoe UI, sans-serif;"></span>
+        </div>
+        <div style="display:flex; gap:10px; margin: 2px 0 10px; flex-wrap:wrap; justify-content:center;">
+            <button class="map-btn" onclick="showAchievements()"><span class="op-slot" data-ico="hat"></span> LOGROS</button>
+            <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="clock"></span> REGISTRO MARINO</button>
+            <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
+        </div>
         <button class="btn-start" onclick="startGame()">☠ ¡ZARPAR AL COMBATE! ☠</button>
         <button class="btn-start" style="margin-top: 10px;" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Beli: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
     </div>
@@ -793,16 +820,56 @@
     <!-- Victory Screen -->
     <div id="victory-screen" class="overlay-screen" style="display: none;">
         <h1 style="font-size: 52px; color: #facc15; text-shadow: 0 4px 20px rgba(250,204,21,0.5);">¡VICTORIA PIRATA!</h1>
-        <p style="color: #cbd5e1; font-size: 18px; margin-bottom: 25px;">¡Don Krieg ha sido derrotado y el Baratie está a salvo!</p>
-        <button class="btn-start" onclick="restartGame()">VOLVER A JUGAR</button>
+        <div id="victory-stats" style="color: #cbd5e1; font-size: 15px; margin-bottom: 8px; font-family:'Segoe UI',sans-serif;"></div>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px; font-family:'Segoe UI',sans-serif;">El mar sigue traicionero... ¿seguís navegando?</p>
+        <button class="btn-start" onclick="startEndless()">☠ MODO INFINITO — SEGUIR NAVEGANDO</button>
+        <button class="btn-start" style="margin-top: 10px;" onclick="restartGame()">VOLVER A JUGAR</button>
+        <button class="btn-start" style="background: linear-gradient(135deg, #94a3b8, #475569); margin-top: 8px;" onclick="backToMenu()">VOLVER AL MENÚ</button>
     </div>
 
     <!-- Game Over Screen -->
     <div id="gameover-screen" class="overlay-screen" style="display: none;">
         <h1 style="font-size: 48px; color: #f43f5e; text-shadow: 0 4px 20px rgba(244,63,94,0.5);">DERROTADO</h1>
-        <p style="color: #cbd5e1; font-size: 18px; margin-bottom: 25px;">Has caído en combate en la Gran Ruta Marítima...</p>
+        <div id="gameover-stats" style="color: #cbd5e1; font-size: 15px; margin-bottom: 25px; font-family:'Segoe UI',sans-serif;"></div>
         <button class="btn-start" onclick="restartGame()">REINTENTAR</button>
         <button class="btn-start" style="background: linear-gradient(135deg, #94a3b8, #475569); margin-top: 8px;" onclick="backToMenu()">VOLVER AL MENÚ</button>
+    </div>
+
+    <!-- Achievements Screen -->
+    <div id="achievements-screen" class="overlay-screen" style="display: none;">
+        <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
+            <div class="wanted-title">SEÑALAMIENTOS</div>
+            <div class="wanted-subtitle" id="ach-subtitle">LOGROS SELLADOS POR LA ARMADA</div>
+            <div class="upgrade-list" id="ach-list"></div>
+            <button class="btn-start" style="margin-top:12px;" onclick="closeAchievements()">VOLVER</button>
+        </div>
+    </div>
+
+    <!-- Bestiary Screen -->
+    <div id="bestiary-screen" class="overlay-screen" style="display: none;">
+        <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
+            <div class="wanted-title">REGISTRO MARINO</div>
+            <div class="wanted-subtitle" id="bestiary-subtitle">ENEMIGOS AVISTADOS EN EL GRAND LINE</div>
+            <div class="upgrade-list" id="bestiary-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px;"></div>
+            <button class="btn-start" style="margin-top:12px;" onclick="closeBestiary()">VOLVER</button>
+        </div>
+    </div>
+
+    <!-- Options Screen -->
+    <div id="options-screen" class="overlay-screen" style="display: none;">
+        <div class="wanted-board" style="max-width: 460px;">
+            <div class="wanted-title">OPCIONES</div>
+            <div class="wanted-subtitle">AJUSTES DE NAVEGACIÓN</div>
+            <div style="display:flex; flex-direction:column; gap:14px; margin:14px 6px; font-family:'Segoe UI',sans-serif; color:#3d2314; font-size:14px; text-align:left;">
+                <label>Música: <span id="opt-music-val">80</span>%</label>
+                <input type="range" id="opt-music" min="0" max="100" value="80" style="width:100%;">
+                <label>EFECTOS (SFX): <span id="opt-sfx-val">80</span>%</label>
+                <input type="range" id="opt-sfx" min="0" max="100" value="80" style="width:100%;">
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-shake" checked> Sacudida de cámara</label>
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-particles"> Partículas reducidas (dispositivos lentos)</label>
+            </div>
+            <button class="btn-start" onclick="closeOptions()">VOLVER</button>
+        </div>
     </div>
 </div>
 
@@ -933,6 +1000,7 @@ const ICONS = {
     unlock:  SVG(`<g ${S}><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 6.8-1.2"/><circle cx="12" cy="15.2" r="1.4" fill="currentColor" stroke="none"/></g>`),
     up:      SVG(`<g ${S}><path d="M12 20V5"/><path d="m6 10.5 6-6 6 6"/></g>`),
     clock:   SVG(`<g ${S}><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></g>`),
+    gear:    SVG(`<g ${S}><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1M15.9 15.9L18 18M18 6l-2.1 2.1M8.1 15.9L6 18"/></g>`),
     pauseIco: SVG(`<g ${F}><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></g>`)
 };
 // Inyecta iconos SVG en los placeholders estáticos del DOM
@@ -993,6 +1061,20 @@ function mapLocked(id) {
     if (id === 'alabasta') return !(meta.wins.baratie > 0);
     if (id === 'skypiea') return !(meta.wins.alabasta > 0);
     return false;
+}
+// === CLIMA PELIGROSO (rango de Maldición 0-4, estilo VS) ===
+// Más peligro (enemigos/HP/velocidad) a cambio de más Beli en la singlatura.
+let runCurseRank = 0;
+function selectCurse(n) {
+    runCurseRank = n;
+    document.querySelectorAll('#curse-select .curse-btn').forEach(b => b.classList.toggle('selected', b.dataset.curse === String(n)));
+    const desc = document.getElementById('curse-desc');
+    if (desc) desc.innerText = '+' + (n * 25) + '% Beli · +' + (n * 25) + '% peligro';
+}
+function applyRunCurse() {
+    if (!player) return;
+    player.curse += 0.25 * runCurseRank;
+    player.runBeliMult = 1 + 0.25 * runCurseRank;
 }
 const CHAR_SKILLS = {
     luffy: ['pistol','gatling','bazooka','gear2','muchi','ono'],
@@ -1084,7 +1166,7 @@ const battleMusic = new Audio('assets/music/battle.mp3');
 menuMusic.loop = true; battleMusic.loop = true;
 function updateMusic() {
     if (!soundEnabled) { menuMusic.pause(); battleMusic.pause(); return; }
-    const vol = masterVolume * 0.5;
+    const vol = masterVolume * (windowOpts ? windowOpts.music : 1) * 0.5;
     if (gameState === 'START' || gameState === 'SHOP') {
         battleMusic.pause();
         menuMusic.volume = vol;
@@ -1116,21 +1198,21 @@ function playSound(type) {
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(180, now);
             osc.frequency.exponentialRampType ? osc.frequency.exponentialRampToValueAtTime(30, now + 0.1) : osc.frequency.linearRampToValueAtTime(30, now + 0.1);
-            gain.gain.setValueAtTime(0.2 * masterVolume, now);
+            gain.gain.setValueAtTime(0.2 * masterVolume * (windowOpts ? windowOpts.sfx : 1), now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
             osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'crit') {
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(500, now);
             osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
-            gain.gain.setValueAtTime(0.25 * masterVolume, now);
+            gain.gain.setValueAtTime(0.25 * masterVolume * (windowOpts ? windowOpts.sfx : 1), now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
             osc.start(now); osc.stop(now + 0.15);
         } else if (type === 'coin') {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(987, now);
             osc.frequency.setValueAtTime(1318, now + 0.08);
-            gain.gain.setValueAtTime(0.15 * masterVolume, now);
+            gain.gain.setValueAtTime(0.15 * masterVolume * (windowOpts ? windowOpts.sfx : 1), now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
             osc.start(now); osc.stop(now + 0.2);
         } else if (type === 'levelup') {
@@ -1138,7 +1220,7 @@ function playSound(type) {
             osc.frequency.setValueAtTime(523, now);
             osc.frequency.setValueAtTime(659, now + 0.08);
             osc.frequency.setValueAtTime(783, now + 0.15);
-            gain.gain.setValueAtTime(0.2 * masterVolume, now);
+            gain.gain.setValueAtTime(0.2 * masterVolume * (windowOpts ? windowOpts.sfx : 1), now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
             osc.start(now); osc.stop(now + 0.3);
         } else if (type === 'boss') {
@@ -1147,7 +1229,7 @@ function playSound(type) {
             osc.frequency.setValueAtTime(110, now);
             osc.frequency.setValueAtTime(880, now + 0.15);
             osc.frequency.setValueAtTime(110, now + 0.45);
-            gain.gain.setValueAtTime(0.25 * masterVolume, now);
+            gain.gain.setValueAtTime(0.25 * masterVolume * (windowOpts ? windowOpts.sfx : 1), now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.7);
             osc.start(now); osc.stop(now + 0.7);
         }
@@ -1260,7 +1342,9 @@ const META_UPGRADES = [
     { id: 'skip', name: 'Saltos', desc: '+3 saltos de subida de nivel por partida', cost: 100, max: 10, apply: (p, lvl) => { p.skipUses += lvl * 3; } },
     { id: 'banish', name: 'Destierros', desc: '+3 destierros de opción por partida', cost: 100, max: 10, apply: (p, lvl) => { p.banishUses += lvl * 3; } }
 ];
-let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false }, wins: { baratie: 0, alabasta: 0, skypiea: 0 } };
+let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false }, wins: { baratie: 0, alabasta: 0, skypiea: 0 },
+    achievements: {},
+    stats: { kills: 0, elites: 0, evolves: 0, beliTotal: 0, maxTime: { baratie: 0, alabasta: 0, skypiea: 0 }, winsByChar: { luffy: 0, zoro: 0, sanji: 0 }, killsByType: {} } };
 META_UPGRADES.forEach(u => meta.upgrades[u.id] = 0);
 function loadMeta() {
     try {
@@ -1272,11 +1356,16 @@ function loadMeta() {
             if (parsed.unlocked) meta.unlocked = { ...meta.unlocked, ...parsed.unlocked };
             if (parsed.wins) meta.wins = { ...meta.wins, ...parsed.wins };
             else meta.wins.baratie = 1; // guardado antiguo: Baratie ya conquistado
+            if (parsed.achievements) meta.achievements = parsed.achievements;
+            if (parsed.stats) meta.stats = { ...meta.stats, ...parsed.stats,
+                maxTime: { ...meta.stats.maxTime, ...(parsed.stats.maxTime || {}) },
+                winsByChar: { ...meta.stats.winsByChar, ...(parsed.stats.winsByChar || {}) },
+                killsByType: { ...(parsed.stats.killsByType || {}) } };
         }
     } catch (e) {}
 }
 function saveMeta() {
-    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins })); } catch (e) {}
+    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats })); } catch (e) {}
 }
 loadMeta();
 let gameTime = 0, lastTime = performance.now();
@@ -1848,6 +1937,7 @@ function startGame() {
     initAudio();
     document.getElementById('start-screen').style.display = 'none';
     resetGame();
+    applyRunCurse();
     // VS: el jugador elige 1 Arcana al empezar la partida
     showArcanaScreen();
     lastTime = performance.now();
@@ -1928,6 +2018,207 @@ function resetMeta() {
     renderShop();
     updateMetaUI();
 }
+// === LOGROS DE SEÑALAMIENTO ===
+// VS: los logros premian con Beli y desbloquean personajes sin pagar la tienda.
+// Se comprueban en tiempo real (killEnemy / evolveWeapon) y al terminar la partida.
+const ACHIEVEMENTS = [
+    { id: 'first_blood',  name: 'Primera Sangre',      desc: 'Derrota a tu primer enemigo.',                  check: s => s.kills >= 1,    reward: 100 },
+    { id: 'evolve_one',   name: 'Arma Legendaria',     desc: 'Evoluciona cualquier arma por primera vez.',    check: s => s.evolves >= 1,  reward: 500 },
+    { id: 'hunt_500',     name: 'Cazamarinos',         desc: 'Derrota 500 enemigos en total.',                check: s => s.kills >= 500,  reward: 1000 },
+    { id: 'elites_25',    name: 'Cabezas de Cartel',   desc: 'Derrota 25 élites con nombre propio.',          check: s => s.elites >= 25,  reward: 1000 },
+    { id: 'survive_10',   name: 'Hasta el Fondo del Mar', desc: 'Sobrevive los 10 minutos completos.',        check: s => Math.max(...Object.values(s.maxTime)) >= 480, reward: 1500 },
+    { id: 'gold_20k',     name: 'Sueño del Gold Roger', desc: 'Acumula 20,000 Beli en total.',                check: s => s.beliTotal >= 20000, reward: 2000 },
+    { id: 'win_luffy',    name: 'Hay Que Ser Leyenda', desc: 'Conquista una isla con Luffy, el Hombre-Goma.', check: s => s.winsByChar.luffy >= 1, reward: 2000, unlock: 'zoro' },
+    { id: 'win_zoro',     name: 'El Mejor Espadachín del Mundo', desc: 'Conquista una isla con Zoro.',        check: s => s.winsByChar.zoro >= 1, reward: 2000, unlock: 'sanji' },
+    { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 3000 }
+];
+function mergeRunStats() {
+    // VS: acumula las estadisticas de la run al terminar (evita saveMeta por kill)
+    if (!window.runStats) return;
+    const st = meta.stats;
+    st.kills += window.runStats.kills;
+    st.elites += window.runStats.elites;
+    st.evolves += window.runStats.evolves;
+    st.beliTotal += scoreBeli;
+    for (const k in window.runStats.killsByType) st.killsByType[k] = (st.killsByType[k] || 0) + window.runStats.killsByType[k];
+    // tiempo maximo por mapa
+    if (gameTime > (st.maxTime[selectedMap] || 0)) st.maxTime[selectedMap] = gameTime;
+    delete window.runStats;
+}
+function checkAchievements() {
+    // vista temporal que une el acumulado del perfil con lo de la singlatura:
+    // permite que first_blood / evolve_one etc. se sellen EN la partida (como en VS)
+    const st = meta.stats;
+    const rs = window.runStats || null;
+    const view = { ...st,
+        kills: st.kills + (rs ? rs.kills : 0),
+        elites: st.elites + (rs ? rs.elites : 0),
+        evolves: st.evolves + (rs ? rs.evolves : 0),
+        killsByType: st.killsByType };
+    for (const a of ACHIEVEMENTS) {
+        if (meta.achievements[a.id]) continue;
+        let ok = false;
+        try { ok = a.check(view); } catch (e) {}
+        if (ok) {
+            meta.achievements[a.id] = true;
+            meta.beli += a.reward;
+            if (a.unlock) meta.unlocked[a.unlock] = true;
+            saveMeta();
+            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Beli' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : ''));
+        }
+    }
+}
+function initRunStats() {
+    window.runStats = { kills: 0, elites: 0, evolves: 0, killsByType: {} };
+}
+initRunStats();
+function showAchToast(text) {
+    const t = document.getElementById('ach-toast');
+    if (!t) return;
+    t.innerText = text;
+    t.style.display = 'block';
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => { t.style.display = 'none'; }, 600); }, 3800);
+}
+function showAchievements() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('achievements-screen').style.display = 'flex';
+    renderAchievements();
+}
+function closeAchievements() {
+    document.getElementById('achievements-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'flex';
+    updateMetaUI();
+}
+function renderAchievements() {
+    const list = document.getElementById('ach-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const done = ACHIEVEMENTS.filter(a => meta.achievements[a.id]).length;
+    document.getElementById('ach-subtitle').innerText = 'SELLADOS POR LA ARMADA: ' + done + '/' + ACHIEVEMENTS.length;
+    ACHIEVEMENTS.forEach(a => {
+        const got = meta.achievements[a.id];
+        const card = document.createElement('div');
+        card.className = 'upgrade-card';
+        card.style.opacity = got ? '1' : '0.55';
+        card.innerHTML = `
+            <div class="upgrade-icon">${got ? '◉' : '○'}</div>
+            <div class="upgrade-info">
+                <h4>${a.name}${got ? ' — ¡SELLADO!' : ''}</h4>
+                <p>${a.desc} · Recompensa: ${a.reward} Beli${a.unlock ? ' · Desbloquea: ' + a.unlock.toUpperCase() : ''}</p>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+// === REGISTRO MARINO (bestiary) ===
+const BESTIARY_INFO = {
+    grunt: 'Pirata Raso — hombre sin recompensa',
+    shooter: 'Fusilero de la Armada',
+    pacifista: 'Pacifista — arma secreta del Gobierno',
+    morgan: 'Capitán Morgan, el Pez-Hacha',
+    kuma: 'B. Kuma — bestia sierva',
+    moria: 'Gekko Moria — Shichibukai',
+    tararan: 'Tararan — la araña bestia',
+    hogback: 'Dr. Hogback — el cirujano',
+    cindry: 'Cindry — la sirvienta del plato',
+    pellona: 'Perona — la fantasma negativa',
+    ryuma: 'Ryuma — el samurái de Wano',
+    inupen: 'Inuppen — el zombi perruno',
+    kumashi: 'Kumashi — el guardián gritón',
+    absalom: 'Absalom — el invisible',
+    boss_krieg: 'Don Krieg — la flota pirata',
+    boss_crocodile: 'Sir Crocodile — la arena del desierto',
+    boss_enel: 'Enel — el dios del trueno'
+};
+function bestiaryName(type) {
+    if (BESTIARY_INFO[type]) return BESTIARY_INFO[type];
+    if (ELITE_INFO[type] && ELITE_INFO[type].name) return ELITE_INFO[type].name.baratie + ' — ÉLITE';
+    return type;
+}
+// miniaturas del bestiario a partir de los sprites idle ya cargados (cache dataURL)
+const BESTIARY_THUMB = {};
+function bestiaryThumb(type) {
+    if (BESTIARY_THUMB[type]) return BESTIARY_THUMB[type];
+    const cfg = ENEMY_IMG[type];
+    const img = (cfg && cfg.idle && cfg.idle[0]) ? cfg.idle[0] : null;
+    if (!img || !img.width || !img.complete === undefined) return null;
+    try {
+        const c = document.createElement('canvas');
+        c.width = img.width; c.height = img.height;
+        c.getContext('2d').drawImage(img, 0, 0);
+        return (BESTIARY_THUMB[type] = c.toDataURL());
+    } catch (e) { return null; }
+}
+function showBestiary() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('bestiary-screen').style.display = 'flex';
+    renderBestiary();
+}
+function closeBestiary() {
+    document.getElementById('bestiary-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'flex';
+    updateMetaUI();
+}
+function renderBestiary() {
+    const grid = document.getElementById('bestiary-list');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const types = Object.keys(ENEMY_ANIMS);
+    let found = 0;
+    const st = meta.stats.killsByType;
+    types.forEach(type => {
+        const seen = (st[type] || 0) > 0;
+        if (seen) found++;
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:8px;text-align:center;color:#3d2314;';
+        const thumb = seen ? bestiaryThumb(type) : null;
+        card.innerHTML = `
+            <div style="height:48px; display:flex; align-items:center; justify-content:center;">
+                ${thumb ? `<img src="${thumb}" style="image-rendering:pixelated; max-height:44px; max-width:56px; filter:none;">` : '<span style="font-size:26px; opacity:0.35;">?</span>'}
+            </div>
+            <div style="font-weight:800; font-size:11px; font-family:Bangers,Verdana,sans-serif; letter-spacing:0.5px; margin-top:4px; line-height:1.15; min-height:26px;">${seen ? bestiaryName(type) : '???'}</div>
+            <div style="font-size:10px; font-family:Segoe UI,Verdana,sans-serif; opacity:0.8;">${seen ? '×' + st[type] + ' derrotados' : 'sin avistar'}</div>
+        `;
+        grid.appendChild(card);
+    });
+    document.getElementById('bestiary-subtitle').innerText = 'AVISTADOS: ' + found + '/' + types.length + ' — GRAND LINE';
+}
+// === OPCIONES (persistente, VS-style sliders) ===
+let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false };
+function loadOpts() {
+    try {
+        const raw = JSON.parse(localStorage.getItem('op_survivor_opts'));
+        if (raw) windowOpts = { ...windowOpts, ...raw };
+    } catch (e) {}
+}
+function saveOpts() {
+    try { localStorage.setItem('op_survivor_opts', JSON.stringify(windowOpts)); } catch (e) {}
+    applyOpts();
+}
+function applyOpts() {
+    const sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
+    const checkSh = document.getElementById('opt-shake'), checkP = document.getElementById('opt-particles');
+    if (sliderM) { sliderM.value = Math.round(windowOpts.music * 100); document.getElementById('opt-music-val').innerText = Math.round(windowOpts.music * 100); }
+    if (sliderS) { sliderS.value = Math.round(windowOpts.sfx * 100); document.getElementById('opt-sfx-val').innerText = Math.round(windowOpts.sfx * 100); }
+    if (checkSh) checkSh.checked = windowOpts.shake;
+    if (checkP) checkP.checked = windowOpts.fewerParticles;
+    setVolume(Math.round(windowOpts.music * 100));
+}
+function showOptions() { document.getElementById('start-screen').style.display = 'none'; document.getElementById('options-screen').style.display = 'flex'; }
+function closeOptions() {
+    const sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
+    const checkSh = document.getElementById('opt-shake'), checkP = document.getElementById('opt-particles');
+    if (sliderM) windowOpts.music = sliderM.value / 100;
+    if (sliderS) windowOpts.sfx = sliderS.value / 100;
+    if (checkSh) windowOpts.shake = checkSh.checked;
+    if (checkP) windowOpts.fewerParticles = checkP.checked;
+    saveOpts();
+    document.getElementById('options-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'flex';
+    updateMetaUI();
+}
 function updateMetaUI() {
     const el = document.getElementById('meta-beli');
     if (el) el.innerText = fmtBeli(meta.beli);
@@ -1935,21 +2226,26 @@ function updateMetaUI() {
     // marca los mapas bloqueados
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('locked', mapLocked(b.dataset.map)));
 }
+loadOpts();
+applyOpts();
 updateMetaUI();
 selectMap('baratie');
 selectCharacter('luffy');
+selectCurse(0);
 
 function restartGame() {
     document.getElementById('gameover-screen').style.display = 'none';
     document.getElementById('victory-screen').style.display = 'none';
     resetGame();
+    applyRunCurse();
     showArcanaScreen(); // VS: 1 Voluntad de D al empezar cada partida
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 }
 
-let soundEnabled = true;
-let masterVolume = 0.8;
+var soundEnabled = true;
+// sliders de opciones independiente: masterVolume es el volumen global heredado
+var masterVolume = 0.8;
 function setVolume(v) { masterVolume = Math.max(0, Math.min(1, v / 100)); updateMusic(); }
 function togglePause() {
     if (gameState !== 'PLAYING') return;
@@ -2058,6 +2354,9 @@ function resetGame() {
     window.spawnTimer = 0;
     player._arcanaPending = 0;
     player._pendingUpgrade = 0;
+    player.runBeliMult = 1;
+    window.endlessMode = false; window.endlessBossKills = 0; window.nextBossAt = 0;
+    initRunStats();
     // apply meta upgrades
     META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
@@ -2159,6 +2458,11 @@ function update(dt) {
     }
 
     if (gameTime >= 480 && !bossSpawned) spawnBoss();
+    // Modo Infinito: tras la victoria, un nuevo boss cada 5 minutos (mas fuerte)
+    if (window.endlessMode && gameTime >= (window.nextBossAt || 0) && !enemies.some(e => e.isBoss)) {
+        spawnBoss();
+        window.nextBossAt = gameTime + 300;
+    }
     // Victoria SOLO al matar al boss (estilo VS) — a los 10 min el boss ya habrá aparecido
 
     let moveX = 0, moveY = 0;
@@ -2448,7 +2752,7 @@ function update(dt) {
                     const roll = Math.random();
                     const count = roll < 0.05 * luck ? 5 : (roll < 0.20 * luck ? 3 : 1);
                     const tierBase = d.tier === 2 ? 500 : (d.tier === 1 ? 300 : 100);
-                    const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus);
+                    const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus * (player.runBeliMult || 1));
                     scoreBeli += beliVal;
                     if (d.canEvolve) checkEvolutions();
                     // VS: si la cutscene de evolucion sigue viva, la pantalla de mejoras espera
@@ -2966,7 +3270,10 @@ function spawnBoss() {
     let bossType = 'boss_krieg';
     if (selectedMap === 'alabasta') bossType = 'boss_crocodile';
     else if (selectedMap === 'skypiea') bossType = 'boss_enel';
-    enemies.push({ x: player.x + 250, y: player.y + 250, type: bossType, hp: BOSS_HP[bossType], maxHp: BOSS_HP[bossType], speed: 55, damage: 50, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isBoss: true, name: BOSS_INFO[bossType] });
+    let hpv = BOSS_HP[bossType];
+    // Modo Infinito: cada boss nuevo es un 60% mas fuerte que el anterior
+    if (window.endlessMode) hpv = Math.round(hpv * (1 + 0.6 * (window.endlessBossKills || 0)));
+    enemies.push({ x: player.x + 250, y: player.y + 250, type: bossType, hp: hpv, maxHp: hpv, speed: 55, damage: 50, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isBoss: true, name: BOSS_INFO[bossType] });
     // VS: anuncio de boss con banner + shake + fanfarria
     window.spawnBanner = { text: BOSS_INFO[bossType], life: 2.2, color: '#facc15' };
     cameraShake = 2.5;
@@ -3017,6 +3324,12 @@ function killEnemy(e) {
     // sobre el mismo enemigo antes del filtro de muertos -> drops/beli/victoria duplicados
     if (e._dead) return;
     e._dead = true;
+    // estadisticas de run para logros y bestiario
+    if (window.runStats) {
+        window.runStats.kills++;
+        window.runStats.killsByType[e.type] = (window.runStats.killsByType[e.type] || 0) + 1;
+        if (e.isElite) window.runStats.elites++;
+    }
     if (e.isElite && (e.type === 'elite_shooter' || e.type === 'elite_tararan' || e.type === 'elite_kuma') && !e._exploded) {
         e._exploded = true;
         // explosion
@@ -3038,7 +3351,7 @@ function killEnemy(e) {
         if (dropChest) drops.push({ x: e.x, y: e.y, type: 'chest', tier: chestTier,
             canEvolve: chestTier >= 1, ground: true, opened: false, openTimer: 0, value: 1 });
     }
-    if (Math.random() < 0.35) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(20 * player.greedBonus) });
+    if (Math.random() < 0.35) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(20 * player.greedBonus * (player.runBeliMult || 1)) });
     // Pickups estilo VS con lore One Piece (drop raro escalado por Suerte):
     // Den Den Mushi dorado (Rosary) / Campana de Skypiea (Orologion) / Iman Magico (Vacuum)
     const pk = Math.random();
@@ -3056,8 +3369,17 @@ function killEnemy(e) {
         particles.push({ x: e.x, y: e.y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 0.45, maxLife: 0.45, color: e.isBoss ? '#facc15' : (e.isElite ? '#ffd700' : '#f8fafc'), shape: 'spark', size: 2.5, grav: 140 });
     }
     if (Math.random() < 0.08) drops.push({ x: e.x, y: e.y, type: 'meat' });
-    // Boss derrotado = victoria (estilo Vampire Survivors)
-    if (e.isBoss) triggerVictory();
+    // Boss derrotado = victoria (estilo Vampire Survivors) — salvo Modo Infinito
+    if (e.isBoss) {
+        if (window.endlessMode) {
+            window.endlessBossKills++;
+            window.nextBossAt = gameTime + 300;
+            scoreBeli += Math.round(3000 * (player.runBeliMult || 1));
+            window.spawnBanner = { text: '¡BRIBECA REEMPLAZADA — SIGUEN LLEGANDO!', life: 2.0, color: '#f87171' };
+            playSound('boss');
+        } else triggerVictory();
+    }
+    checkAchievements();
 }
 
 function spawnDamageText(x, y, dmgInfo) {
@@ -3087,7 +3409,8 @@ function updateParticles(dt) {
         if (p.life <= 0) particles.splice(i, 1);
     }
     // cap de partículas (VS usa pooling: evita acumulación en partidas largas)
-    if (particles.length > 600) particles.splice(0, particles.length - 600);
+    const cap = (windowOpts && windowOpts.fewerParticles) ? 300 : 600;
+    if (particles.length > cap) particles.splice(0, particles.length - cap);
 }
 
 // === Sistema de particulas pulido (estilo VS: formas con proposito) ===
@@ -3095,7 +3418,8 @@ function updateParticles(dt) {
 // | 'ring' (onda expansiva que crece) | 'star' (destello dorado con parpadeo)
 // | 'ghost' (estela de sprite del jugador, para dashes)
 function fxSpark(x, y, color, n, speed, life = 0.45, size = 2.5, grav = 120) {
-    for (let k = 0; k < n; k++) {
+    const q = (windowOpts && windowOpts.fewerParticles) ? 0.5 : 1;
+    if (Math.random() < q || q >= 1) for (let k = 0; k < n * q; k++) {
         const ang = Math.random() * Math.PI * 2;
         const sp = speed * (0.5 + Math.random() * 0.7);
         particles.push({ x: x, y: y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: life * (0.7 + Math.random() * 0.5), maxLife: life, color: color, shape: 'spark', size: size, grav: grav });
@@ -3108,7 +3432,9 @@ function fxOrb(x, y, color, size = 8, life = 0.25) {
     particles.push({ x: x, y: y, vx: 0, vy: 0, life: life, maxLife: life, color: color, shape: 'orb', size: size });
 }
 function fxStars(x, y, n = 8) {
-    for (let k = 0; k < n; k++) {
+    const q = (windowOpts && windowOpts.fewerParticles) ? 0.5 : 1;
+    const count = Math.max(0, Math.round(n * q));
+    for (let k = 0; k < count; k++) {
         const ang = (Math.PI * 2 * k) / n + Math.random() * 0.4;
         const sp = 55 + Math.random() * 70;
         particles.push({ x: x, y: y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 30, life: 0.6, maxLife: 0.6, color: Math.random() < 0.5 ? '#ffd700' : '#fff2c0', shape: 'star', size: 3 + Math.random() * 3, grav: 90 });
@@ -3207,6 +3533,7 @@ function evolveWeapon(id) {
     window.spawnBanner = { text: '◆ ¡' + EVOLUTIONS[id].name.toUpperCase() + ' ◆', life: 1.3, color: '#c084fc' };
     playSound('levelup');
     cameraShake = 2;
+    if (window.runStats) window.runStats.evolves++;
     // burst inicial: anillo + confetti de 5 colores
     fxRing(player.x, player.y, '#c084fc', 24, 0.9);
     fxOrb(player.x, player.y, '#ffffff', 26, 0.6);
@@ -3330,7 +3657,7 @@ function showUpgradeScreen(count, isChest) {
     let upgradeShowingFallback = false;
     if (!container.children.length) {
         upgradeShowingFallback = true;
-        const goldVal = Math.round((75 + player.level * 25) * (upgradeIsChest ? 2 : 1) * player.greedBonus);
+        const goldVal = Math.round((75 + player.level * 25) * (upgradeIsChest ? 2 : 1) * player.greedBonus * (player.runBeliMult || 1));
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.innerHTML = `
@@ -3504,19 +3831,45 @@ function triggerGameOver() {
         return;
     }
     gameState = 'GAMEOVER';
+    const endKills = window.runStats ? window.runStats.kills : 0;
+    mergeRunStats();
+    checkAchievements();
     meta.beli += scoreBeli;
     saveMeta();
     updateMetaUI();
+    const st = meta.stats;
+    document.getElementById('gameover-stats').innerText =
+        'Tiempo: ' + formatTime(gameTime) + ' · Enemigos derrotados esta singlatura: ' + endKills +
+        ' · Beli conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0);
     document.getElementById('gameover-screen').style.display = 'flex';
 }
 
 function triggerVictory() {
     gameState = 'VICTORY';
-    meta.beli += scoreBeli;
+    mergeRunStats();
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
+    meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
+    checkAchievements();
     saveMeta();
     updateMetaUI();
+    const st = meta.stats;
+    const record = gameTime >= (st.maxTime[selectedMap] || 0) ? ' · ¡NUEVO RÉCORD!' : '';
+    document.getElementById('victory-stats').innerText =
+        'Tiempo: ' + formatTime(gameTime) + ' · Beli conseguido: ' + fmtBeli(scoreBeli) +
+        ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0) + record;
     document.getElementById('victory-screen').style.display = 'flex';
+}
+
+// VS: tras vencer al boss puedes seguir navegando — Modo Infinito con bosses cada 5 min
+function startEndless() {
+    window.endlessMode = true;
+    window.nextBossAt = gameTime + 300;
+    initRunStats(); // nueva singlatura estadistica para la fase infinita (ya se mergeo la anterior)
+    document.getElementById('victory-screen').style.display = 'none';
+    gameState = 'PLAYING';
+    lastTime = performance.now();
+    showAchToast('MODO INFINITO — bosses cada 5 minutos, cada uno un 60% más fuerte');
+    requestAnimationFrame(gameLoop); // el bucle se detuvo al pasar a VICTORY
 }
 
 // formato con separador de miles (el simbolo ฿ va en el markup)
@@ -3586,8 +3939,9 @@ function render() {
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 
     ctx.save();
-    let shakeX = (Math.random() - 0.5) * cameraShake * 4;
-    let shakeY = (Math.random() - 0.5) * cameraShake * 4;
+    const shakeMult = (windowOpts && windowOpts.shake === false) ? 0 : 1;
+    let shakeX = (Math.random() - 0.5) * cameraShake * 4 * shakeMult;
+    let shakeY = (Math.random() - 0.5) * cameraShake * 4 * shakeMult;
     
     const camX = VIEW_W / 2 - player.x + shakeX;
     const camY = VIEW_H / 2 - player.y + shakeY;
@@ -4073,5 +4427,6 @@ function render() {
 }
 updateMusic();
 </script>
+<div id="ach-toast"></div>
 </body>
 </html>

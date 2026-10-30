@@ -732,19 +732,19 @@
             <button class="char-card" data-char="luffy" onclick="selectCharacter('luffy')">
                 <img src="assets/sprites/ui/sprite_000.png" alt="Luffy" onerror="this.style.display='none'">
                 <span class="char-name">LUFFY</span>
-                <span class="char-role">Gomu Gomu • Estiramiento<br>Pistol / Gatling / Bazooka</span>
+                <span class="char-role">Gomu Gomu • Estiramiento<br>Pistol / Gatling / Muchi / Ono</span>
                 <span class="char-bounty">฿ 3,000,000,000</span>
             </button>
             <button class="char-card" data-char="zoro" onclick="selectCharacter('zoro')">
                 <img src="assets/sprites/ui/sprite_004.png" alt="Zoro" onerror="this.style.display='none'">
                 <span class="char-name">ZORO</span>
-                <span class="char-role">Santoryu • Espadachín<br>Oni Giri / Flying Slash</span>
+                <span class="char-role">Santoryu • Espadachín<br>Tatsumaki / Pound Ho / Oni Giri</span>
                 <span class="char-bounty">฿ 1,111,000,000</span>
             </button>
             <button class="char-card" data-char="sanji" onclick="selectCharacter('sanji')">
                 <img src="assets/sprites/ui/sprite_005.png" alt="Sanji" onerror="this.style.display='none'">
                 <span class="char-name">SANJI</span>
-                <span class="char-role">Diable Jambe • Pieles<br>Collier / Joue Shot</span>
+                <span class="char-role">Diable Jambe • Pieles<br>Concassé / Party Table / Joue Shot</span>
                 <span class="char-bounty">฿ 1,032,000,000</span>
             </button>
         </div>
@@ -886,6 +886,12 @@ const ICONS = {
     diablejambe: SVG(`<g ${F}><path d="M12 2C9.4 7 5 9.2 5 13.8A6.99 6.99 0 0 0 19 13.8C19 9.2 14.6 7 12 2z" fill-rule="evenodd"/><path d="M12 20.5a3.3 3.3 0 0 1-3.3-3.3c0-2 2-3.2 3.3-4.7 1.3 1.5 3.3 2.7 3.3 4.7A3.3 3.3 0 0 1 12 20.5z" fill="#000" opacity=".25"/></g>`),
     collier:     SVG(`<g ${F}><path d="M7.5 3h4.4v8.2l6.3 4.6c.9.7 1.3 1.5 1.3 2.6V21H9.3C6.6 21 4.5 18.9 4.5 16.3V3z"/></g>`),
     joueshot:    SVG(`<g ${F}><path d="M8.6 12.4 15 4.5l2.3 1.8-5.6 7.5 4.6 2.7-1.4 4.2L4.6 14.6z"/></g><g ${S}><path d="M3 8h4.5M2 12h3" opacity=".6"/></g>`),
+    muchi:       SVG(`<g ${S}><path d="M4 6c6 0 10 2 12 6 1.4 2.8-1 5-3.2 3.6-4-2.6-6.4-2-9.4 1.4"/><circle cx="4.4" cy="5.6" r="2" fill="currentColor" stroke="none"/><circle cx="4" cy="17.6" r="1.6" fill="currentColor" stroke="none"/></g>`),
+    ono:         SVG(`<g ${S}><path d="M14.5 4.5 20 10M15.5 3.5c2 .4 3 1.4 3.4 3.4 2.8-2.6 1.2-6.4-2-7 .4 1.4.2 2.4-1.4 3.6z" fill="currentColor" stroke="none"/><path d="M14 5 6.5 18.5l3 2L17 7"/></g>`),
+    tatsumaki:   SVG(`<g ${S}><path d="M12 3.5c4.5 0 7 2.2 7 4.6 0 2.6-2.8 3.6-5.5 3-2.2-.5-3.8.4-3.4 2 .3 1.2 2 1.6 3.4 1"/><path d="M18.5 12.5c1.5 1.5 1.2 3.8-1 4.4"/><path d="M5 20.5h9"/><path d="M7.5 18.5c-1.4.8-2.3 1.2-3 2" opacity=".6"/></g>`),
+    poundho:     SVG(`<g ${S}><path d="M3 7h9M2 12h11M3 17h9"/><path d="M12 4c6.5 0 9 4 9 8s-2.5 8-9 8M12 8c4.2 0 6 1.8 6 4s-1.8 4-6 4" opacity=".75"/><circle cx="3.4" cy="12" r="1.6" fill="currentColor" stroke="none"/></g>`),
+    concasse:    SVG(`<g ${S}><path d="M12 2.5 15 8l-3 2-3-2zM5.5 12.5 12 10l6.5 2.5M3.5 20h17"/><path d="M12 20.5v-3" opacity=".6"/><path d="M9 15.5h6" opacity=".8"/></g>`),
+    partycourse: SVG(`<g ${S}><circle cx="12" cy="12" r="7"/><path d="M12 5a7 7 0 0 1 5 11.7" stroke-width="2.4"/><circle cx="12" cy="5.2" r="1.8" fill="currentColor" stroke="none"/><circle cx="17" cy="16.5" r="1.8" fill="currentColor" stroke="none"/><circle cx="7" cy="16.5" r="1.8" fill="currentColor" stroke="none"/></g>`),
     // pasivas
     power:       SVG(`<g ${S}><path d="M12 3l8 3v6c0 5-3.4 7.4-8 9-4.6-1.6-8-4-8-9V6z"/><path d="M12 7.5 13.4 11 17 11.2 14.2 13.6 15.2 17.1 12 15 8.8 17.1 9.8 13.6 7 11.2 10.6 11z" fill="currentColor" stroke="none"/></g>`),
     crit:        SVG(`<g ${S}><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3"/><path d="M12 1.8v3M12 19.2v3M1.8 12h3M19.2 12h3"/></g>`),
@@ -978,9 +984,9 @@ function mapLocked(id) {
     return false;
 }
 const CHAR_SKILLS = {
-    luffy: ['pistol','gatling','bazooka','gear2'],
-    zoro: ['santoryu','onigiri','flyingslash'],
-    sanji: ['diablejambe','collier','joueshot']
+    luffy: ['pistol','gatling','bazooka','gear2','muchi','ono'],
+    zoro: ['santoryu','onigiri','flyingslash','tatsumaki','poundho'],
+    sanji: ['diablejambe','collier','joueshot','concasse','partycourse']
 };
 
 // Animation frame indices within assets/extracted/<char>_gba/
@@ -1656,16 +1662,25 @@ const player = {
 };
 
 const skills = {
-    pistol: { level: 1, baseDamage: 15, cooldown: 1.2, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
-    gatling: { level: 0, baseDamage: 6, cooldown: 3.8, timer: 0, radius: 85, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
-    bazooka: { level: 0, baseDamage: 30, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
+    pistol: { level: 1, baseDamage: 20, cooldown: 1.2, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
+    gatling: { level: 0, baseDamage: 10, cooldown: 3.8, timer: 0, radius: 85, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
+    bazooka: { level: 0, baseDamage: 45, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
     gear2: { level: 0, cooldown: 12.0, timer: 0, duration: 6.0, speedBonus: 0.3, active: false, remain: 0, evolved: false },
-    santoryu: { level: 0, baseDamage: 20, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
-    onigiri: { level: 0, baseDamage: 40, cooldown: 4.5, timer: 0, dash: 160, evolved: false },
-    flyingslash: { level: 0, baseDamage: 15, cooldown: 2.2, timer: 0, range: 300, speed: 600, evolved: false },
-    diablejambe: { level: 0, baseDamage: 12, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
-    collier: { level: 0, baseDamage: 10, cooldown: 0.6, timer: 0, range: 40, evolved: false },
-    joueshot: { level: 0, baseDamage: 20, cooldown: 2.8, timer: 0, range: 240, speed: 500, evolved: false }
+    // Luffy: latigazo frontal (abanico) y patada hacha alla gear 3
+    muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Black Whip' },
+    ono: { level: 0, baseDamage: 70, cooldown: 5.0, timer: 0, radius: 65, evolved: false },
+    santoryu: { level: 1, baseDamage: 42, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
+    onigiri: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, dash: 160, evolved: false },
+    flyingslash: { level: 0, baseDamage: 20, cooldown: 2.2, timer: 0, range: 300, speed: 600, evolved: false },
+    // Zoro: tornado orbitante y cañón de viento perforante
+    tatsumaki: { level: 0, baseDamage: 10, cooldown: 3.6, timer: 0, radius: 95, duration: 1.0, evolved: false },
+    poundho: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, range: 420, speed: 700, evolved: false },
+    diablejambe: { level: 1, baseDamage: 16, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
+    collier: { level: 0, baseDamage: 10, cooldown: 0.6, timer: 0, range: 70, evolved: false },
+    joueshot: { level: 0, baseDamage: 26, cooldown: 2.8, timer: 0, range: 240, speed: 560, evolved: false },
+    // Sanji: patada aérea demoledora y tanda giratoria 360
+    concasse: { level: 0, baseDamage: 75, cooldown: 4.2, timer: 0, radius: 72, evolved: false },
+    partycourse: { level: 0, baseDamage: 9, cooldown: 4.2, timer: 0, radius: 90, duration: 1.6, evolved: false }
 };
 
 let enemies = [];
@@ -1891,7 +1906,7 @@ function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
     if (!wEl || !pEl) return;
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck'];
     const icons = ICONS;
     wEl.innerHTML = '';
@@ -1988,15 +2003,21 @@ function resetGame() {
     });
 
     skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 20; skills.pistol.evolved = false;
-    skills.gatling.level = 0; skills.gatling.evolved = false;
-    skills.bazooka.level = 0; skills.bazooka.evolved = false;
+    skills.gatling.level = 0; skills.gatling.baseDamage = 10; skills.gatling.evolved = false;
+    skills.bazooka.level = 0; skills.bazooka.baseDamage = 45; skills.bazooka.evolved = false;
     skills.gear2.level = 0; skills.gear2.active = false; skills.gear2.remain = 0; skills.gear2.evolved = false;
-    skills.santoryu.level = (selectedCharacter === 'zoro') ? 1 : 0; skills.santoryu.evolved = false;
-    skills.onigiri.level = 0; skills.onigiri.evolved = false;
-    skills.flyingslash.level = 0; skills.flyingslash.evolved = false;
-    skills.diablejambe.level = (selectedCharacter === 'sanji') ? 1 : 0; skills.diablejambe.evolved = false;
-    skills.collier.level = 0; skills.collier.evolved = false;
-    skills.joueshot.level = 0; skills.joueshot.evolved = false;
+    skills.muchi.level = 0; skills.muchi.baseDamage = 35; skills.muchi.evolved = false;
+    skills.ono.level = 0; skills.ono.baseDamage = 70; skills.ono.evolved = false;
+    skills.santoryu.level = (selectedCharacter === 'zoro') ? 1 : 0; skills.santoryu.baseDamage = 42; skills.santoryu.evolved = false;
+    skills.onigiri.level = 0; skills.onigiri.baseDamage = 60; skills.onigiri.evolved = false;
+    skills.flyingslash.level = 0; skills.flyingslash.baseDamage = 20; skills.flyingslash.evolved = false;
+    skills.tatsumaki.level = 0; skills.tatsumaki.baseDamage = 10; skills.tatsumaki.evolved = false;
+    skills.poundho.level = 0; skills.poundho.baseDamage = 30; skills.poundho.evolved = false;
+    skills.diablejambe.level = (selectedCharacter === 'sanji') ? 1 : 0; skills.diablejambe.baseDamage = 16; skills.diablejambe.evolved = false;
+    skills.collier.level = 0; skills.collier.baseDamage = 10; skills.collier.evolved = false;
+    skills.joueshot.level = 0; skills.joueshot.baseDamage = 26; skills.joueshot.evolved = false;
+    skills.concasse.level = 0; skills.concasse.baseDamage = 75; skills.concasse.evolved = false;
+    skills.partycourse.level = 0; skills.partycourse.baseDamage = 9; skills.partycourse.evolved = false;
 
     enemies = []; enemyBullets = []; drops = []; particles = []; damageTexts = []; activeAttacks = [];
     gameTime = 0; scoreBeli = 0; bossSpawned = false;
@@ -2187,7 +2208,9 @@ function update(dt) {
         } else if (atk.type === 'bazooka') {
             atk.life -= dt;
             for (let e of enemies) {
-                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                // VS: la explosion es un golpe UNICO por enemigo (bug de frames corregido)
+                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                    atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
@@ -2199,7 +2222,8 @@ function update(dt) {
         } else if (atk.type === 'santoryu') {
             atk.life -= dt;
             for (let e of enemies) {
-                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                    atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
@@ -2211,7 +2235,8 @@ function update(dt) {
         } else if (atk.type === 'onigiri') {
             atk.life -= dt;
             for (let e of enemies) {
-                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                    atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
@@ -2231,15 +2256,72 @@ function update(dt) {
                 }
             }
             if (atk.life <= 0) activeAttacks.splice(i, 1);
-        } else if (atk.type === 'flyingslash' || atk.type === 'collier' || atk.type === 'joueshot') {
+        } else if (atk.type === 'muchi') {
+            // Muchi: abanico frontal, un solo golpe por enemigo
+            atk.life -= dt;
+            for (let e of enemies) {
+                const dAng = Math.atan2(e.y - player.y, e.x - player.x);
+                let diff = Math.abs(dAng - atk.angle);
+                if (diff > Math.PI) diff = Math.PI * 2 - diff;
+                if (!atk.hitEnemies.has(e) && diff < 1.1 && Math.hypot(e.x - player.x, e.y - player.y) < atk.radius) {
+                    atk.hitEnemies.add(e);
+                    const dmgInfo = calculateDamage(atk.baseDamage);
+                    e.hp -= dmgInfo.amount * e.damageTaken;
+                    spawnDamageText(e.x, e.y, dmgInfo);
+                    playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    if (e.hp <= 0) killEnemy(e);
+                }
+            }
+            if (atk.life <= 0) activeAttacks.splice(i, 1);
+        } else if (atk.type === 'ono' || atk.type === 'concasse') {
+            atk.life -= dt;
+            for (let e of enemies) {
+                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                    atk.hitEnemies.add(e);
+                    const dmgInfo = calculateDamage(atk.baseDamage);
+                    e.hp -= dmgInfo.amount * e.damageTaken;
+                    spawnDamageText(e.x, e.y, dmgInfo);
+                    playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    if (e.hp <= 0) killEnemy(e);
+                }
+            }
+            if (atk.life <= 0) activeAttacks.splice(i, 1);
+        } else if (atk.type === 'tatsumaki') {
+            atk.life -= dt;
+            atk.spin += dt * 9;
+            atk.x = player.x; atk.y = player.y;
+            for (let e of enemies) {
+                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                    const dmgInfo = calculateDamage(atk.baseDamage);
+                    e.hp -= dmgInfo.amount * dt * 4 * e.damageTaken;
+                    if (Math.random() < 0.08) spawnDamageText(e.x, e.y, dmgInfo);
+                    if (e.hp <= 0) killEnemy(e);
+                }
+            }
+            if (atk.life <= 0) activeAttacks.splice(i, 1);
+        } else if (atk.type === 'partycourse') {
+            atk.life -= dt;
+            atk.spin += dt * 11;
+            atk.x = player.x; atk.y = player.y;
+            for (let e of enemies) {
+                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+                    const dmgInfo = calculateDamage(atk.baseDamage);
+                    e.hp -= dmgInfo.amount * dt * 3.5 * e.damageTaken;
+                    if (Math.random() < 0.1) spawnDamageText(e.x, e.y, dmgInfo);
+                    if (e.hp <= 0) killEnemy(e);
+                }
+            }
+            if (atk.life <= 0) activeAttacks.splice(i, 1);
+        } else if (atk.type === 'flyingslash' || atk.type === 'collier' || atk.type === 'joueshot' || atk.type === 'poundho') {
             atk.currentRange += atk.speed * dt;
             const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
             const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
+            const hitR = atk.type === 'poundho' ? 38 : 24;
             for (let e of enemies) {
-                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - endX, e.y - endY) < 24) {
+                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - endX, e.y - endY) < hitR) {
+                    atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
-                    atk.hitEnemies.add(e);
                     spawnDamageText(endX, endY, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
                     if (e.hp <= 0) killEnemy(e);
@@ -2249,7 +2331,7 @@ function update(dt) {
             if (Math.random() < 0.4) {
                 const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
                 const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-                const col = atk.type === 'flyingslash' ? '#38bdf8' : (atk.type === 'joueshot' ? '#f59e0b' : '#ffdbac');
+                const col = atk.type === 'flyingslash' ? '#38bdf8' : (atk.type === 'joueshot' ? '#f59e0b' : (atk.type === 'poundho' ? '#9cc3e8' : '#ffdbac'));
                 particles.push({ x: endX, y: endY, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15, life: 0.15, color: col });
             }
         }
@@ -2412,7 +2494,8 @@ function handleAttacks(dt) {
                 type: 'santoryu', x: player.x, y: player.y,
                 radius: skills.santoryu.radius * player.areaBonus,
                 life: 0.3, maxLife: 0.3,
-                baseDamage: skills.santoryu.baseDamage
+                baseDamage: skills.santoryu.baseDamage,
+                hitEnemies: new Set()
             });
             player.attackTimer = 0.2;
         }
@@ -2431,7 +2514,8 @@ function handleAttacks(dt) {
                     type: 'onigiri', x: player.x, y: player.y,
                     radius: 40 * player.areaBonus,
                     life: 0.2, maxLife: 0.2,
-                    baseDamage: skills.onigiri.baseDamage
+                    baseDamage: skills.onigiri.baseDamage,
+                    hitEnemies: new Set()
                 });
                 player.attackTimer = 0.2;
             }
@@ -2501,6 +2585,112 @@ function handleAttacks(dt) {
                 maxRange: skills.joueshot.range * player.areaBonus,
                 baseDamage: skills.joueshot.baseDamage,
                 hitEnemies: new Set()
+            });
+            player.attackTimer = 0.2;
+        }
+    }
+
+    // Gomu Gomu no Muchi: latigazo en abanico frontal (VS: arma whip)
+    if (skills.muchi.level > 0 && CHAR_SKILLS[selectedCharacter].includes('muchi')) {
+        skills.muchi.timer += dt;
+        if (skills.muchi.timer >= skills.muchi.cooldown * cdMult) {
+            skills.muchi.timer = 0;
+            let target = getNearestEnemy();
+            let angle = player.facing === 1 ? 0 : Math.PI;
+            if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
+            activeAttacks.push({
+                type: 'muchi', x: player.x, y: player.y,
+                angle: angle, radius: skills.muchi.radius * player.areaBonus,
+                life: 0.25, maxLife: 0.25,
+                baseDamage: skills.muchi.baseDamage,
+                hitEnemies: new Set()
+            });
+            player.attackTimer = 0.25;
+        }
+    }
+
+    // Gomu Gomu no Ono: patada hacha vertical sobre un enemigo cercano (burst)
+    if (skills.ono.level > 0 && CHAR_SKILLS[selectedCharacter].includes('ono')) {
+        skills.ono.timer += dt;
+        if (skills.ono.timer >= skills.ono.cooldown * cdMult) {
+            skills.ono.timer = 0;
+            const inRange = enemies.filter(e => Math.hypot(e.x - player.x, e.y - player.y) < 340);
+            const target = inRange.length ? inRange[Math.floor(Math.random() * inRange.length)] : null;
+            activeAttacks.push({
+                type: 'ono', x: target ? target.x : player.x, y: target ? target.y : player.y,
+                radius: skills.ono.radius * player.areaBonus,
+                life: 0.35, maxLife: 0.35,
+                baseDamage: skills.ono.baseDamage,
+                hitEnemies: new Set()
+            });
+            player.attackTimer = 0.2;
+        }
+    }
+
+    // Tatsumaki: tornado cortante orbitando al jugador (aura creciente)
+    if (skills.tatsumaki.level > 0 && CHAR_SKILLS[selectedCharacter].includes('tatsumaki')) {
+        skills.tatsumaki.timer += dt;
+        if (skills.tatsumaki.timer >= skills.tatsumaki.cooldown * cdMult) {
+            skills.tatsumaki.timer = 0;
+            activeAttacks.push({
+                type: 'tatsumaki', x: player.x, y: player.y,
+                radius: skills.tatsumaki.radius * player.areaBonus,
+                life: skills.tatsumaki.duration, maxLife: skills.tatsumaki.duration,
+                baseDamage: skills.tatsumaki.baseDamage,
+                spin: 0
+            });
+            player.attackTimer = 0.2;
+        }
+    }
+
+    // 108 Pound Ho: cañonazo de viento que perfora TODO en línea recta
+    if (skills.poundho.level > 0 && CHAR_SKILLS[selectedCharacter].includes('poundho')) {
+        skills.poundho.timer += dt;
+        if (skills.poundho.timer >= skills.poundho.cooldown * cdMult) {
+            skills.poundho.timer = 0;
+            let target = getNearestEnemy();
+            let angle = player.facing === 1 ? 0 : Math.PI;
+            if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
+            activeAttacks.push({
+                type: 'poundho', startX: player.x, startY: player.y,
+                angle: angle, speed: skills.poundho.speed, currentRange: 0,
+                maxRange: skills.poundho.range * player.areaBonus,
+                baseDamage: skills.poundho.baseDamage,
+                hitEnemies: new Set()
+            });
+            player.attackTimer = 0.2;
+        }
+    }
+
+    // Concassé: patada aérea demoledora sobre un enemigo cercano (burst dirigido)
+    if (skills.concasse.level > 0 && CHAR_SKILLS[selectedCharacter].includes('concasse')) {
+        skills.concasse.timer += dt;
+        if (skills.concasse.timer >= skills.concasse.cooldown * cdMult) {
+            skills.concasse.timer = 0;
+            const inRange = enemies.filter(e => Math.hypot(e.x - player.x, e.y - player.y) < 320);
+            const target = inRange.length ? inRange[Math.floor(Math.random() * inRange.length)] : null;
+            activeAttacks.push({
+                type: 'concasse', x: target ? target.x : player.x, y: target ? target.y : player.y,
+                radius: skills.concasse.radius * player.areaBonus,
+                life: 0.45, maxLife: 0.45,
+                baseDamage: skills.concasse.baseDamage,
+                hitEnemies: new Set()
+            });
+            player.attackTimer = 0.25;
+        }
+    }
+
+    // Party Table Kick Course: tanda de patadas giratorias 360 (aura)
+    if (skills.partycourse.level > 0 && CHAR_SKILLS[selectedCharacter].includes('partycourse')) {
+        skills.partycourse.timer += dt;
+        if (skills.partycourse.timer >= skills.partycourse.cooldown * cdMult) {
+            skills.partycourse.timer = 0;
+            activeAttacks.push({
+                type: 'partycourse', x: player.x, y: player.y,
+                radius: skills.partycourse.radius * player.areaBonus,
+                life: skills.partycourse.duration, maxLife: skills.partycourse.duration,
+                baseDamage: skills.partycourse.baseDamage,
+                spin: 0
             });
             player.attackTimer = 0.2;
         }
@@ -2731,12 +2921,18 @@ const EVOLUTIONS = {
     gatling:     { passive: 'cd',     name: 'Jet Gatling' },
     bazooka:     { passive: 'area',   name: 'Gorilla Bazooka' },
     gear2:       { passive: 'speed',  name: 'Gear 2: Boundman' },
+    muchi:       { passive: 'speed',  name: 'Black Whip' },
+    ono:         { passive: 'power',  name: 'Gomu Gomu no Gigant Ono' },
     santoryu:    { passive: 'crit',   name: 'Asura (Santoryu Ogi)' },
     onigiri:     { passive: 'power',  name: 'Oni Giri: Inferno' },
     flyingslash: { passive: 'cd',     name: 'Shishi Sonson' },
+    tatsumaki:   { passive: 'cd',     name: 'Kokutei Roseo Metele' },
+    poundho:     { passive: 'crit',   name: 'Sanzen Daisen Sekai' },
     diablejambe: { passive: 'speed',  name: 'Hell Memories' },
     collier:     { passive: 'area',   name: 'Collier Shoot: Grilled' },
-    joueshot:    { passive: 'crit',   name: 'Concassé Shot' }
+    joueshot:    { passive: 'crit',   name: 'Concassé Shot' },
+    concasse:    { passive: 'speed',  name: 'Ifrit Jambe' },
+    partycourse: { passive: 'crit',   name: 'Anti-Manner Kick Course' }
 };
 function evolveWeapon(id) {
     const sk = skills[id];
@@ -2754,6 +2950,12 @@ function evolveWeapon(id) {
     else if (id === 'diablejambe') { sk.baseDamage *= 1.7; sk.radius += 20; }
     else if (id === 'collier') { sk.baseDamage *= 1.8; sk.range += 20; }
     else if (id === 'joueshot') { sk.baseDamage *= 1.7; sk.range += 50; }
+    else if (id === 'muchi') { sk.baseDamage *= 1.8; sk.radius += 40; sk.cooldown = Math.max(0.8, sk.cooldown - 0.3); }
+    else if (id === 'ono') { sk.baseDamage *= 1.8; sk.radius += 25; }
+    else if (id === 'tatsumaki') { sk.baseDamage *= 2.0; sk.radius += 30; sk.duration += 0.5; }
+    else if (id === 'poundho') { sk.baseDamage *= 2.0; sk.range += 120; }
+    else if (id === 'concasse') { sk.baseDamage *= 1.8; sk.radius += 25; }
+    else if (id === 'partycourse') { sk.baseDamage *= 1.9; sk.radius += 35; sk.duration += 0.4; }
 }
 function checkEvolutions() {
     // Se llama SOLO al abrir cofres capaces de evolucionar (VS: cofres de plata)
@@ -2779,7 +2981,7 @@ function showUpgradeScreen(count, isChest) {
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck'];
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
@@ -2795,7 +2997,13 @@ function showUpgradeScreen(count, isChest) {
         { id: 'flyingslash', type: 'weapon', chars: ['zoro'], title: 'Flying Slash', icon: ICONS.flyingslash, desc: 'Desbloquea corte a distancia (Zoro).' },
         { id: 'diablejambe', type: 'weapon', chars: ['sanji'], title: 'Diable Jambe', icon: ICONS.diablejambe, desc: 'Desbloquea patadas de fuego (Sanji).' },
         { id: 'collier', type: 'weapon', chars: ['sanji'], title: 'Collier', icon: ICONS.collier, desc: 'Desbloquea golpe rápido (Sanji).' },
-        { id: 'joueshot', type: 'weapon', chars: ['sanji'], title: 'Joue Shot', icon: ICONS.joueshot, desc: 'Desbloquea patada voladora (Sanji).' },
+        { id: 'joueshot', type: 'weapon', chars: ['sanji'], title: 'Joue Shot', icon: ICONS.joueshot, desc: 'Disparo a distancia con la pierna flotante (rango amplio).' },
+        { id: 'muchi', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Muchi', icon: ICONS.muchi, desc: 'Latigazo de goma que golpea TODOS los enemigos en abanico frente a ti.' },
+        { id: 'ono', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Ono', icon: ICONS.ono, desc: 'Patada hacha vertical demoledora sobre un enemigo cercano.' },
+        { id: 'tatsumaki', type: 'weapon', chars: ['zoro'], title: 'Santoryu Ogi: Tatsumaki', icon: ICONS.tatsumaki, desc: 'Tornado cortante que gira alrededor de ti dañando sin parar.' },
+        { id: 'poundho', type: 'weapon', chars: ['zoro'], title: '108 Pound Ho', icon: ICONS.poundho, desc: 'Cañonazo de viento que PERFORA a todos en linea recta.' },
+        { id: 'concasse', type: 'weapon', chars: ['sanji'], title: 'Concassé', icon: ICONS.concasse, desc: 'Patada aérea demoledora que aplasta a un enemigo y a sus vecinos.' },
+        { id: 'partycourse', type: 'weapon', chars: ['sanji'], title: 'Party Table Kick Course', icon: ICONS.partycourse, desc: 'Tanda de patadas giratorias en 360 grados: limpieza masiva.' },
         { id: 'haki_buso', type: 'passive', chars: 'all', title: 'Busoshoku Haki', icon: ICONS.haki_buso, desc: 'Aumenta daño y armadura.' },
         { id: 'haki_ken', type: 'passive', chars: 'all', title: 'Kenbunshoku Haki', icon: ICONS.haki_ken, desc: 'Aumenta crit y evasión.' },
         { id: 'haki_hao', type: 'passive', chars: 'all', title: 'Haoshoku Haki', icon: ICONS.haki_hao, desc: 'Stun/área a enemigos.' },
@@ -2952,37 +3160,38 @@ function selectUpgrade(id) {
         skills.joueshot.level = Math.min(5, skills.joueshot.level + 1);
         skills.joueshot.baseDamage += 11;
     }
+    else if (id === 'muchi') {
+        skills.muchi.level = Math.min(5, skills.muchi.level + 1);
+        skills.muchi.baseDamage += 14; skills.muchi.radius += 15;
+    }
+    else if (id === 'ono') {
+        skills.ono.level = Math.min(5, skills.ono.level + 1);
+        skills.ono.baseDamage += 18; skills.ono.radius += 8;
+    }
+    else if (id === 'tatsumaki') {
+        skills.tatsumaki.level = Math.min(5, skills.tatsumaki.level + 1);
+        skills.tatsumaki.baseDamage += 4; skills.tatsumaki.radius += 8;
+    }
+    else if (id === 'poundho') {
+        skills.poundho.level = Math.min(5, skills.poundho.level + 1);
+        skills.poundho.baseDamage += 10; skills.poundho.range += 25;
+    }
+    else if (id === 'concasse') {
+        skills.concasse.level = Math.min(5, skills.concasse.level + 1);
+        skills.concasse.baseDamage += 24; skills.concasse.radius += 10;
+    }
+    else if (id === 'partycourse') {
+        skills.partycourse.level = Math.min(5, skills.partycourse.level + 1);
+        skills.partycourse.baseDamage += 3; skills.partycourse.radius += 8;
+    }
     else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
     else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }
     else if (id === 'haki_hao') { /* stun area: handled in render/update */ player.passives.haki_hao = (player.passives.haki_hao || 0) + 1; }
     else if (id === 'area') { player.areaBonus *= 1.1; player.passives.area = (player.passives.area || 0) + 1; }
     else if (id === 'speed') { player.speed *= 1.08; player.passives.speed = (player.passives.speed || 0) + 1; }
-    else if (id === 'pickup') { player.pickupBonus += 0.1; }
-    else if (id === 'growth') { player.growthBonus += 0.08; }
-    else if (id === 'luck') { player.critChance += 0.05; player.luckBonus += 0.10; }
-    else if (id === 'diablejambe') {
-        skills.diablejambe.level = Math.min(5, skills.diablejambe.level + 1);
-        if (skills.diablejambe.level >= 5 && !skills.diablejambe.evolved) { skills.diablejambe.evolved = true; skills.diablejambe.baseDamage += 15; skills.diablejambe.radius += 20; }
-        else { skills.diablejambe.baseDamage += 6; skills.diablejambe.radius += 5; }
-    }
-    else if (id === 'collier') {
-        skills.collier.level = Math.min(5, skills.collier.level + 1);
-        if (skills.collier.level >= 5 && !skills.collier.evolved) { skills.collier.evolved = true; skills.collier.baseDamage += 10; skills.collier.range += 20; }
-        else skills.collier.baseDamage += 5;
-    }
-    else if (id === 'joueshot') {
-        skills.joueshot.level = Math.min(5, skills.joueshot.level + 1);
-        if (skills.joueshot.level >= 5 && !skills.joueshot.evolved) { skills.joueshot.evolved = true; skills.joueshot.baseDamage += 15; skills.joueshot.range += 50; }
-        else skills.joueshot.baseDamage += 8;
-    }
-    else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
-    else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }
-    else if (id === 'haki_hao') { /* stun area: handled in render/update */ player.passives.haki_hao = (player.passives.haki_hao || 0) + 1; }
-    else if (id === 'area') { player.areaBonus *= 1.1; }
-    else if (id === 'speed') { player.speed *= 1.08; }
-    else if (id === 'pickup') { player.pickupBonus += 0.1; }
-    else if (id === 'growth') { player.growthBonus += 0.08; }
-    else if (id === 'luck') { player.critChance += 0.05; }
+    else if (id === 'pickup') { player.pickupBonus += 0.1; player.passives.pickup = (player.passives.pickup || 0) + 1; }
+    else if (id === 'growth') { player.growthBonus += 0.08; player.passives.growth = (player.passives.growth || 0) + 1; }
+    else if (id === 'luck') { player.critChance += 0.05; player.luckBonus += 0.10; player.passives.luck = (player.passives.luck || 0) + 1; }
 
     document.getElementById('upgrade-screen').style.display = 'none';
     // VS: las Arcanas otorgadas a mitad de partida encadenan tras cerrar la subida
@@ -3054,7 +3263,13 @@ function updateWeaponsHUD() {
         { id: 'flyingslash', icon: ICONS.flyingslash, name: 'Flying Slash' },
         { id: 'diablejambe', icon: ICONS.diablejambe, name: 'Diable Jambe' },
         { id: 'collier', icon: ICONS.collier, name: 'Collier' },
-        { id: 'joueshot', icon: ICONS.joueshot, name: 'Joue Shot' }
+        { id: 'joueshot', icon: ICONS.joueshot, name: 'Joue Shot' },
+        { id: 'muchi', icon: ICONS.muchi, name: 'Muchi' },
+        { id: 'ono', icon: ICONS.ono, name: 'Ono' },
+        { id: 'tatsumaki', icon: ICONS.tatsumaki, name: 'Tatsumaki' },
+        { id: 'poundho', icon: ICONS.poundho, name: '108 Pound Ho' },
+        { id: 'concasse', icon: ICONS.concasse, name: 'Concassé' },
+        { id: 'partycourse', icon: ICONS.partycourse, name: 'Party Table' }
     ];
     el.innerHTML = '';
     weapons.forEach(w => {
@@ -3146,6 +3361,81 @@ function render() {
         } else if (atk.type === 'gatling') {
             ctx.fillStyle = 'rgba(255, 219, 172, 0.4)';
             ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
+        } else if (atk.type === 'muchi') {
+            // latigazo: media luna dorada en la dirección del golpe
+            const a = Math.max(0, atk.life / atk.maxLife);
+            ctx.strokeStyle = `rgba(255, 214, 120, ${0.9 * a})`;
+            ctx.lineWidth = 9;
+            ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(atk.x, atk.y, atk.radius * 0.75, atk.angle - 1.05, atk.angle + 1.05);
+            ctx.stroke();
+            ctx.strokeStyle = `rgba(255,255,255,${0.7 * a})`;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(atk.x, atk.y, atk.radius * 0.55, atk.angle - 0.9, atk.angle + 0.9);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        } else if (atk.type === 'ono' || atk.type === 'concasse') {
+            // patada aérea: chorro de caída + onda de impacto
+            const a = Math.max(0, atk.life / atk.maxLife);
+            const col = atk.type === 'ono' ? '255,219,172' : '251,146,60';
+            ctx.fillStyle = `rgba(${col}, ${0.55 * a})`;
+            ctx.beginPath(); ctx.ellipse(atk.x, atk.y, atk.radius, atk.radius * 0.62, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = `rgba(${col}, ${0.85 * a})`;
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.ellipse(atk.x, atk.y, atk.radius * (1 - 0.5 * a), atk.radius * 0.62 * (1 - 0.5 * a), 0, 0, Math.PI * 2); ctx.stroke();
+            // estela de caída (VS: telegrafo el impacto)
+            ctx.fillStyle = `rgba(${col}, ${0.8 * a})`;
+            ctx.beginPath(); ctx.ellipse(atk.x, atk.y - 70 * a, 10, 34, 0, 0, Math.PI * 2); ctx.fill();
+        } else if (atk.type === 'tatsumaki') {
+            // tornado: espirales giratorios
+            atk.x = player.x; atk.y = player.y;
+            const a = Math.max(0, atk.life / atk.maxLife);
+            ctx.save();
+            ctx.translate(atk.x, atk.y);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${0.75 * a})`;
+            ctx.lineWidth = 5;
+            ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 10;
+            for (let k = 0; k < 3; k++) {
+                const off = atk.spin + k * Math.PI * 2 / 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, atk.radius * (0.35 + 0.3 * k), off, off + 2.2);
+                ctx.stroke();
+            }
+            ctx.restore();
+            ctx.shadowBlur = 0;
+        } else if (atk.type === 'poundho') {
+            // cañón de viento: haz ancho perforante
+            const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
+            const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
+            ctx.strokeStyle = 'rgba(156, 195, 232, 0.85)';
+            ctx.lineWidth = 20;
+            ctx.shadowColor = '#9cc3e8'; ctx.shadowBlur = 14;
+            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
+            ctx.strokeStyle = skills.poundho.evolved ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
+            ctx.shadowBlur = 0;
+        } else if (atk.type === 'partycourse') {
+            // tanda de patadas 360: aro rotatorio doble
+            atk.x = player.x; atk.y = player.y;
+            const a = Math.max(0, atk.life / atk.maxLife);
+            ctx.save();
+            ctx.translate(atk.x, atk.y);
+            ctx.rotate(atk.spin);
+            ctx.strokeStyle = `rgba(251, 146, 60, ${0.85 * a})`;
+            ctx.lineWidth = 6;
+            ctx.shadowColor = '#f97316'; ctx.shadowBlur = 10;
+            for (let k = 0; k < 3; k++) {
+                const off = k * Math.PI * 2 / 3;
+                ctx.beginPath(); ctx.arc(0, 0, atk.radius * 0.55, off, off + 0.9); ctx.stroke();
+            }
+            ctx.strokeStyle = `rgba(255, 235, 200, ${0.6 * a})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.arc(0, 0, atk.radius * 0.8, 0, Math.PI * 2); ctx.stroke();
+            ctx.restore();
+            ctx.shadowBlur = 0;
         } else if (atk.type === 'bazooka') {
             ctx.fillStyle = skills.bazooka.evolved ? 'rgba(244, 63, 94, 0.7)' : 'rgba(244, 63, 94, 0.5)';
             ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();

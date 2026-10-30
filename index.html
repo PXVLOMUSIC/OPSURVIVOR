@@ -1067,6 +1067,12 @@ function mapLocked(id) {
 // Más peligro (enemigos/HP/velocidad) a cambio de más Beli en la singlatura.
 let runCurseRank = 0;
 function selectCurse(n) {
+    // VS: cada dificultad se desbloquea venciendo la anterior
+    if (n > meta.curseUnlocked) {
+        playSound('muted');
+        showAchToast('CLIMA PELIGROSO ' + n + ' — VENCE EL CLIMA ' + (n - 1) + ' PARA DESBLOQUEARLO');
+        return;
+    }
     runCurseRank = n;
     document.querySelectorAll('#curse-select .curse-btn').forEach(b => b.classList.toggle('selected', b.dataset.curse === String(n)));
     const desc = document.getElementById('curse-desc');
@@ -1356,7 +1362,7 @@ const META_UPGRADES = [
     { id: 'skip', name: 'Saltos', desc: '+3 saltos de subida de nivel por partida', cost: 100, max: 10, apply: (p, lvl) => { p.skipUses += lvl * 3; } },
     { id: 'banish', name: 'Destierros', desc: '+3 destierros de opción por partida', cost: 100, max: 10, apply: (p, lvl) => { p.banishUses += lvl * 3; } }
 ];
-let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false }, wins: { baratie: 0, alabasta: 0, skypiea: 0 },
+let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false }, wins: { baratie: 0, alabasta: 0, skypiea: 0 }, curseUnlocked: 0,
     achievements: {},
     stats: { kills: 0, elites: 0, evolves: 0, beliTotal: 0, maxTime: { baratie: 0, alabasta: 0, skypiea: 0 }, winsByChar: { luffy: 0, zoro: 0, sanji: 0 }, killsByType: {} } };
 META_UPGRADES.forEach(u => meta.upgrades[u.id] = 0);
@@ -1371,6 +1377,7 @@ function loadMeta() {
             if (parsed.wins) meta.wins = { ...meta.wins, ...parsed.wins };
             else meta.wins.baratie = 1; // guardado antiguo: Baratie ya conquistado
             if (parsed.achievements) meta.achievements = parsed.achievements;
+            meta.curseUnlocked = parsed.curseUnlocked || 0;
             if (parsed.stats) meta.stats = { ...meta.stats, ...parsed.stats,
                 maxTime: { ...meta.stats.maxTime, ...(parsed.stats.maxTime || {}) },
                 winsByChar: { ...meta.stats.winsByChar, ...(parsed.stats.winsByChar || {}) },
@@ -1379,7 +1386,7 @@ function loadMeta() {
     } catch (e) {}
 }
 function saveMeta() {
-    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats })); } catch (e) {}
+    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats, curseUnlocked: meta.curseUnlocked })); } catch (e) {}
 }
 loadMeta();
 let gameTime = 0, lastTime = performance.now();
@@ -2239,6 +2246,14 @@ function updateMetaUI() {
     if (typeof refreshCharCards === 'function') refreshCharCards();
     // marca los mapas bloqueados
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('locked', mapLocked(b.dataset.map)));
+    // marcas de Clima Peligroso bloqueado (se desbloquea venciendo el rango anterior)
+    document.querySelectorAll('#curse-select .curse-btn').forEach(b => {
+        const n = parseInt(b.dataset.curse, 10);
+        const locked = n > meta.curseUnlocked;
+        b.classList.toggle('locked', locked);
+        b.title = locked ? 'Vence el Clima ' + (n - 1) + ' para desbloquear' : 'Clima ' + n + ': +' + (n * 25) + '% Beli y peligro';
+        if (locked && runCurseRank === n) { runCurseRank = 0; document.querySelectorAll('#curse-select .curse-btn').forEach(bb => bb.classList.toggle('selected', bb.dataset.curse === '0')); }
+    });
 }
 loadOpts();
 applyOpts();
@@ -3885,6 +3900,12 @@ function triggerVictory() {
     mergeRunStats();
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
+    // VS: vencer con el clima N desbloquea el N+1 (una vez)
+    if (runCurseRank === meta.curseUnlocked && meta.curseUnlocked < 4) {
+        meta.curseUnlocked++;
+        showAchToast('CLIMA PELIGROSO ' + meta.curseUnlocked + ' DESBLOQUEADO — más Beli, más peligro');
+        updateMetaUI();
+    }
     checkAchievements();
     saveMeta();
     updateMetaUI();

@@ -475,7 +475,7 @@
 
     <!-- Shop Screen -->
     <div id="shop-screen" class="overlay-screen" style="display: none;">
-        <div class="wanted-board" style="max-width: 560px;">
+        <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
             <div class="wanted-title">TIENDA</div>
             <div class="wanted-subtitle">MEJORAS PERMANENTES (BELI: <span id="shop-beli">0</span>)</div>
             <div class="upgrade-list" id="shop-options"></div>
@@ -549,6 +549,8 @@ const ENEMY_ANIMS = {
     elite_shooter: { folder: 'marine2_gba', idle: [2,3,4,5,6,7], attack: [9,10] },
     pacifista: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29] },
     boss_krieg: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
+    boss_crocodile: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
+    boss_enel: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
     kuma: { folder: 'kuma', idle: [0,1,2,3], attack: [4,5,6,7] },
     elite_kuma: { folder: 'kuma', idle: [0,1,2,3], attack: [4,5,6,7] },
     moria: { folder: 'moria', idle: [0,1,2,3], attack: [4,5,6,7] },
@@ -934,7 +936,7 @@ const player = {
 
 const skills = {
     pistol: { level: 1, baseDamage: 15, cooldown: 1.2, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
-    gatling: { level: 0, baseDamage: 8, cooldown: 3.5, timer: 0, radius: 90, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
+    gatling: { level: 0, baseDamage: 6, cooldown: 3.8, timer: 0, radius: 85, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
     bazooka: { level: 0, baseDamage: 30, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
     gear2: { level: 0, cooldown: 12.0, timer: 0, duration: 6.0, speedBonus: 0.3, active: false, remain: 0, evolved: false },
     santoryu: { level: 0, baseDamage: 20, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
@@ -1265,7 +1267,7 @@ function update(dt) {
     if (player._dmgSoundCd > 0) player._dmgSoundCd -= dt;
 
     if (gameTime >= 600 && !bossSpawned) { triggerVictory(); return; }
-    if (gameTime >= 480 && !bossSpawned) spawnDonKrieg();
+    if (gameTime >= 480 && !bossSpawned) spawnBoss();
 
     let moveX = 0, moveY = 0;
     if (keys['KeyW'] || keys['ArrowUp']) moveY -= 1;
@@ -1380,7 +1382,7 @@ function update(dt) {
             for (let e of enemies) {
                 if (Math.hypot(e.x - player.x, e.y - player.y) < atk.radius) {
                     const dmgInfo = calculateDamage(atk.baseDamage);
-                    e.hp -= dmgInfo.amount * dt * 4.5 * (e.type === 'elite_marine' ? 0.5 : 1);
+                    e.hp -= dmgInfo.amount * dt * 3.0 * (e.type === 'elite_marine' ? 0.5 : 1);
                     if (Math.random() < 0.12) spawnDamageText(e.x, e.y, dmgInfo);
                     if (e.hp <= 0) killEnemy(e);
                 }
@@ -1476,6 +1478,7 @@ function update(dt) {
                 player.hp = Math.min(player.maxHp, player.hp + 40); playSound('levelup');
             } else if (d.type === 'chest') {
                 playSound('levelup');
+                gameState = 'UPGRADE';
                 const roll = Math.random();
                 const count = roll < 0.05 ? 5 : (roll < 0.20 ? 3 : 1);
                 showUpgradeScreen(count);
@@ -1488,6 +1491,15 @@ function update(dt) {
         const dtObj = damageTexts[i];
         dtObj.life -= dt; dtObj.y -= 28 * dt;
         if (dtObj.life <= 0) damageTexts.splice(i, 1);
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        if (p.life <= 0) particles.splice(i, 1);
     }
 
     document.getElementById('time-txt').innerText = formatTime(gameTime);
@@ -1673,7 +1685,11 @@ function handleSpawning(dt) {
         let type = 'grunt', hp = 32 * hpScale, speed = 78 + Math.random() * 22, damage = 16;
 
         const rand = Math.random();
-        if (minutes >= 1 && rand < 0.35) {
+        if (selectedMap === 'alabasta' && rand < 0.25) {
+            type = 'pacifista'; hp = 120 * hpScale; speed = 50; damage = 25;
+        } else if (selectedMap === 'skypiea' && rand < 0.35) {
+            type = 'shooter'; hp = 55 * hpScale; speed = 65; damage = 24;
+        } else if (minutes >= 1 && rand < 0.35) {
             type = 'shooter'; hp = 48 * hpScale; speed = 62; damage = 22;
         } else if (minutes >= 2 && rand < 0.15) {
             type = 'tararan'; hp = 80 * hpScale; speed = 55; damage = 20;
@@ -1753,9 +1769,12 @@ function handleSpawning(dt) {
     }
 }
 
-function spawnDonKrieg() {
+function spawnBoss() {
     bossSpawned = true;
-    enemies.push({ x: player.x + 250, y: player.y + 250, type: 'boss_krieg', hp: 10000, maxHp: 10000, speed: 55, damage: 50, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false });
+    let bossType = 'boss_krieg';
+    if (selectedMap === 'alabasta') bossType = 'boss_crocodile';
+    else if (selectedMap === 'skypiea') bossType = 'boss_enel';
+    enemies.push({ x: player.x + 250, y: player.y + 250, type: bossType, hp: 10000, maxHp: 10000, speed: 55, damage: 50, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isBoss: true });
 }
 
 function killEnemy(e) {
@@ -1778,6 +1797,11 @@ function killEnemy(e) {
         drops.push({ x: e.x + (Math.random()*10-5), y: e.y + (Math.random()*10-5), type: 'chest', value: 1 });
     }
     if (Math.random() < 0.35) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: 20 });
+    for (let k = 0; k < 8; k++) {
+        const ang = Math.random() * Math.PI * 2;
+        const sp = 40 + Math.random() * 60;
+        particles.push({ x: e.x, y: e.y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 0.4, color: e.isElite ? '#ffd700' : '#fff' });
+    }
     if (Math.random() < 0.08) drops.push({ x: e.x, y: e.y, type: 'meat' });
 }
 
@@ -2084,29 +2108,48 @@ function render() {
         if (atk.type === 'pistol') {
             const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
             const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-            ctx.strokeStyle = '#ffdbac'; ctx.lineWidth = 12;
-            ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10;
+            const isRedHawk = skills.pistol.evolved;
+            ctx.strokeStyle = isRedHawk ? '#f43f5e' : '#ffdbac';
+            ctx.lineWidth = isRedHawk ? 16 : 12;
+            ctx.shadowColor = isRedHawk ? '#f43f5e' : '#f59e0b';
+            ctx.shadowBlur = isRedHawk ? 16 : 10;
             ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
+            if (isRedHawk) {
+                ctx.fillStyle = 'rgba(244,63,94,0.3)';
+                ctx.beginPath(); ctx.arc(endX, endY, 12, 0, Math.PI*2); ctx.fill();
+            }
         } else if (atk.type === 'gatling') {
             ctx.fillStyle = 'rgba(255, 219, 172, 0.4)';
             ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
         } else if (atk.type === 'bazooka') {
-            ctx.fillStyle = 'rgba(244, 63, 94, 0.5)';
+            ctx.fillStyle = skills.bazooka.evolved ? 'rgba(244, 63, 94, 0.7)' : 'rgba(244, 63, 94, 0.5)';
             ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
+            if (skills.bazooka.evolved) {
+                ctx.strokeStyle = 'rgba(255, 165, 0, 0.6)';
+                ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius * 0.7, 0, Math.PI * 2); ctx.stroke();
+            }
         } else if (atk.type === 'santoryu') {
-            ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-            ctx.lineWidth = 6;
-            for (let k = 0; k < 3; k++) {
-                const ang = atk.angle || 0;
-                const ox = Math.cos(ang + (k-1)*0.3) * 10;
-                const oy = Math.sin(ang + (k-1)*0.3) * 10;
+            const slashes = skills.santoryu.evolved ? 9 : 3;
+            ctx.strokeStyle = skills.santoryu.evolved ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.8)';
+            ctx.lineWidth = skills.santoryu.evolved ? 8 : 6;
+            ctx.shadowColor = '#fff'; ctx.shadowBlur = skills.santoryu.evolved ? 12 : 0;
+            for (let k = 0; k < slashes; k++) {
+                const ang = (atk.angle || 0) + (k - (slashes-1)/2) * 0.15;
+                const ox = Math.cos(ang) * 8;
+                const oy = Math.sin(ang) * 8;
                 ctx.beginPath(); ctx.moveTo(atk.x + ox, atk.y + oy); ctx.lineTo(atk.x + ox + Math.cos(ang)*atk.radius, atk.y + oy + Math.sin(ang)*atk.radius); ctx.stroke();
             }
+            ctx.shadowBlur = 0;
         } else if (atk.type === 'diablejambe') {
-            ctx.fillStyle = 'rgba(244, 63, 94, 0.5)';
+            ctx.fillStyle = skills.diablejambe.evolved ? 'rgba(244, 63, 94, 0.6)' : 'rgba(244, 63, 94, 0.5)';
             ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = 'rgba(255, 165, 0, 0.4)';
-            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius * 0.6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = skills.diablejambe.evolved ? 'rgba(255, 165, 0, 0.6)' : 'rgba(255, 165, 0, 0.4)';
+            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius * 0.7, 0, Math.PI * 2); ctx.fill();
+            if (skills.diablejambe.evolved) {
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.4)';
+                ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+            }
         } else if (atk.type === 'onigiri') {
             ctx.fillStyle = 'rgba(255,255,255,0.6)';
             ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
@@ -2247,6 +2290,14 @@ function render() {
         ctx.drawImage(Sprites.luffy, player.animFrame * 32, 0, 32, 32, -16, -16, 32, 32);
     }
     ctx.restore();
+
+    // Particles
+    for (let p of particles) {
+        ctx.globalAlpha = Math.max(0, p.life / 0.4);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
 
     // Damage Numbers (Overcrit / Crit formatting)
     for (let dtObj of damageTexts) {

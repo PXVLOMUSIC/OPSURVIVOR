@@ -1840,8 +1840,8 @@ function chooseArcana(id) {
     playSound('levelup');
     updateUI();
     document.getElementById('arcana-screen').style.display = 'none';
-    gameState = 'PLAYING';
-    lastTime = performance.now();
+    // VS: lo pendiente (niveles/cofres en cola) encadena tras la Voluntad de D
+    resumeAfterUpgrade();
 }
 
 function startGame() {
@@ -2051,6 +2051,13 @@ function resetGame() {
     player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};
     player.arcana = []; player._arcanaPending = 0;
     window.freezeTimer = 0; window.vacuumTimer = 0;
+    // VS: estado window que nunca debia sobrevivir a una partida
+    window._evolveCut = null;
+    window._pendingLevelUps = 0;
+    window.nextEventAt = 70;
+    window.spawnTimer = 0;
+    player._arcanaPending = 0;
+    player._pendingUpgrade = 0;
     // apply meta upgrades
     META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
@@ -2128,16 +2135,27 @@ function update(dt) {
     if (window.spawnBanner && window.spawnBanner.life > 0) window.spawnBanner.life -= dt;
 
     // VS: cutscene de evolución — mundo congelado mientras llueve el confetti
-    if (window._evolveCut && window._evolveCut.life > 0) {
+    if (window._evolveCut) {
         window._evolveCut.life -= dt;
-        if (Math.random() < dt * 55) { // goteo continuo de confetti
-            const confettiCols = ['#f43f5e', '#facc15', '#38bdf8', '#a78bfa', '#ffffff'];
-            particles.push({ x: player.x + (Math.random() * 220 - 110), y: player.y - 210,
-                vx: (Math.random() - 0.5) * 60, vy: 90 + Math.random() * 90,
-                life: 1.0, maxLife: 1.0, color: confettiCols[Math.floor(Math.random() * 5)], shape: 'star', size: 2.5 + Math.random() * 3, grav: 150 });
+        if (window._evolveCut.life > 0) {
+            if (Math.random() < dt * 55) { // goteo continuo de confetti
+                const confettiCols = ['#f43f5e', '#facc15', '#38bdf8', '#a78bfa', '#ffffff'];
+                particles.push({ x: player.x + (Math.random() * 220 - 110), y: player.y - 210,
+                    vx: (Math.random() - 0.5) * 60, vy: 90 + Math.random() * 90,
+                    life: 1.0, maxLife: 1.0, color: confettiCols[Math.floor(Math.random() * 5)], shape: 'star', size: 2.5 + Math.random() * 3, grav: 150 });
+            }
+            updateParticles(dt);
+            return;
         }
-        updateParticles(dt);
-        return;
+        // fin de la cutscene: las mejoras de un cofre abierto durante la evolucion quedaron pendientes
+        window._evolveCut = null;
+        if (player._pendingUpgrade && player._pendingUpgrade > 0) {
+            const c = player._pendingUpgrade;
+            player._pendingUpgrade = 0;
+            gameState = 'UPGRADE';
+            showUpgradeScreen(c, true);
+            return;
+        }
     }
 
     if (gameTime >= 480 && !bossSpawned) spawnBoss();
@@ -2433,8 +2451,9 @@ function update(dt) {
                     const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus);
                     scoreBeli += beliVal;
                     if (d.canEvolve) checkEvolutions();
-                    gameState = 'UPGRADE';
-                    showUpgradeScreen(count, true);
+                    // VS: si la cutscene de evolucion sigue viva, la pantalla de mejoras espera
+                    if (window._evolveCut && window._evolveCut.life > 0) player._pendingUpgrade = count;
+                    else { gameState = 'UPGRADE'; showUpgradeScreen(count, true); }
                     updateUI();
                     drops.splice(i, 1);
                 }
@@ -2456,14 +2475,14 @@ function update(dt) {
             d.x += ((player.x - d.x) / dist) * 420 * dt;
             d.y += ((player.y - d.y) / dist) * 420 * dt;
         }
-        if (dist < 110 * player.pickupBonus) {
+        if (dist < 110 * player.pickupBonus && dist > 0) {
             d.x += ((player.x - d.x) / dist) * 260 * dt;
             d.y += ((player.y - d.y) / dist) * 260 * dt;
         }
         if (dist < 22) {
             if (d.type === 'xp') {
                 player.xp += d.value * player.growthBonus; playSound('coin');
-                if (player.xp >= player.nextXp) levelUp();
+                while (player.xp >= player.nextXp) levelUp();
             } else if (d.type === 'beli') {
                 scoreBeli += d.value; playSound('coin');
             } else if (d.type === 'meat') {
@@ -2596,8 +2615,18 @@ function handleAttacks(dt) {
             if (target) {
                 const ang = Math.atan2(target.y - player.y, target.x - player.x);
                 const px0 = player.x, py0 = player.y;
-                player.x += Math.cos(ang) * skills.onigiri.dash;
-                player.y += Math.sin(ang) * skills.onigiri.dash;
+                // sweep por pasos: nos detenemos en el ULTIMO punto caminable
+                // (el dash crudo podia teletransportar fuera de la cubierta/arena)
+                const poly = walkPoly();
+                const dashLen = skills.onigiri.dash;
+                let fx = px0, fy = py0;
+                const STEPS = 10;
+                for (let s = STEPS; s >= 1; s--) {
+                    const nx = px0 + Math.cos(ang) * dashLen * (s / STEPS);
+                    const ny = py0 + Math.sin(ang) * dashLen * (s / STEPS);
+                    if (pointInPoly(nx, ny, poly)) { fx = nx; fy = ny; break; }
+                }
+                player.x = fx; player.y = fy;
                 // VFX: estelas del sprite a lo largo del tajo (Oni Giri)
                 for (let g = 1; g <= 3; g++) fxGhost(px0 + (player.x - px0) * (g / 4), py0 + (player.y - py0) * (g / 4), player.facing);
                 fxRing(player.x, player.y, '#e2e8f0', 16, 0.3);
@@ -2984,6 +3013,10 @@ function updateEvents(dt) {
 }
 
 function killEnemy(e) {
+    // guard: con mas de 1 golpe en el mismo frame dos armas pueden invocar killEnemy
+    // sobre el mismo enemigo antes del filtro de muertos -> drops/beli/victoria duplicados
+    if (e._dead) return;
+    e._dead = true;
     if (e.isElite && (e.type === 'elite_shooter' || e.type === 'elite_tararan' || e.type === 'elite_kuma') && !e._exploded) {
         e._exploded = true;
         // explosion
@@ -3116,10 +3149,12 @@ function xpToNext(level) {
     return need;
 }
 function levelUp() {
+    // VS: subir 2+ niveles de un solo pickup encadena pantallas en cola
+    if (gameState === 'UPGRADE') { window._pendingLevelUps = (window._pendingLevelUps || 0) + 1; }
+    else { gameState = 'UPGRADE'; }
     player.level++;
     player.xp -= player.nextXp;
     player.nextXp = xpToNext(player.level);
-    gameState = 'UPGRADE';
     playSound('levelup');
     showUpgradeScreen();
 }
@@ -3309,15 +3344,7 @@ function showUpgradeScreen(count, isChest) {
             scoreBeli += goldVal;
             playSound('coin');
             document.getElementById('upgrade-screen').style.display = 'none';
-            // VS: las Voluntades de D pendientes encadenan igual que una subida normal
-            if ((player._arcanaPending || 0) > 0) {
-                player._arcanaPending--;
-                showArcanaScreen();
-                return;
-            }
-            updateUI();
-            gameState = 'PLAYING';
-            lastTime = performance.now();
+            resumeAfterUpgrade();
         };
         container.appendChild(card);
         document.getElementById('upgrade-subtitle').innerText = upgradeIsChest
@@ -3361,17 +3388,26 @@ function renderUpgradeToolbar() {
     });
 }
 
-function skipUpgrade() {
-    // VS: Skip salta la subida de nivel sin elegir nada
-    document.getElementById('upgrade-screen').style.display = 'none';
-    if ((player._arcanaPending || 0) > 0) {
-        player._arcanaPending--;
-        showArcanaScreen();
+// VS: al cerrar una pantalla (mejora/cofre/aracana) encadena lo pendiente:
+// Voluntades D > niveles en cola > reanudar juego
+function resumeAfterUpgrade() {
+    if ((player._arcanaPending || 0) > 0) { player._arcanaPending--; showArcanaScreen(); return; }
+    if ((window._pendingLevelUps || 0) > 0) {
+        window._pendingLevelUps--;
+        updateUI();
+        gameState = 'UPGRADE';
+        showUpgradeScreen();
         return;
     }
     updateUI();
     gameState = 'PLAYING';
     lastTime = performance.now();
+}
+
+function skipUpgrade() {
+    // VS: Skip salta la subida de nivel sin elegir nada
+    document.getElementById('upgrade-screen').style.display = 'none';
+    resumeAfterUpgrade();
 }
 
 function selectUpgrade(id) {
@@ -3454,14 +3490,7 @@ function selectUpgrade(id) {
 
     document.getElementById('upgrade-screen').style.display = 'none';
     // VS: las Arcanas otorgadas a mitad de partida encadenan tras cerrar la subida
-    if ((player._arcanaPending || 0) > 0) {
-        player._arcanaPending--;
-        showArcanaScreen();
-        return;
-    }
-    updateUI();
-    gameState = 'PLAYING';
-    lastTime = performance.now();
+    resumeAfterUpgrade();
     // no re-armamos rAF: el bucle sigue activo (evita doble gameLoop)
 }
 

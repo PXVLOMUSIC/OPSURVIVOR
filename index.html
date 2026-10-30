@@ -928,6 +928,8 @@ const ELITE_INFO = {
 };
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai' };
 const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno' };
+// VS: la vida del boss escala por etapa/mapa
+const BOSS_HP = { boss_krieg: 9000, boss_crocodile: 14000, boss_enel: 18000 };
 function enemyPath(folder, idx) {
     return 'assets/extracted/' + folder + '/sprite_' + String(idx).padStart(3,'0') + '.png';
 }
@@ -1114,6 +1116,15 @@ function playSound(type) {
             gain.gain.setValueAtTime(0.2 * masterVolume, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
             osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'boss') {
+            // fanfarria de aparición de boss (VS: anuncio con sting propio)
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(110, now);
+            osc.frequency.setValueAtTime(880, now + 0.15);
+            osc.frequency.setValueAtTime(110, now + 0.45);
+            gain.gain.setValueAtTime(0.25 * masterVolume, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.7);
+            osc.start(now); osc.stop(now + 0.7);
         }
     } catch(e){}
 }
@@ -1778,7 +1789,7 @@ function closeShop() {
 function renderShop() {
     const container = document.getElementById('shop-options');
     container.innerHTML = '';
-    document.getElementById('shop-beli').innerText = meta.beli;
+    document.getElementById('shop-beli').innerText = fmtBeli(meta.beli);
     META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
         const cost = u.cost * (lvl + 1);
@@ -1842,7 +1853,7 @@ function resetMeta() {
 }
 function updateMetaUI() {
     const el = document.getElementById('meta-beli');
-    if (el) el.innerText = '฿' + meta.beli;
+    if (el) el.innerText = fmtBeli(meta.beli);
     if (typeof refreshCharCards === 'function') refreshCharCards();
     // marca los mapas bloqueados
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('locked', mapLocked(b.dataset.map)));
@@ -1983,6 +1994,7 @@ function resetGame() {
     enemies = []; enemyBullets = []; drops = []; particles = []; damageTexts = []; activeAttacks = [];
     gameTime = 0; scoreBeli = 0; bossSpawned = false;
     window.moriaSpawned = false; window.kumaSpawned = false; window.morganSpawned = false;
+    window.spawnBanner = null;
     updateUI();
 }
 
@@ -2030,6 +2042,7 @@ function update(dt) {
     if (player._dmgSoundCd > 0) player._dmgSoundCd -= dt;
     if (window.freezeTimer > 0) window.freezeTimer -= dt;
     if (window.vacuumTimer > 0) window.vacuumTimer -= dt;
+    if (window.spawnBanner && window.spawnBanner.life > 0) window.spawnBanner.life -= dt;
 
     if (gameTime >= 480 && !bossSpawned) spawnBoss();
     // Victoria SOLO al matar al boss (estilo VS) — a los 10 min el boss ya habrá aparecido
@@ -2503,7 +2516,7 @@ function handleSpawning(dt) {
         // En arenas cerradas (Alabasta/Skypiea) los enemigos nacen DENTRO del muro
         if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
 
-        const hpScale = Math.pow(1.55, minutes) * player.curse;
+        const hpScale = Math.pow(1.28, minutes) * player.curse;
         let type = 'grunt', hp = 32 * hpScale, speed = 78 + Math.random() * 22, damage = 16;
 
         const rand = Math.random();
@@ -2550,13 +2563,14 @@ function handleSpawning(dt) {
         // Iconicos (Morgan/Ryuma/Absalom/Perona/Hogback/Cindry...): chanzas altas
         // o siempre élite (x8 HP) porque son personajes con nombre propio.
         let isElite = false;
-        let eliteMult = 8, eliteDmgMult = 1.8, eliteSpdMult = 1.05;
+        // VS: los bruisers valen ~2-4x el enemigo base; los iconicos ya parten con base propia
+        let eliteMult = 3, eliteDmgMult = 1.8, eliteSpdMult = 1.05;
         if (type === 'grunt' && Math.random() < 0.02) {
-            type = 'elite_marine'; eliteMult = 18; eliteDmgMult = 2; eliteSpdMult = 0.8; isElite = true;
+            type = 'elite_marine'; eliteMult = 9; eliteDmgMult = 2; eliteSpdMult = 0.8; isElite = true;
         } else if (type === 'shooter' && Math.random() < 0.02) {
-            type = 'elite_shooter'; eliteMult = 18; eliteDmgMult = 2; eliteSpdMult = 1.2; isElite = true;
+            type = 'elite_shooter'; eliteMult = 9; eliteDmgMult = 2; eliteSpdMult = 1.2; isElite = true;
         } else if (type === 'pacifista' && Math.random() < 0.03) {
-            type = 'elite_kuma'; eliteMult = 10; eliteDmgMult = 2; eliteSpdMult = 0.9; isElite = true;
+            type = 'elite_kuma'; eliteMult = 6; eliteDmgMult = 2; eliteSpdMult = 0.9; isElite = true;
         } else if (type === 'inupen' && Math.random() < 0.05) {
             type = 'elite_inupen'; isElite = true;
         } else if (type === 'kumashi' && Math.random() < 0.10) {
@@ -2595,10 +2609,14 @@ function handleSpawning(dt) {
         if (minutes >= 4 && !window.moriaSpawned) {
             window.moriaSpawned = true;
             enemies.push({ x: ex, y: ey, type: 'moria', hp: 600 * hpScale, maxHp: 600 * hpScale, speed: 35, damage: 30, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isMiniboss: true, name: MINIBOSS_INFO.moria });
+            window.spawnBanner = { text: MINIBOSS_INFO.moria, life: 2.0, color: '#ffa500' };
+            playSound('boss');
         }
         if (minutes >= 6 && !window.kumaSpawned) {
             window.kumaSpawned = true;
             enemies.push({ x: ex, y: ey, type: 'kuma', hp: 800 * hpScale, maxHp: 800 * hpScale, speed: 45, damage: 35, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isMiniboss: true, name: MINIBOSS_INFO.kuma });
+            window.spawnBanner = { text: MINIBOSS_INFO.kuma, life: 2.0, color: '#ffa500' };
+            playSound('boss');
         }
     }
 }
@@ -2608,7 +2626,12 @@ function spawnBoss() {
     let bossType = 'boss_krieg';
     if (selectedMap === 'alabasta') bossType = 'boss_crocodile';
     else if (selectedMap === 'skypiea') bossType = 'boss_enel';
-    enemies.push({ x: player.x + 250, y: player.y + 250, type: bossType, hp: 10000, maxHp: 10000, speed: 55, damage: 50, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isBoss: true, name: BOSS_INFO[bossType] });
+    enemies.push({ x: player.x + 250, y: player.y + 250, type: bossType, hp: BOSS_HP[bossType], maxHp: BOSS_HP[bossType], speed: 55, damage: 50, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isBoss: true, name: BOSS_INFO[bossType] });
+    // VS: anuncio de boss con banner + shake + fanfarria
+    window.spawnBanner = { text: BOSS_INFO[bossType], life: 2.2, color: '#facc15' };
+    cameraShake = 2.5;
+    playSound('boss');
+    updateUI();
 }
 
 function killEnemy(e) {
@@ -2713,16 +2736,17 @@ function evolveWeapon(id) {
     if (!sk || sk.evolved) return;
     sk.evolved = true;
     sk.evolvedName = EVOLUTIONS[id].name;
-    if (id === 'pistol') { sk.baseDamage += 40; sk.range += 80; sk.cooldown = Math.max(0.6, sk.cooldown - 0.3); }
-    else if (id === 'gatling') { sk.baseDamage += 15; sk.radius += 40; sk.duration += 1.0; }
-    else if (id === 'bazooka') { sk.baseDamage += 30; sk.radius += 30; }
+    // VS: la evolucion multiplica el producto del arma (x1.7-x2.0), no suma flat
+    if (id === 'pistol') { sk.baseDamage *= 1.8; sk.range += 80; sk.cooldown = Math.max(0.6, sk.cooldown - 0.3); }
+    else if (id === 'gatling') { sk.baseDamage *= 1.7; sk.radius += 40; sk.duration += 1.0; }
+    else if (id === 'bazooka') { sk.baseDamage *= 1.8; sk.radius += 30; }
     else if (id === 'gear2') { sk.speedBonus += 0.2; sk.duration += 2; }
-    else if (id === 'santoryu') { sk.baseDamage += 20; sk.radius += 20; }
-    else if (id === 'onigiri') { sk.baseDamage += 25; sk.dash += 50; }
-    else if (id === 'flyingslash') { sk.baseDamage += 15; sk.range += 100; }
-    else if (id === 'diablejambe') { sk.baseDamage += 15; sk.radius += 20; }
-    else if (id === 'collier') { sk.baseDamage += 10; sk.range += 20; }
-    else if (id === 'joueshot') { sk.baseDamage += 15; sk.range += 50; }
+    else if (id === 'santoryu') { sk.baseDamage *= 2.0; sk.radius += 20; }
+    else if (id === 'onigiri') { sk.baseDamage *= 1.8; sk.dash += 50; }
+    else if (id === 'flyingslash') { sk.baseDamage *= 1.7; sk.range += 100; }
+    else if (id === 'diablejambe') { sk.baseDamage *= 1.7; sk.radius += 20; }
+    else if (id === 'collier') { sk.baseDamage *= 1.8; sk.range += 20; }
+    else if (id === 'joueshot') { sk.baseDamage *= 1.7; sk.range += 50; }
 }
 function checkEvolutions() {
     // Se llama SOLO al abrir cofres capaces de evolucionar (VS: cofres de plata)
@@ -2879,11 +2903,11 @@ function skipUpgrade() {
 function selectUpgrade(id) {
     if (id === 'pistol') {
         skills.pistol.level = Math.min(5, skills.pistol.level + 1);
-        skills.pistol.baseDamage += 16; skills.pistol.range += 35;
+        skills.pistol.baseDamage += 22; skills.pistol.range += 35;
     }
     else if (id === 'gatling') {
         skills.gatling.level = Math.min(5, skills.gatling.level + 1);
-        skills.gatling.baseDamage += 7;
+        skills.gatling.baseDamage += 9;
     }
     else if (id === 'power') { player.powerPct += 20; player.passives.power = (player.passives.power || 0) + 1; }
     else if (id === 'crit') { player.critChance += 0.15; player.passives.crit = (player.passives.crit || 0) + 1; }
@@ -2891,7 +2915,7 @@ function selectUpgrade(id) {
     else if (id === 'armor') { player.armor = Math.min(70, player.armor + 8); player.passives.armor = (player.passives.armor || 0) + 1; }
     else if (id === 'bazooka') {
         skills.bazooka.level = Math.min(5, skills.bazooka.level + 1);
-        skills.bazooka.baseDamage += 15;
+        skills.bazooka.baseDamage += 20;
     }
     else if (id === 'gear2') {
         skills.gear2.level = Math.min(5, skills.gear2.level + 1);
@@ -2899,27 +2923,27 @@ function selectUpgrade(id) {
     }
     else if (id === 'santoryu') {
         skills.santoryu.level = Math.min(5, skills.santoryu.level + 1);
-        skills.santoryu.baseDamage += 8; skills.santoryu.radius += 5;
+        skills.santoryu.baseDamage += 12; skills.santoryu.radius += 5;
     }
     else if (id === 'onigiri') {
         skills.onigiri.level = Math.min(5, skills.onigiri.level + 1);
-        skills.onigiri.baseDamage += 12; skills.onigiri.dash += 30;
+        skills.onigiri.baseDamage += 16; skills.onigiri.dash += 30;
     }
     else if (id === 'flyingslash') {
         skills.flyingslash.level = Math.min(5, skills.flyingslash.level + 1);
-        skills.flyingslash.baseDamage += 6;
+        skills.flyingslash.baseDamage += 9;
     }
     else if (id === 'diablejambe') {
         skills.diablejambe.level = Math.min(5, skills.diablejambe.level + 1);
-        skills.diablejambe.baseDamage += 6; skills.diablejambe.radius += 5;
+        skills.diablejambe.baseDamage += 9; skills.diablejambe.radius += 5;
     }
     else if (id === 'collier') {
         skills.collier.level = Math.min(5, skills.collier.level + 1);
-        skills.collier.baseDamage += 5;
+        skills.collier.baseDamage += 7;
     }
     else if (id === 'joueshot') {
         skills.joueshot.level = Math.min(5, skills.joueshot.level + 1);
-        skills.joueshot.baseDamage += 8;
+        skills.joueshot.baseDamage += 11;
     }
     else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
     else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }
@@ -2991,12 +3015,15 @@ function triggerVictory() {
     document.getElementById('victory-screen').style.display = 'flex';
 }
 
+// VS-style display: ฿ with thousands separator
+function fmtBeli(n) { return '฿' + Math.floor(n).toLocaleString('en-US'); }
+
 function updateUI() {
     document.getElementById('hp-text').innerText = `${Math.max(0, Math.ceil(player.hp))}/${player.maxHp}`;
     document.getElementById('hp-bar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
     document.getElementById('xp-bar').style.width = `${Math.min(100, (player.xp / player.nextXp) * 100)}%`;
     document.getElementById('level-txt').innerText = player.level;
-    document.getElementById('score-txt').innerText = scoreBeli;
+    document.getElementById('score-txt').innerText = fmtBeli(scoreBeli);
 
     document.getElementById('stat-power').innerText = `+${player.powerPct}%`;
     document.getElementById('stat-crit').innerText = `${Math.round(player.critChance * 100)}%`;
@@ -3177,7 +3204,7 @@ function render() {
         ctx.translate(e.x, e.y);
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        ctx.beginPath(); ctx.ellipse(0, 14, e.type === 'boss_krieg' ? 26 : 14, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 14, (e.isBoss || e.isMiniboss) ? 24 : 14, 6, 0, 0, Math.PI * 2); ctx.fill();
 
         const eState = (e.attackTimer > 0) ? 'attack' : 'idle';
         const eSet = (assetsLoaded && ENEMY_IMG[e.type] && ENEMY_IMG[e.type][eState] && ENEMY_IMG[e.type][eState].length) ? ENEMY_IMG[e.type][eState] : (assetsLoaded && ENEMY_IMG[e.type] ? ENEMY_IMG[e.type].idle : null);
@@ -3227,35 +3254,59 @@ function render() {
         if (e.name || e.isBoss || e.isMiniboss) {
             const loreName = e.isBoss ? BOSS_INFO[e.type] : (e.isMiniboss ? MINIBOSS_INFO[e.type] : e.name);
             if (loreName) {
-                ctx.font = 'bold 10px Bangers, Arial, sans-serif';
+                // VS: texto grande legible con outline, sin caja negra
+                ctx.font = 'bold 14px Bangers, Arial, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                const tw = ctx.measureText(loreName).width;
-                ctx.fillRect(-tw/2 - 3, -46, tw + 6, 12);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+                ctx.strokeText(loreName, 0, -44);
                 ctx.fillStyle = e.isBoss ? '#facc15' : (e.isMiniboss ? '#ffa500' : '#fbbf24');
-                ctx.fillText(loreName, 0, -37);
+                ctx.fillText(loreName, 0, -44);
                 ctx.textAlign = 'left';
             }
         }
         ctx.restore();
     }
 
-    // Boss Bar Header if Active
-    const boss = enemies.find(e => e.type === 'boss_krieg');
+    // Boss Bar Header if Active (VS: barra superior con nombre del boss real, para todos los mapas)
+    const boss = enemies.find(e => e.isBoss && e.hp > 0);
     if (boss) {
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         const bw = 420, bh = 14;
-        const bx = VIEW_W / 2 - bw / 2, by = 65;
+        const bx = VIEW_W / 2 - bw / 2, by = 100;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
         ctx.fillRect(bx - 6, by - 6, bw + 12, bh + 16);
         ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
         ctx.strokeRect(bx - 6, by - 6, bw + 12, bh + 16);
         ctx.fillStyle = '#1e1b4b'; ctx.fillRect(bx, by, bw, bh);
         ctx.fillStyle = '#f43f5e'; ctx.fillRect(bx, by, (boss.hp / boss.maxHp) * bw, bh);
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText("DON KRIEG - ALMIRANTE DE LOS PIRATAS DE KRIEG", VIEW_W / 2, by - 8);
+        ctx.font = 'bold 15px Bangers, Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+        const bossLabel = BOSS_INFO[boss.type] || 'BOSS';
+        ctx.strokeText(bossLabel, VIEW_W / 2, by - 10);
+        ctx.fillStyle = '#facc15';
+        ctx.fillText(bossLabel, VIEW_W / 2, by - 10);
         ctx.restore();
+    }
+
+    // VS: banner de aparicion de boss/miniboss (grande, centro pantalla, 2s)
+    if (window.spawnBanner && window.spawnBanner.life > 0) {
+        const b = window.spawnBanner;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.globalAlpha = Math.max(0, Math.min(1, b.life / 0.4));
+        ctx.font = 'bold 36px Bangers, Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 7;
+        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+        ctx.strokeText(b.text, VIEW_W / 2, VIEW_H / 2 - 130);
+        ctx.fillStyle = b.color;
+        ctx.fillText(b.text, VIEW_W / 2, VIEW_H / 2 - 130);
+        ctx.restore();
+        ctx.globalAlpha = 1;
     }
 
     // Player with Dynamic Shadow
@@ -3305,7 +3356,7 @@ function render() {
 
     // Damage Numbers (Overcrit / Crit formatting)
     for (let dtObj of damageTexts) {
-        ctx.font = dtObj.isOvercrit ? '900 18px sans-serif' : (dtObj.isCrit ? 'bold 15px sans-serif' : '13px sans-serif');
+        ctx.font = dtObj.isOvercrit ? '900 17px Bangers, Arial, sans-serif' : (dtObj.isCrit ? 'bold 15px Bangers, Arial, sans-serif' : '12px sans-serif');
         ctx.fillStyle = dtObj.isOvercrit ? '#c084fc' : (dtObj.isCrit ? '#facc15' : '#ffffff');
         ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4;
         ctx.fillText(dtObj.text, dtObj.x, dtObj.y);

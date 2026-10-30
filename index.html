@@ -3017,8 +3017,8 @@ function showUpgradeScreen(count, isChest) {
         if (player.banished && player.banished[u.id]) return false; // VS: Banish retira el ítem de la partida
         const sk = skills[u.id];
         const isNew = !sk || sk.level <= 0;
-        if (u.type === 'weapon' && sk && sk.level >= 5 && !sk.evolved) {
-            // VS: un arma al máximo deja de ofrecerse en el nivel; evolucionará al abrir un cofre
+        if (u.type === 'weapon' && sk && sk.level >= 5) {
+            // VS: un arma al maximo (evolucionada o a la espera de cofre) deja de ofrecerse; si no queda nada, el botin se vuelve Beli
             return false;
         }
         if (isNew && u.type === 'weapon') {
@@ -3066,8 +3066,42 @@ function showUpgradeScreen(count, isChest) {
         container.appendChild(card);
     });
 
+    // VS: sin opciones (todo maxeado/banished) el botín se convierte en Beli — nunca se queda pillado
+    let upgradeShowingFallback = false;
+    if (!container.children.length) {
+        upgradeShowingFallback = true;
+        const goldVal = Math.round((75 + player.level * 25) * (upgradeIsChest ? 2 : 1) * player.greedBonus);
+        const card = document.createElement('div');
+        card.className = 'upgrade-card';
+        card.innerHTML = `
+            <div class="upgrade-icon">${ICONS.cart}</div>
+            <div class="upgrade-info">
+                <h4>Bolsa de Beli</h4>
+                <p>No queda nada que mejorar en este cofre. El botín se convierte en <b style="color:#b45309">+${goldVal.toLocaleString('en-US')} Beli</b>.</p>
+            </div>
+        `;
+        card.onclick = () => {
+            scoreBeli += goldVal;
+            playSound('coin');
+            document.getElementById('upgrade-screen').style.display = 'none';
+            // VS: las Voluntades de D pendientes encadenan igual que una subida normal
+            if ((player._arcanaPending || 0) > 0) {
+                player._arcanaPending--;
+                showArcanaScreen();
+                return;
+            }
+            updateUI();
+            gameState = 'PLAYING';
+            lastTime = performance.now();
+        };
+        container.appendChild(card);
+        document.getElementById('upgrade-subtitle').innerText = upgradeIsChest
+            ? '¡COFRE VACÍO! EL BOTÍN SE CONVIERTE EN BELI — TOMA EL ORO'
+            : '¡TRIPULACIÓN COMPLETA! EL BOTÍN SE CONVIERTE EN BELI';
+    }
+
     renderUpgradeToolbar();
-    document.getElementById('upgrade-subtitle').innerText = upgradeIsChest
+    if (!upgradeShowingFallback) document.getElementById('upgrade-subtitle').innerText = upgradeIsChest
         ? '¡COFRE DEL TESORO! ELIGE TU BOTÍN — DEAD OR ALIVE'
         : '¡SUBIDA DE NIVEL! ELIGE TU MEJORA — DEAD OR ALIVE';
     document.getElementById('upgrade-screen').style.display = 'flex';

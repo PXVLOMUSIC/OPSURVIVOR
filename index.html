@@ -605,7 +605,13 @@
         .bar-label { color: #facc15; text-shadow: 0 1px 2px #000; }
         .bar-outer { border-color: #524023; box-shadow: inset 0 0 6px rgba(0,0,0,0.8); }
         .bar-inner-xp { background: linear-gradient(90deg, #facc15, #b45309); }
-        .bar-inner-hp { background: linear-gradient(90deg, #ef4444, #a31212); }
+        /* HP: verde sano / ambar al baja / rojo latiendo al limite — feedback claro de la vida */
+        .bar-inner-hp { background: linear-gradient(90deg, #4ade80, #16a34a); transition: width 0.12s linear; }
+        .bar-inner-hp.hp-mid { background: linear-gradient(90deg, #fbbf24, #d97706); }
+        .bar-inner-hp.hp-low { background: linear-gradient(90deg, #ef4444, #7f1d1d); animation: hpPulse 0.6s infinite; }
+        @keyframes hpPulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.7); } }
+        #hp-text.warn { color: #fbbf24; }
+        #hp-text.danger { color: #f87171; text-shadow: 0 0 6px rgba(239, 68, 68, 0.7); }
         .stats-panel b { color: #f6e2b8; }
         .stat-item { color: #fde68a; text-shadow: 0 1px 2px #000; font-family: 'Segoe UI', Tahoma, sans-serif; letter-spacing: 0.3px; font-size: 13px; }
         .stat-item b { color: #fff; }
@@ -2385,7 +2391,7 @@ function resetGame() {
     player.x = 0; player.y = 0;
     player.hp = 100; player.maxHp = 100;
     player.walkFrame = 0; player.isMoving = false;
-    player.animState = 'idle'; player.animIndex = 0; player.attackTimer = 0; player.hitTimer = 0; player._hurtFlash = 0;
+    player.animState = 'idle'; player.animIndex = 0; player.attackTimer = 0; player.hitTimer = 0; player._hurtFlash = 0; player._hurtShakeCd = 0;
     player.level = 1; player.xp = 0; player.nextXp = 5;
     player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1;
     player.passives = {};
@@ -2490,8 +2496,9 @@ function update(dt) {
     }
     if (window.vacuumTimer > 0) window.vacuumTimer -= dt;
     if (window.spawnBanner && window.spawnBanner.life > 0) window.spawnBanner.life -= dt;
-    // destello rojo de dano: se apaga al dejar de recibir golpes
+    // destello rojo de dano: se apaga al dejar de recibir golpes; cooldown de sacudida
     if (player._hurtFlash > 0) player._hurtFlash -= dt;
+    if (player._hurtShakeCd > 0) player._hurtShakeCd -= dt;
 
     // VS: cutscene de evolución — mundo congelado mientras llueve el confetti
     if (window._evolveCut) {
@@ -2598,9 +2605,9 @@ function update(dt) {
             const dmgMult = 1 - (player.armor / 100);
             player.hp -= e.damage * dt * dmgMult;
             player.hitTimer = 0.12;
-            // VS: destello rojo + micro sacudida mientras estas herido
-            player._hurtFlash = 0.35;
-            cameraShake = Math.max(cameraShake, 0.5);
+            // VS: destello rojo + sacudida MUY breve (pulso con cooldown, no constante)
+            if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
+            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 0.85); player._hurtShakeCd = 0.35; }
             if (!player._dmgSoundCd || player._dmgSoundCd <= 0) { playSound('hit'); player._dmgSoundCd = 0.25; }
             if (player.hp <= 0) { triggerGameOver(); return; }
             updateUI();
@@ -2623,8 +2630,8 @@ function update(dt) {
         if (Math.hypot(player.x - b.x, player.y - b.y) < 16) {
             const dmgMult = 1 - (player.armor / 100);
             player.hp -= b.damage * dmgMult; player.hitTimer = 0.12; playSound('hit'); updateUI();
-            player._hurtFlash = 0.35;
-            cameraShake = Math.max(cameraShake, 0.5);
+            if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
+            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 0.85); player._hurtShakeCd = 0.35; }
             enemyBullets.splice(i, 1);
             if (player.hp <= 0) { triggerGameOver(); return; }
             continue;
@@ -3993,6 +4000,14 @@ function fmtBeli(n) { return Math.floor(n).toLocaleString('en-US'); }
 function updateUI() {
     document.getElementById('hp-text').innerText = `${Math.max(0, Math.ceil(player.hp))}/${player.maxHp}`;
     document.getElementById('hp-bar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
+    // VS: estados de vida por porcentaje — verde sano, ambar media, roja al limite
+    const hpPct = Math.max(0, player.hp / player.maxHp);
+    const hpBar = document.getElementById('hp-bar');
+    hpBar.classList.toggle('hp-mid', hpPct <= 0.6 && hpPct > 0.3);
+    hpBar.classList.toggle('hp-low', hpPct <= 0.3);
+    const hpText = document.getElementById('hp-text');
+    hpText.classList.toggle('warn', hpPct <= 0.6 && hpPct > 0.3);
+    hpText.classList.toggle('danger', hpPct <= 0.3);
     document.getElementById('xp-bar').style.width = `${Math.min(100, (player.xp / player.nextXp) * 100)}%`;
     document.getElementById('level-txt').innerText = player.level;
     document.getElementById('score-txt').innerText = fmtBeli(scoreBeli);
@@ -4538,14 +4553,25 @@ function render() {
         ctx.fillText(dtObj.text, dtObj.x, dtObj.y);
     }
 
-    // VS: vignette rojo de dano — "estas herido" (ligero, se desvanece en ~0.3s)
+    // VS: vignette rojo de dano — "estas herido" (pulso breve 0.3s por golpe)
+    // Y a partir de 30% de vida: latido suave permanente para ver el limite
+    const hpPctNow = Math.max(0, player.hp / player.maxHp);
+    let vignetteAlpha = 0;
     if (player._hurtFlash > 0) {
         const fa = Math.max(0, Math.min(1, player._hurtFlash / 0.35));
+        vignetteAlpha += 0.26 * fa;
+    }
+    if (hpPctNow > 0 && hpPctNow <= 0.3) {
+        // latido suave ~1Hz entre alpha 0.09 y 0.15
+        const beat = 0.09 + 0.06 * (0.5 + 0.5 * Math.sin(gameTime * 6.3));
+        vignetteAlpha = Math.max(vignetteAlpha, beat);
+    }
+    if (vignetteAlpha > 0.001) {
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         const grad = ctx.createRadialGradient(VIEW_W / 2, VIEW_H / 2, Math.min(VIEW_W, VIEW_H) * 0.22, VIEW_W / 2, VIEW_H / 2, Math.max(VIEW_W, VIEW_H) * 0.72);
         grad.addColorStop(0, 'rgba(244, 63, 94, 0)');
-        grad.addColorStop(1, 'rgba(200, 20, 40, ' + (0.26 * fa).toFixed(3) + ')');
+        grad.addColorStop(1, 'rgba(200, 20, 40, ' + Math.min(0.4, vignetteAlpha).toFixed(3) + ')');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, VIEW_W, VIEW_H);
         ctx.restore();

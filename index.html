@@ -723,7 +723,7 @@
                 <p><b>WASD / Flechas:</b> Mover</p>
                 <p><b>Joystick:</b> Mover (táctil)</p>
                 <p><b>ESC / P:</b> Pausar</p>
-                <p><b>Objetivo:</b> Sobrevive 10 minutos y derrota a Don Krieg.</p>
+                <p><b>Objetivo:</b> Sobrevive 10 minutos y derrota al boss del mapa.</p>
                 <p><b>Mejoras:</b> Al subir de nivel elige una carta.</p>
             </div>
             <button class="btn-start" onclick="document.getElementById('controls-screen').style.display='none'; document.getElementById('pause-screen').style.display='flex';">Volver</button>
@@ -1346,13 +1346,12 @@ const META_UPGRADES = [
     { id: 'area', name: 'Área', desc: '+5% área por nivel', cost: 450, max: 10, apply: (p, lvl) => { p.areaBonus *= (1 + lvl * 0.05); } },
     { id: 'cooldown', name: 'Cooldown', desc: '-3% cooldown por nivel', cost: 500, max: 10, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 3); } },
     { id: 'armor', name: 'Armadura', desc: '+5% armadura por nivel', cost: 600, max: 10, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 5); } },
-    { id: 'luck', name: 'Suerte', desc: '+5% crit por nivel', cost: 750, max: 10, apply: (p, lvl) => { p.critChance += lvl * 0.05; } },
+    { id: 'luck', name: 'Crítico', desc: '+5% prob. crítica por nivel', cost: 750, max: 10, apply: (p, lvl) => { p.critChance += lvl * 0.05; } },
     { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 400, max: 10, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
     { id: 'growth', name: 'Crecimiento', desc: '+5% XP por nivel', cost: 500, max: 10, apply: (p, lvl) => { p.growthBonus += lvl * 0.05; } },
     { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 50% HP', cost: 2000, max: 1, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
     { id: 'greed', name: 'Avaricia', desc: '+20% Beli por nivel', cost: 300, max: 10, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
     { id: 'curse', name: 'Maldición', desc: '+10% enemigos/HP/vel (riesgo/recompensa)', cost: 1000, max: 5, apply: (p, lvl) => { p.curse += lvl * 0.10; } },
-    { id: 'magnet', name: 'Imán', desc: '+20% rango de recogida por nivel', cost: 300, max: 10, apply: (p, lvl) => { /* handled in pickup */ } },
     { id: 'reroll', name: 'Rerolls', desc: '+3 rerolls de opciones por partida', cost: 500, max: 10, apply: (p, lvl) => { p.rerollUses += lvl * 3; } },
     { id: 'skip', name: 'Saltos', desc: '+3 saltos de subida de nivel por partida', cost: 100, max: 10, apply: (p, lvl) => { p.skipUses += lvl * 3; } },
     { id: 'banish', name: 'Destierros', desc: '+3 destierros de opción por partida', cost: 100, max: 10, apply: (p, lvl) => { p.banishUses += lvl * 3; } }
@@ -1784,7 +1783,7 @@ const skills = {
     // Luffy: latigazo frontal (abanico) y patada hacha alla gear 3
     muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Black Whip' },
     ono: { level: 0, baseDamage: 70, cooldown: 5.0, timer: 0, radius: 65, evolved: false },
-    santoryu: { level: 1, baseDamage: 42, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
+    santoryu: { level: 1, baseDamage: 34, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
     onigiri: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, dash: 160, evolved: false },
     flyingslash: { level: 0, baseDamage: 20, cooldown: 2.2, timer: 0, range: 300, speed: 600, evolved: false },
     // Zoro: tornado orbitante y cañón de viento perforante
@@ -2149,7 +2148,7 @@ const BESTIARY_INFO = {
 };
 function bestiaryName(type) {
     if (BESTIARY_INFO[type]) return BESTIARY_INFO[type];
-    if (ELITE_INFO[type] && ELITE_INFO[type].name) return ELITE_INFO[type].name.baratie + ' — ÉLITE';
+    if (ELITE_INFO[type] && ELITE_INFO[type].name) return (ELITE_INFO[type].name[selectedMap] || ELITE_INFO[type].name.baratie);
     return type;
 }
 // miniaturas del bestiario a partir de los sprites idle ya cargados (cache dataURL)
@@ -2362,7 +2361,7 @@ function resetGame() {
     player.passives = {};
     player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};
     player.arcana = []; player._arcanaPending = 0;
-    window.freezeTimer = 0; window.vacuumTimer = 0;
+    window.freezeTimer = 0; window.vacuumTimer = 0; window.haoTimer = 0;
     // VS: estado window que nunca debia sobrevivir a una partida
     window._evolveCut = null;
     window._pendingLevelUps = 0;
@@ -2385,7 +2384,7 @@ function resetGame() {
     skills.gear2.level = 0; skills.gear2.active = false; skills.gear2.remain = 0; skills.gear2.evolved = false;
     skills.muchi.level = 0; skills.muchi.baseDamage = 35; skills.muchi.evolved = false;
     skills.ono.level = 0; skills.ono.baseDamage = 70; skills.ono.evolved = false;
-    skills.santoryu.level = (selectedCharacter === 'zoro') ? 1 : 0; skills.santoryu.baseDamage = 42; skills.santoryu.evolved = false;
+    skills.santoryu.level = (selectedCharacter === 'zoro') ? 1 : 0; skills.santoryu.baseDamage = 34; skills.santoryu.evolved = false;
     skills.onigiri.level = 0; skills.onigiri.baseDamage = 60; skills.onigiri.evolved = false;
     skills.flyingslash.level = 0; skills.flyingslash.baseDamage = 20; skills.flyingslash.evolved = false;
     skills.tatsumaki.level = 0; skills.tatsumaki.baseDamage = 10; skills.tatsumaki.evolved = false;
@@ -2446,6 +2445,19 @@ function update(dt) {
     if (player.hitTimer > 0) player.hitTimer -= dt;
     if (player._dmgSoundCd > 0) player._dmgSoundCd -= dt;
     if (window.freezeTimer > 0) window.freezeTimer -= dt;
+    // Haoshoku Haki: pulso periodico que aturde a los enemigos cercanos (VS: pasiva activa util)
+    if (player.passives.haki_hao > 0) {
+        window.haoTimer = (window.haoTimer || 0) - dt;
+        if (window.haoTimer <= 0) {
+            window.haoTimer = 6;
+            const lvl = Math.min(4, player.passives.haki_hao);
+            forEnemiesNear(player.x, player.y, 240 * (1 + 0.12 * lvl), en => {
+                if (!en.isBoss && !en.isMiniboss) en._stun = 1.5;
+            });
+            fxRing(player.x, player.y, '#38bdf8', 16, 0.45);
+            playSound('coin');
+        }
+    }
     if (window.vacuumTimer > 0) window.vacuumTimer -= dt;
     if (window.spawnBanner && window.spawnBanner.life > 0) window.spawnBanner.life -= dt;
 
@@ -2526,6 +2538,12 @@ function update(dt) {
         const edx = player.x - e.x, edy = player.y - e.y, edist = Math.hypot(edx, edy);
         // Campana de Skypiea (VS Orologion): los enemigos quedan congelados 10s
         if (window.freezeTimer > 0) {
+            e.animState = 'idle';
+            continue;
+        }
+        // Haoshoku Haki: aturdido (los pulso no afectan a bosses/minibosses)
+        if ((e._stun || 0) > 0) {
+            e._stun -= dt;
             e.animState = 'idle';
             continue;
         }
@@ -3391,7 +3409,7 @@ function killEnemy(e) {
             window.endlessBossKills++;
             window.nextBossAt = gameTime + 300;
             scoreBeli += Math.round(3000 * (player.runBeliMult || 1));
-            window.spawnBanner = { text: '¡BRIBECA REEMPLAZADA — SIGUEN LLEGANDO!', life: 2.0, color: '#f87171' };
+            window.spawnBanner = { text: '¡BRIGADA CAÍDA — EL MAR ENVÍA OTRA MÁS FUERTE!', life: 2.0, color: '#f87171' };
             playSound('boss');
         } else triggerVictory();
     }
@@ -3609,7 +3627,7 @@ function showUpgradeScreen(count, isChest) {
         { id: 'partycourse', type: 'weapon', chars: ['sanji'], title: 'Party Table Kick Course', icon: ICONS.partycourse, desc: 'Tanda de patadas giratorias en 360 grados: limpieza masiva.' },
         { id: 'haki_buso', type: 'passive', chars: 'all', title: 'Busoshoku Haki', icon: ICONS.haki_buso, desc: 'Aumenta daño y armadura.' },
         { id: 'haki_ken', type: 'passive', chars: 'all', title: 'Kenbunshoku Haki', icon: ICONS.haki_ken, desc: 'Aumenta crit y evasión.' },
-        { id: 'haki_hao', type: 'passive', chars: 'all', title: 'Haoshoku Haki', icon: ICONS.haki_hao, desc: 'Stun/área a enemigos.' },
+        { id: 'haki_hao', type: 'passive', chars: 'all', title: 'Haoshoku Haki', icon: ICONS.haki_hao, desc: 'Pulso cada 6s que aturde 1.5s a los enemigos cercanos (no bosses).' },
         { id: 'area', type: 'passive', chars: 'all', title: 'Área de Efecto', icon: ICONS.area, desc: 'Aumenta el área de los ataques +10%.' },
         { id: 'speed', type: 'passive', chars: 'all', title: 'Velocidad', icon: ICONS.speed, desc: 'Aumenta la velocidad de movimiento +8%.' },
         { id: 'pickup', type: 'passive', chars: 'all', title: 'Recogida', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida de drops.' },
@@ -3855,13 +3873,15 @@ function triggerGameOver() {
     updateMetaUI();
     const st = meta.stats;
     document.getElementById('gameover-stats').innerText =
-        'Tiempo: ' + formatTime(gameTime) + ' · Enemigos derrotados esta singlatura: ' + endKills +
+        'Tiempo: ' + formatTime(gameTime) + ' · Enemigos derrotados esta singladura: ' + endKills +
         ' · Beli conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0);
     document.getElementById('gameover-screen').style.display = 'flex';
 }
 
 function triggerVictory() {
     gameState = 'VICTORY';
+    meta.beli += scoreBeli; // VS: la botin de la singladura entra en la bolsa al terminar
+    const prevBest = meta.stats.maxTime[selectedMap] || 0;
     mergeRunStats();
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
@@ -3869,7 +3889,7 @@ function triggerVictory() {
     saveMeta();
     updateMetaUI();
     const st = meta.stats;
-    const record = gameTime >= (st.maxTime[selectedMap] || 0) ? ' · ¡NUEVO RÉCORD!' : '';
+    const record = gameTime > prevBest ? ' · ¡NUEVO RÉCORD!' : '';
     document.getElementById('victory-stats').innerText =
         'Tiempo: ' + formatTime(gameTime) + ' · Beli conseguido: ' + fmtBeli(scoreBeli) +
         ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0) + record;

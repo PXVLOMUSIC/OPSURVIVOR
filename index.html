@@ -547,6 +547,19 @@
             transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
         }
         .map-btn:hover { transform: translateY(-2px); filter: brightness(1.15); }
+        .map-btn.locked { opacity: 0.45; filter: grayscale(0.9); cursor: not-allowed; }
+        .map-btn.locked:hover { transform: none; filter: grayscale(0.9); }
+        .upgrade-toolbar { display: flex; gap: 10px; justify-content: center; margin-top: 14px; }
+        .ut-btn {
+            font-family: 'Bangers', sans-serif; font-size: 14px; letter-spacing: 2px;
+            padding: 7px 16px; border-radius: 8px; cursor: pointer; color: #f6e2b8;
+            background: linear-gradient(135deg, #3f5a34, #1e2f18);
+            border: 2px solid #6d8a56; box-shadow: 0 3px 0 #14200c;
+            transition: transform 0.15s, filter 0.15s;
+        }
+        .ut-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.2); }
+        .ut-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .ut-btn.active { background: linear-gradient(135deg, #7a3f34, #2f1a18); border-color: #b06a56; }
         .map-btn.selected {
             background: linear-gradient(135deg, #7a4a08, #bf7d10);
             border: 2px solid #ffd94a;
@@ -754,8 +767,18 @@
     <div id="upgrade-screen" class="overlay-screen" style="display: none;">
         <div class="wanted-board">
             <div class="wanted-title">WANTED</div>
-            <div class="wanted-subtitle">¡SUBIDA DE NIVEL! ELIGE TU MEJORA — DEAD OR ALIVE</div>
+            <div class="wanted-subtitle" id="upgrade-subtitle">¡SUBIDA DE NIVEL! ELIGE TU MEJORA — DEAD OR ALIVE</div>
             <div class="upgrade-list" id="upgrade-options"></div>
+            <div class="upgrade-toolbar" id="upgrade-toolbar"></div>
+        </div>
+    </div>
+
+    <!-- Voluntades de D (Arcanas) -->
+    <div id="arcana-screen" class="overlay-screen" style="display: none;">
+        <div class="wanted-board">
+            <div class="wanted-title">VOLUNTADES DE D</div>
+            <div class="wanted-subtitle" id="arcana-subtitle">ELIGE UNA VOLUNTAD — SOLO UN DESTINO</div>
+            <div class="upgrade-list" id="arcana-options"></div>
         </div>
     </div>
 
@@ -932,10 +955,17 @@ preloadEnemySprites();
 let selectedCharacter = 'luffy';
 let selectedMap = 'baratie';
 function selectMap(id) {
+    if (mapLocked(id)) { playSound('muted'); return; }
     selectedMap = id;
     const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
+}
+// VS: las etapas se desbloquean por logros — aquí, venciendo al boss del mapa anterior
+function mapLocked(id) {
+    if (id === 'alabasta') return !(meta.wins.baratie > 0);
+    if (id === 'skypiea') return !(meta.wins.alabasta > 0);
+    return false;
 }
 const CHAR_SKILLS = {
     luffy: ['pistol','gatling','bazooka','gear2'],
@@ -1189,9 +1219,12 @@ const META_UPGRADES = [
     { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 50% HP', cost: 2000, max: 1, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
     { id: 'greed', name: 'Avaricia', desc: '+20% Beli por nivel', cost: 300, max: 10, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
     { id: 'curse', name: 'Maldición', desc: '+10% enemigos/HP/vel (riesgo/recompensa)', cost: 1000, max: 5, apply: (p, lvl) => { p.curse += lvl * 0.10; } },
-    { id: 'magnet', name: 'Imán', desc: '+20% rango de recogida por nivel', cost: 300, max: 10, apply: (p, lvl) => { /* handled in pickup */ } }
+    { id: 'magnet', name: 'Imán', desc: '+20% rango de recogida por nivel', cost: 300, max: 10, apply: (p, lvl) => { /* handled in pickup */ } },
+    { id: 'reroll', name: 'Rerolls', desc: '+3 rerolls de opciones por partida', cost: 500, max: 10, apply: (p, lvl) => { p.rerollUses += lvl * 3; } },
+    { id: 'skip', name: 'Saltos', desc: '+3 saltos de subida de nivel por partida', cost: 100, max: 10, apply: (p, lvl) => { p.skipUses += lvl * 3; } },
+    { id: 'banish', name: 'Destierros', desc: '+3 destierros de opción por partida', cost: 100, max: 10, apply: (p, lvl) => { p.banishUses += lvl * 3; } }
 ];
-let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false } };
+let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false }, wins: { baratie: 0, alabasta: 0, skypiea: 0 } };
 META_UPGRADES.forEach(u => meta.upgrades[u.id] = 0);
 function loadMeta() {
     try {
@@ -1201,11 +1234,13 @@ function loadMeta() {
             meta.beli = parsed.beli || 0;
             META_UPGRADES.forEach(u => { meta.upgrades[u.id] = (parsed.upgrades && parsed.upgrades[u.id]) || 0; });
             if (parsed.unlocked) meta.unlocked = { ...meta.unlocked, ...parsed.unlocked };
+            if (parsed.wins) meta.wins = { ...meta.wins, ...parsed.wins };
+            else meta.wins.baratie = 1; // guardado antiguo: Baratie ya conquistado
         }
     } catch (e) {}
 }
 function saveMeta() {
-    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked })); } catch (e) {}
+    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins })); } catch (e) {}
 }
 loadMeta();
 let gameTime = 0, lastTime = performance.now();
@@ -1670,11 +1705,62 @@ function updateJoystick(touch) {
     joystick.dx = dx / maxRadius; joystick.dy = dy / maxRadius;
 }
 
+// === Voluntades de D: modificadores de partida estilo Arcanas de VS ===
+// 1 al empezar la run (arriba) + 1 al vencer cada miniboss (Moria / Kuma)
+const ARCANA_POOL = [
+    { id: 'd_ascendiente', name: 'D. Ascendiente', desc: 'La Voluntad del Dawn despierta: +25% Poder.', apply: () => { player.powerPct += 25; } },
+    { id: 'chef_baratie', name: 'Chef del Baratie', desc: 'Un banquete del mar llenara el espirito: +40% XP.', apply: () => { player.growthBonus += 0.4; } },
+    { id: 'log_pose', name: 'Log Pose', desc: 'Navegas la ruta mas corta: -25% Cooldown.', apply: () => { player.cdReduction = Math.min(80, player.cdReduction + 25); } },
+    { id: 'mandoble_wano', name: 'Mandoble de Wano', desc: 'Te ganza un samurai: +20% Critico.', apply: () => { player.critChance = Math.min(1.0, player.critChance + 0.2); } },
+    { id: 'campana_dorada', name: 'Campana Dorada', desc: 'Resuena sobre la selva: +100% rango de recogida.', apply: () => { player.pickupBonus += 1.0; } },
+    { id: 'bolsa_avaro', name: 'Bolsa del Avaro', desc: 'El oro llama al oro: +30% Beli.', apply: () => { player.greedBonus += 0.3; } },
+    { id: 'sangre_celestial', name: 'Sangre Celestial', desc: 'La sangre de Mariejois blindia: +15% Armadura.', apply: () => { player.armor = Math.min(70, player.armor + 15); } },
+    { id: 'viento_alabasta', name: 'Viento de Alabasta', desc: 'El viento empuja las velas: +15% Velocidad.', apply: () => { player.speed *= 1.15; } },
+    { id: 'haki_rey', name: 'Haki del Emperador', desc: 'Impones tu voluntad: +15% Poder y +10% Critico.', apply: () => { player.powerPct += 15; player.critChance = Math.min(1.0, player.critChance + 0.1); } },
+    { id: 'flecha_yonta', name: 'Flecha Yonta', desc: 'El trueno castiga en area: +25% Area de efecto.', apply: () => { player.areaBonus *= 1.25; } }
+];
+function showArcanaScreen() {
+    const pool = ARCANA_POOL.filter(a => !(player.arcana || []).includes(a.id));
+    const options = pool.slice().sort(() => 0.5 - Math.random()).slice(0, 3);
+    const container = document.getElementById('arcana-options');
+    container.innerHTML = '';
+    if (!options.length) { // todo usado: resume sin otorgar
+        gameState = 'PLAYING'; lastTime = performance.now(); return;
+    }
+    options.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'upgrade-card';
+        card.innerHTML = `
+            <div class="upgrade-icon">${ICONS.up}</div>
+            <div class="upgrade-info">
+                <h4>${a.name}</h4>
+                <p>${a.desc}</p>
+            </div>
+        `;
+        card.onclick = () => chooseArcana(a.id);
+        container.appendChild(card);
+    });
+    gameState = 'ARCANA';
+    document.getElementById('arcana-screen').style.display = 'flex';
+}
+function chooseArcana(id) {
+    const a = ARCANA_POOL.find(x => x.id === id);
+    if (!a) return;
+    (player.arcana = player.arcana || []).push(id);
+    a.apply();
+    playSound('levelup');
+    updateUI();
+    document.getElementById('arcana-screen').style.display = 'none';
+    gameState = 'PLAYING';
+    lastTime = performance.now();
+}
+
 function startGame() {
     initAudio();
     document.getElementById('start-screen').style.display = 'none';
     resetGame();
-    gameState = 'PLAYING';
+    // VS: el jugador elige 1 Arcana al empezar la partida
+    showArcanaScreen();
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 }
@@ -1758,6 +1844,8 @@ function updateMetaUI() {
     const el = document.getElementById('meta-beli');
     if (el) el.innerText = '฿' + meta.beli;
     if (typeof refreshCharCards === 'function') refreshCharCards();
+    // marca los mapas bloqueados
+    document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('locked', mapLocked(b.dataset.map)));
 }
 updateMetaUI();
 selectMap('baratie');
@@ -1767,7 +1855,7 @@ function restartGame() {
     document.getElementById('gameover-screen').style.display = 'none';
     document.getElementById('victory-screen').style.display = 'none';
     resetGame();
-    gameState = 'PLAYING';
+    showArcanaScreen(); // VS: 1 Voluntad de D al empezar cada partida
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 }
@@ -1872,6 +1960,9 @@ function resetGame() {
     player.level = 1; player.xp = 0; player.nextXp = 5;
     player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1;
     player.passives = {};
+    player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};
+    player.arcana = []; player._arcanaPending = 0;
+    window.freezeTimer = 0; window.vacuumTimer = 0;
     // apply meta upgrades
     META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
@@ -1907,7 +1998,7 @@ function gameLoop(now) {
     // música: solo al cambiar de estado (evita .play() cada frame)
     if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); }
 
-    if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE') {
+    if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA') {
         requestAnimationFrame(gameLoop);
     }
 }
@@ -1937,6 +2028,8 @@ function update(dt) {
     if (player.attackTimer > 0) player.attackTimer -= dt;
     if (player.hitTimer > 0) player.hitTimer -= dt;
     if (player._dmgSoundCd > 0) player._dmgSoundCd -= dt;
+    if (window.freezeTimer > 0) window.freezeTimer -= dt;
+    if (window.vacuumTimer > 0) window.vacuumTimer -= dt;
 
     if (gameTime >= 480 && !bossSpawned) spawnBoss();
     // Victoria SOLO al matar al boss (estilo VS) — a los 10 min el boss ya habrá aparecido
@@ -1982,6 +2075,11 @@ function update(dt) {
     for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
         const edx = player.x - e.x, edy = player.y - e.y, edist = Math.hypot(edx, edy);
+        // Campana de Skypiea (VS Orologion): los enemigos quedan congelados 10s
+        if (window.freezeTimer > 0) {
+            e.animState = 'idle';
+            continue;
+        }
 
         if (edist > 0) {
             e.x += (edx / edist) * e.speed * dt;
@@ -2148,6 +2246,11 @@ function update(dt) {
             d.y += Math.sin(ang) * 60 * dt;
         }
         const dist = Math.hypot(player.x - d.x, player.y - d.y);
+        if (window.vacuumTimer > 0 && d.type === 'xp' && dist > 0) {
+            // Iman Magico (VS Vacuum): las gemas vuelan hacia el jugador
+            d.x += ((player.x - d.x) / dist) * 420 * dt;
+            d.y += ((player.y - d.y) / dist) * 420 * dt;
+        }
         if (dist < 110 * player.pickupBonus) {
             d.x += ((player.x - d.x) / dist) * 260 * dt;
             d.y += ((player.y - d.y) / dist) * 260 * dt;
@@ -2160,6 +2263,28 @@ function update(dt) {
                 scoreBeli += d.value; playSound('coin');
             } else if (d.type === 'meat') {
                 player.hp = Math.min(player.maxHp, player.hp + 40); playSound('levelup');
+            } else if (d.type === 'denden') {
+                // Den Den Mushi dorado (VS Rosary): limpia la pantalla de enemigos — sin drops
+                const targets = enemies.slice();
+                cameraShake = 2;
+                playSound('boss');
+                targets.forEach(en => {
+                    if (en.isBoss || en.isMiniboss) return; // los minibosses/boss no caen aqui
+                    en.hp = 0;
+                    for (let k = 0; k < 4; k++) {
+                        const ang = Math.random() * Math.PI * 2;
+                        particles.push({ x: en.x, y: en.y, vx: Math.cos(ang) * 70, vy: Math.sin(ang) * 70, life: 0.4, color: '#ffd700' });
+                    }
+                });
+            } else if (d.type === 'bell') {
+                // Campana de Skypiea (VS Orologion): congela a todos los enemigos 10s
+                window.freezeTimer = 10;
+                cameraShake = 1;
+                playSound('levelup');
+            } else if (d.type === 'vacuum') {
+                // Iman Magico (VS Vacuum): atrae todas las gemas de XP hacia el jugador
+                window.vacuumTimer = 2.0;
+                playSound('coin');
             } else if (d.type === 'chest') {
                 playSound('levelup');
                 gameState = 'UPGRADE';
@@ -2173,7 +2298,7 @@ function update(dt) {
                 scoreBeli += beliVal;
                 // VS: la evolución se dispara al abrir un cofre capaz de evolucionar
                 if (d.canEvolve) checkEvolutions();
-                showUpgradeScreen(count);
+                showUpgradeScreen(count, true);
             }
             updateUI(); drops.splice(i, 1);
         }
@@ -2509,6 +2634,14 @@ function killEnemy(e) {
             canEvolve: e.isBoss || e.isMiniboss });
     }
     if (Math.random() < 0.35) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(20 * player.greedBonus) });
+    // Pickups estilo VS con lore One Piece (drop raro escalado por Suerte):
+    // Den Den Mushi dorado (Rosary) / Campana de Skypiea (Orologion) / Iman Magico (Vacuum)
+    const pk = Math.random();
+    if (pk < 0.002 * player.luckBonus) drops.push({ x: e.x, y: e.y, type: 'denden' });
+    else if (pk < 0.005 * player.luckBonus) drops.push({ x: e.x, y: e.y, type: 'bell' });
+    else if (pk < 0.010 * player.luckBonus) drops.push({ x: e.x, y: e.y, type: 'vacuum' });
+    // VS: cada miniboss derrotado otorga una Voluntad de D a mitad de partida
+    if (e.isMiniboss) player._arcanaPending = (player._arcanaPending || 0) + 1;
     for (let k = 0; k < 8; k++) {
         const ang = Math.random() * Math.PI * 2;
         const sp = 40 + Math.random() * 60;
@@ -2604,7 +2737,14 @@ function checkEvolutions() {
     if (evolvedAny) { playSound('levelup'); cameraShake = 2; }
 }
 
-function showUpgradeScreen(count = 3) {
+let currentUpgradeCount = 3, upgradeIsChest = false, _banishing = false;
+
+function showUpgradeScreen(count, isChest) {
+    upgradeIsChest = !!isChest;
+    // VS: en subidas de nivel hay una 4ta opción con probabilidad (1 - 1/SuerteTotal)
+    if (count === undefined || count === null) count = 3 + (Math.random() < (1 - 1 / player.luckBonus) ? 1 : 0);
+    currentUpgradeCount = count;
+    _banishing = false;
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
@@ -2635,6 +2775,7 @@ function showUpgradeScreen(count = 3) {
         { id: 'luck', type: 'passive', chars: 'all', title: 'Suerte', icon: ICONS.luck, desc: 'Mejora la calidad de los cofres y el Beli; +5% crítico.' }
     ].filter(u => {
         if (u.chars !== 'all' && !u.chars.includes(selectedCharacter)) return false;
+        if (player.banished && player.banished[u.id]) return false; // VS: Banish retira el ítem de la partida
         const sk = skills[u.id];
         const isNew = !sk || sk.level <= 0;
         if (u.type === 'weapon' && sk && sk.level >= 5 && !sk.evolved) {
@@ -2646,7 +2787,9 @@ function showUpgradeScreen(count = 3) {
             if (equippedWeapons >= 6) return false;
         }
         if (isNew && u.type === 'passive') {
-            // pasivas no limitadas por slot por ahora
+            // VS: máximo 6 pasivas por partida
+            const ownedPassives = passiveIds.filter(pid => (player.passives[pid] || 0) > 0).length;
+            if (ownedPassives >= 6) return false;
         }
         return true;
     });
@@ -2667,11 +2810,70 @@ function showUpgradeScreen(count = 3) {
                 <p>${desc}</p>
             </div>
         `;
-        card.onclick = () => selectUpgrade(up.id);
+        card.onclick = () => {
+            if (_banishing) {
+                // VS: Destierro retira la opción de la partida y repone opciones nuevas
+                if (player.banishUses > 0) {
+                    player.banished[up.id] = true;
+                    player.banishUses--;
+                    _banishing = false;
+                    playSound('coin');
+                    showUpgradeScreen(currentUpgradeCount, upgradeIsChest);
+                }
+                return;
+            }
+            selectUpgrade(up.id);
+        };
         container.appendChild(card);
     });
 
+    renderUpgradeToolbar();
+    document.getElementById('upgrade-subtitle').innerText = upgradeIsChest
+        ? '¡COFRE DEL TESORO! ELIGE TU BOTÍN — DEAD OR ALIVE'
+        : '¡SUBIDA DE NIVEL! ELIGE TU MEJORA — DEAD OR ALIVE';
     document.getElementById('upgrade-screen').style.display = 'flex';
+}
+
+// VS: Reroll / Skip / Banish — cargas compradas en la meta-tienda
+function renderUpgradeToolbar() {
+    const bar = document.getElementById('upgrade-toolbar');
+    if (!bar) return;
+    bar.innerHTML =
+        `<button class="ut-btn" data-ut="reroll" ${player.rerollUses <= 0 ? 'disabled' : ''}>Reroll (x${player.rerollUses})</button>` +
+        (upgradeIsChest ? '' : `<button class="ut-btn" data-ut="skip" ${player.skipUses <= 0 ? 'disabled' : ''}>Saltar (x${player.skipUses})</button>`) +
+        `<button class="ut-btn" data-ut="banish" ${player.banishUses <= 0 ? 'disabled' : ''}>Desterrar (x${player.banishUses})</button>`;
+    bar.querySelectorAll('[data-ut]').forEach(b => {
+        b.onclick = () => {
+            const k = b.dataset.ut;
+            if (k === 'reroll' && player.rerollUses > 0) {
+                player.rerollUses--;
+                playSound('coin');
+                showUpgradeScreen(currentUpgradeCount, upgradeIsChest);
+            } else if (k === 'skip' && player.skipUses > 0 && !upgradeIsChest) {
+                player.skipUses--;
+                skipUpgrade();
+            } else if (k === 'banish' && player.banishUses > 0) {
+                _banishing = !_banishing;
+                b.classList.toggle('active', _banishing);
+                document.getElementById('upgrade-subtitle').innerText = _banishing
+                    ? 'ELIGE UNA CARTA PARA DESTERRAR — DEAD OR ALIVE'
+                    : (upgradeIsChest ? '¡COFRE DEL TESORO! ELIGE TU BOTÍN — DEAD OR ALIVE' : '¡SUBIDA DE NIVEL! ELIGE TU MEJORA — DEAD OR ALIVE');
+            }
+        };
+    });
+}
+
+function skipUpgrade() {
+    // VS: Skip salta la subida de nivel sin elegir nada
+    document.getElementById('upgrade-screen').style.display = 'none';
+    if ((player._arcanaPending || 0) > 0) {
+        player._arcanaPending--;
+        showArcanaScreen();
+        return;
+    }
+    updateUI();
+    gameState = 'PLAYING';
+    lastTime = performance.now();
 }
 
 function selectUpgrade(id) {
@@ -2686,7 +2888,7 @@ function selectUpgrade(id) {
     else if (id === 'power') { player.powerPct += 20; player.passives.power = (player.passives.power || 0) + 1; }
     else if (id === 'crit') { player.critChance += 0.15; player.passives.crit = (player.passives.crit || 0) + 1; }
     else if (id === 'cd') { player.cdReduction = Math.min(60, player.cdReduction + 12); player.passives.cd = (player.passives.cd || 0) + 1; }
-    else if (id === 'armor') { player.armor = Math.min(70, player.armor + 8); }
+    else if (id === 'armor') { player.armor = Math.min(70, player.armor + 8); player.passives.armor = (player.passives.armor || 0) + 1; }
     else if (id === 'bazooka') {
         skills.bazooka.level = Math.min(5, skills.bazooka.level + 1);
         skills.bazooka.baseDamage += 15;
@@ -2719,9 +2921,9 @@ function selectUpgrade(id) {
         skills.joueshot.level = Math.min(5, skills.joueshot.level + 1);
         skills.joueshot.baseDamage += 8;
     }
-    else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); }
-    else if (id === 'haki_ken') { player.critChance += 0.1; }
-    else if (id === 'haki_hao') { /* stun area: handled in render/update */ }
+    else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
+    else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }
+    else if (id === 'haki_hao') { /* stun area: handled in render/update */ player.passives.haki_hao = (player.passives.haki_hao || 0) + 1; }
     else if (id === 'area') { player.areaBonus *= 1.1; player.passives.area = (player.passives.area || 0) + 1; }
     else if (id === 'speed') { player.speed *= 1.08; player.passives.speed = (player.passives.speed || 0) + 1; }
     else if (id === 'pickup') { player.pickupBonus += 0.1; }
@@ -2742,9 +2944,9 @@ function selectUpgrade(id) {
         if (skills.joueshot.level >= 5 && !skills.joueshot.evolved) { skills.joueshot.evolved = true; skills.joueshot.baseDamage += 15; skills.joueshot.range += 50; }
         else skills.joueshot.baseDamage += 8;
     }
-    else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); }
-    else if (id === 'haki_ken') { player.critChance += 0.1; }
-    else if (id === 'haki_hao') { /* stun area: handled in render/update */ }
+    else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
+    else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }
+    else if (id === 'haki_hao') { /* stun area: handled in render/update */ player.passives.haki_hao = (player.passives.haki_hao || 0) + 1; }
     else if (id === 'area') { player.areaBonus *= 1.1; }
     else if (id === 'speed') { player.speed *= 1.08; }
     else if (id === 'pickup') { player.pickupBonus += 0.1; }
@@ -2752,6 +2954,12 @@ function selectUpgrade(id) {
     else if (id === 'luck') { player.critChance += 0.05; }
 
     document.getElementById('upgrade-screen').style.display = 'none';
+    // VS: las Arcanas otorgadas a mitad de partida encadenan tras cerrar la subida
+    if ((player._arcanaPending || 0) > 0) {
+        player._arcanaPending--;
+        showArcanaScreen();
+        return;
+    }
     updateUI();
     gameState = 'PLAYING';
     lastTime = performance.now();
@@ -2777,6 +2985,7 @@ function triggerGameOver() {
 function triggerVictory() {
     gameState = 'VICTORY';
     meta.beli += scoreBeli;
+    meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     saveMeta();
     updateMetaUI();
     document.getElementById('victory-screen').style.display = 'flex';
@@ -2871,7 +3080,7 @@ function render() {
     for (let d of drops) {
         ctx.save();
         ctx.translate(d.x, d.y + Math.sin(gameTime * 6 + d.x) * 3);
-        const dCol = d.type === 'xp' ? '#38bdf8' : (d.type === 'beli' ? '#facc15' : '#ef4444');
+        const dCol = d.type === 'xp' ? '#38bdf8' : (d.type === 'beli' ? '#facc15' : (d.type === 'denden' ? '#fde047' : (d.type === 'bell' ? '#67e8f9' : (d.type === 'vacuum' ? '#a78bfa' : '#ef4444'))));
         const glowImg = getGlow(dCol, 20);
         ctx.drawImage(glowImg, -20, -20);
         ctx.fillStyle = dCol;

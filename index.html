@@ -765,8 +765,8 @@
         <div id="map-select" style="display:flex; gap:12px; margin: 6px 0 10px; flex-wrap:wrap; justify-content:center; align-items:center;">
             <span style="color:#dcc596; letter-spacing:2px; font-size:13px;">ELIGE ISLA:</span>
             <button class="map-btn" data-map="baratie" onclick="selectMap('baratie')"><span class="op-slot" data-ico="ship"></span> Baratie</button>
-            <button class="map-btn" data-map="alabasta" onclick="selectMap('alabasta')"><span class="op-slot" data-ico="dune"></span> Alabasta</button>
-            <button class="map-btn" data-map="skypiea" onclick="selectMap('skypiea')"><span class="op-slot" data-ico="cloud"></span> Skypiea</button>
+            <button class="map-btn" data-map="alabasta"><span class="op-slot" data-ico="dune"></span> Alabasta · PRÓXIMAMENTE</button>
+            <button class="map-btn" data-map="skypiea"><span class="op-slot" data-ico="cloud"></span> Skypiea · PRÓXIMAMENTE</button>
         </div>
         <div id="map-selected" style="color:#dcc596; font-size:14px; margin-bottom:6px;">Mapa: Baratie</div>
         <div id="curse-select" style="display:flex; gap:8px; margin: 2px 0 10px; flex-wrap:wrap; justify-content:center; align-items:center;">
@@ -1059,8 +1059,8 @@ function selectMap(id) {
 }
 // VS: las etapas se desbloquean por logros — aquí, venciendo al boss del mapa anterior
 function mapLocked(id) {
-    if (id === 'alabasta') return !(meta.wins.baratie > 0);
-    if (id === 'skypiea') return !(meta.wins.alabasta > 0);
+    // Alabasta y Skypiea deshabilitadas: en desarrollo (PRÓXIMAMENTE)
+    if (id === 'alabasta' || id === 'skypiea') return true;
     return false;
 }
 // === CLIMA PELIGROSO (rango de Maldición 0-4, estilo VS) ===

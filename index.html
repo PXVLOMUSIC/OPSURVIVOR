@@ -1701,6 +1701,35 @@ let particles = [];
 let damageTexts = [];
 let activeAttacks = [];
 
+// === Spatial hash de enemigos (VS usa grids: evita el O(n^2) en hordas grandes) ===
+const GRID_CELL = 70;
+let enemyGrid = new Map();
+function rebuildEnemyGrid() {
+    enemyGrid.clear();
+    for (const e of enemies) {
+        const key = Math.floor(e.x / GRID_CELL) + ',' + Math.floor(e.y / GRID_CELL);
+        let arr = enemyGrid.get(key);
+        if (!arr) { arr = []; enemyGrid.set(key, arr); }
+        arr.push(e);
+    }
+}
+// itera SOLO enemigos dentro del radio r desde (x, y)
+function forEnemiesNear(x, y, r, cb) {
+    const c0 = Math.floor((x - r) / GRID_CELL), c1 = Math.floor((x + r) / GRID_CELL);
+    const w0 = Math.floor((y - r) / GRID_CELL), w1 = Math.floor((y + r) / GRID_CELL);
+    const rr = r * r;
+    for (let cx = c0; cx <= c1; cx++) {
+        for (let cy = w0; cy <= w1; cy++) {
+            const arr = enemyGrid.get(cx + ',' + cy);
+            if (!arr) continue;
+            for (const e of arr) {
+                const dx = e.x - x, dy = e.y - y;
+                if (dx * dx + dy * dy <= rr) cb(e);
+            }
+        }
+    }
+}
+
 const keys = {};
 let joystick = { active: false, dx: 0, dy: 0, touchId: null };
 
@@ -1715,19 +1744,43 @@ window.addEventListener('keyup', e => { keys[e.code] = false; });
 
 const joystickZone = document.getElementById('joystick-zone');
 const joystickKnob = document.getElementById('joystick-knob');
-if ('ontouchstart' in window) joystickZone.style.display = 'block';
+// Joystick flotante estilo VS mobile: aparece donde toques la pantalla (no en UI)
+const JOY_HALF = 65; // mitad del tamaño de la zona (130px)
+function isUITouch(el) {
+    return el.closest && el.closest('button, #upgrade-screen, #arcana-screen, #start-screen, #shop-screen, #pause-menu, #gameover-screen, #victory-screen, #hud, .hud');
+}
+function joystickDelta(clientX, clientY, centerX, centerY) {
+    let dx = clientX - centerX, dy = clientY - centerY;
+    const dist = Math.hypot(dx, dy), maxR = JOY_HALF;
+    if (dist > maxR) { dx = (dx / dist) * maxR; dy = (dy / dist) * maxR; }
+    joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+    joystick.dx = dx / maxR; joystick.dy = dy / maxR;
+}
 
-joystickZone.addEventListener('touchstart', e => {
+window.addEventListener('touchstart', e => {
+    if (gameState !== 'PLAYING') return;
+    if (joystick.active) return; // un solo stick: ignorar segundas manos
+    if (isUITouch(e.target)) return;
     e.preventDefault();
     const touch = e.changedTouches[0];
+    const cx = touch.clientX, cy = touch.clientY;
+    // mover la base del stick al punto tactil
+    joystickZone.style.bottom = 'auto';
+    joystickZone.style.left = (cx - JOY_HALF) + 'px';
+    joystickZone.style.top = (cy - JOY_HALF) + 'px';
     joystick.active = true; joystick.touchId = touch.identifier;
-    updateJoystick(touch);
+    joystickZone.style.display = 'block';
+    joystickDelta(cx, cy, cx, cy);
 }, { passive: false });
 
 window.addEventListener('touchmove', e => {
     if (!joystick.active) return;
     for (let touch of e.changedTouches) {
-        if (touch.identifier === joystick.touchId) updateJoystick(touch);
+        if (touch.identifier === joystick.touchId) {
+            e.preventDefault();
+            const rect = joystickZone.getBoundingClientRect();
+            joystickDelta(touch.clientX, touch.clientY, rect.left + JOY_HALF, rect.top + JOY_HALF);
+        }
     }
 }, { passive: false });
 
@@ -1735,20 +1788,11 @@ window.addEventListener('touchend', e => {
     for (let touch of e.changedTouches) {
         if (touch.identifier === joystick.touchId) {
             joystick.active = false; joystick.dx = 0; joystick.dy = 0;
+            joystickZone.style.display = 'none';
             joystickKnob.style.transform = `translate(0px, 0px)`;
         }
     }
 });
-
-function updateJoystick(touch) {
-    const rect = joystickZone.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
-    let dx = touch.clientX - centerX, dy = touch.clientY - centerY;
-    const dist = Math.hypot(dx, dy), maxRadius = rect.width / 2;
-    if (dist > maxRadius) { dx = (dx / dist) * maxRadius; dy = (dy / dist) * maxRadius; }
-    joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
-    joystick.dx = dx / maxRadius; joystick.dy = dy / maxRadius;
-}
 
 // === Voluntades de D: modificadores de partida estilo Arcanas de VS ===
 // 1 al empezar la run (arriba) + 1 al vencer cada miniboss (Moria / Kuma)
@@ -2083,6 +2127,19 @@ function update(dt) {
     if (window.vacuumTimer > 0) window.vacuumTimer -= dt;
     if (window.spawnBanner && window.spawnBanner.life > 0) window.spawnBanner.life -= dt;
 
+    // VS: cutscene de evolución — mundo congelado mientras llueve el confetti
+    if (window._evolveCut && window._evolveCut.life > 0) {
+        window._evolveCut.life -= dt;
+        if (Math.random() < dt * 55) { // goteo continuo de confetti
+            const confettiCols = ['#f43f5e', '#facc15', '#38bdf8', '#a78bfa', '#ffffff'];
+            particles.push({ x: player.x + (Math.random() * 220 - 110), y: player.y - 210,
+                vx: (Math.random() - 0.5) * 60, vy: 90 + Math.random() * 90,
+                life: 1.0, maxLife: 1.0, color: confettiCols[Math.floor(Math.random() * 5)], shape: 'star', size: 2.5 + Math.random() * 3, grav: 150 });
+        }
+        updateParticles(dt);
+        return;
+    }
+
     if (gameTime >= 480 && !bossSpawned) spawnBoss();
     // Victoria SOLO al matar al boss (estilo VS) — a los 10 min el boss ya habrá aparecido
 
@@ -2121,8 +2178,10 @@ function update(dt) {
     if (player.animTimer > 0.1) { player.animIndex = (player.animIndex + 1) % animLen; player.animTimer = 0; }
     if (player.animState === 'idle') player.animIndex = 0;
 
+    rebuildEnemyGrid();
     handleAttacks(dt);
     handleSpawning(dt);
+    updateEvents(dt);
 
     for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
@@ -2210,14 +2269,12 @@ function update(dt) {
             }
         } else if (atk.type === 'gatling') {
             atk.x = player.x; atk.y = player.y;
-            for (let e of enemies) {
-                if (Math.hypot(e.x - player.x, e.y - player.y) < atk.radius) {
-                    const dmgInfo = calculateDamage(atk.baseDamage);
-                    e.hp -= dmgInfo.amount * dt * 3.0 * e.damageTaken;
-                    if (Math.random() < 0.12) spawnDamageText(e.x, e.y, dmgInfo);
-                    if (e.hp <= 0) killEnemy(e);
-                }
-            }
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                const dmgInfo = calculateDamage(atk.baseDamage);
+                e.hp -= dmgInfo.amount * dt * 3.0 * e.damageTaken;
+                if (Math.random() < 0.12) spawnDamageText(e.x, e.y, dmgInfo);
+                if (e.hp <= 0) killEnemy(e);
+            });
             // VFX: puños de goma disparados en ráfaga al derredor
             if (Math.random() < dt * 30) {
                 const ang = Math.random() * Math.PI * 2;
@@ -2227,9 +2284,9 @@ function update(dt) {
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'bazooka') {
             atk.life -= dt;
-            for (let e of enemies) {
-                // VS: la explosion es un golpe UNICO por enemigo (bug de frames corregido)
-                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+            // VS: la explosion es un golpe UNICO por enemigo (bug de frames corregido)
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
@@ -2237,12 +2294,12 @@ function update(dt) {
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
                     if (e.hp <= 0) killEnemy(e);
                 }
-            }
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'santoryu') {
             atk.life -= dt;
-            for (let e of enemies) {
-                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
@@ -2250,12 +2307,12 @@ function update(dt) {
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
                     if (e.hp <= 0) killEnemy(e);
                 }
-            }
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'onigiri') {
             atk.life -= dt;
-            for (let e of enemies) {
-                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
@@ -2263,27 +2320,26 @@ function update(dt) {
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
                     if (e.hp <= 0) killEnemy(e);
                 }
-            }
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'diablejambe') {
             atk.life -= dt;
-            for (let e of enemies) {
-                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
-                    const dmgInfo = calculateDamage(atk.baseDamage);
-                    e.hp -= dmgInfo.amount * dt * 4;
-                    if (Math.random() < 0.1) spawnDamageText(e.x, e.y, dmgInfo);
-                    if (e.hp <= 0) killEnemy(e);
-                }
-            }
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                const dmgInfo = calculateDamage(atk.baseDamage);
+                e.hp -= dmgInfo.amount * dt * 4;
+                if (Math.random() < 0.1) spawnDamageText(e.x, e.y, dmgInfo);
+                if (e.hp <= 0) killEnemy(e);
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'muchi') {
             // Muchi: abanico frontal, un solo golpe por enemigo
             atk.life -= dt;
-            for (let e of enemies) {
+            forEnemiesNear(player.x, player.y, atk.radius, function (e) {
+                if (atk.hitEnemies.has(e)) return;
                 const dAng = Math.atan2(e.y - player.y, e.x - player.x);
                 let diff = Math.abs(dAng - atk.angle);
                 if (diff > Math.PI) diff = Math.PI * 2 - diff;
-                if (!atk.hitEnemies.has(e) && diff < 1.1 && Math.hypot(e.x - player.x, e.y - player.y) < atk.radius) {
+                if (diff < 1.1) {
                     atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
@@ -2291,12 +2347,12 @@ function update(dt) {
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
                     if (e.hp <= 0) killEnemy(e);
                 }
-            }
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'ono' || atk.type === 'concasse') {
             atk.life -= dt;
-            for (let e of enemies) {
-                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
@@ -2304,41 +2360,37 @@ function update(dt) {
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
                     if (e.hp <= 0) killEnemy(e);
                 }
-            }
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'tatsumaki') {
             atk.life -= dt;
             atk.spin += dt * 9;
             atk.x = player.x; atk.y = player.y;
-            for (let e of enemies) {
-                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
-                    const dmgInfo = calculateDamage(atk.baseDamage);
-                    e.hp -= dmgInfo.amount * dt * 4 * e.damageTaken;
-                    if (Math.random() < 0.08) spawnDamageText(e.x, e.y, dmgInfo);
-                    if (e.hp <= 0) killEnemy(e);
-                }
-            }
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                const dmgInfo = calculateDamage(atk.baseDamage);
+                e.hp -= dmgInfo.amount * dt * 4 * e.damageTaken;
+                if (Math.random() < 0.08) spawnDamageText(e.x, e.y, dmgInfo);
+                if (e.hp <= 0) killEnemy(e);
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'partycourse') {
             atk.life -= dt;
             atk.spin += dt * 11;
             atk.x = player.x; atk.y = player.y;
-            for (let e of enemies) {
-                if (Math.hypot(e.x - atk.x, e.y - atk.y) < atk.radius) {
-                    const dmgInfo = calculateDamage(atk.baseDamage);
-                    e.hp -= dmgInfo.amount * dt * 3.5 * e.damageTaken;
-                    if (Math.random() < 0.1) spawnDamageText(e.x, e.y, dmgInfo);
-                    if (e.hp <= 0) killEnemy(e);
-                }
-            }
+            forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
+                const dmgInfo = calculateDamage(atk.baseDamage);
+                e.hp -= dmgInfo.amount * dt * 3.5 * e.damageTaken;
+                if (Math.random() < 0.1) spawnDamageText(e.x, e.y, dmgInfo);
+                if (e.hp <= 0) killEnemy(e);
+            });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'flyingslash' || atk.type === 'collier' || atk.type === 'joueshot' || atk.type === 'poundho') {
             atk.currentRange += atk.speed * dt;
             const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
             const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
             const hitR = atk.type === 'poundho' ? 38 : 24;
-            for (let e of enemies) {
-                if (!atk.hitEnemies.has(e) && Math.hypot(e.x - endX, e.y - endY) < hitR) {
+            forEnemiesNear(endX, endY, hitR, function (e) {
+                if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
                     const dmgInfo = calculateDamage(atk.baseDamage);
                     e.hp -= dmgInfo.amount * e.damageTaken;
@@ -2346,7 +2398,7 @@ function update(dt) {
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
                     if (e.hp <= 0) killEnemy(e);
                 }
-            }
+            });
             if (atk.currentRange >= atk.maxRange) activeAttacks.splice(i, 1);
             if (Math.random() < 0.4) {
                 const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
@@ -2448,22 +2500,7 @@ function update(dt) {
         dtObj.life -= dt; dtObj.y -= 28 * dt;
         if (dtObj.life <= 0) damageTexts.splice(i, 1);
     }
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life -= dt;
-        if (p.shape === 'ring') {
-            p.size += 150 * dt;
-        } else {
-            p.x += p.vx * dt;
-            p.y += p.vy * dt;
-            p.vx *= 0.92;
-            p.vy *= 0.92;
-            if (p.grav) p.vy += p.grav * dt;
-        }
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-    // cap de partículas (VS usa pooling: evita acumulación en partidas largas)
-    if (particles.length > 600) particles.splice(0, particles.length - 600);
+    updateParticles(dt);
 
     document.getElementById('time-txt').innerText = formatTime(gameTime);
 }
@@ -2908,17 +2945,54 @@ function spawnBoss() {
     updateUI();
 }
 
+// === VS: eventos periodicos de oleada (cada ~90s sorpresa) ===
+function updateEvents(dt) {
+    if (!window.nextEventAt) window.nextEventAt = 70;
+    if (gameTime < window.nextEventAt) return;
+    window.nextEventAt = gameTime + 85 + Math.random() * 25;
+    const minutes = Math.floor(gameTime / 60);
+    const hpScale = Math.pow(1.28, minutes) * player.curse;
+    const kind = Math.random() < 0.5 ? 'ring' : 'charge';
+    if (kind === 'ring') {
+        // Emboscada: anillo de piratas cierra TODO el contorno hacia el jugador
+        window.spawnBanner = { text: '¡EMBOSCADA PIRATA!', life: 2.0, color: '#ef4444' };
+        playSound('levelup');
+        const n = 24 + minutes * 2;
+        for (let k = 0; k < n; k++) {
+            const ang = (Math.PI * 2 * k) / n;
+            let ex = player.x + Math.cos(ang) * 560, ey = player.y + Math.sin(ang) * 560;
+            if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
+            enemies.push({ x: ex, y: ey, type: 'grunt', hp: 32 * hpScale, maxHp: 32 * hpScale, speed: 110 + minutes * 10, damage: 16, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isEvent: true, name: 'X' });
+        }
+    } else {
+        // Carga de la Armada: filas cruzando el mapa desde un costado
+        window.spawnBanner = { text: '¡CARGA DE LA ARMADA!', life: 2.0, color: '#38bdf8' };
+        playSound('levelup');
+        const side = Math.random() < 0.5 ? -1 : 1;
+        const n = 20 + minutes * 2;
+        for (let k = 0; k < n; k++) {
+            let ex = player.x + side * 640, ey = player.y - 360 + k * 34;
+            if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
+            enemies.push({ x: ex, y: ey, type: 'shooter', hp: 48 * hpScale, maxHp: 48 * hpScale, speed: 70, damage: 16, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isEvent: true, name: 'X' });
+        }
+        for (let k = 0; k < 10; k++) {
+            let ex = player.x + side * 640, ey = player.y - 200 + k * 40;
+            if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
+            enemies.push({ x: ex, y: ey, type: 'inupen', hp: 70 * hpScale, maxHp: 70 * hpScale, speed: 130, damage: 18, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isEvent: true, name: 'X' });
+        }
+    }
+}
+
 function killEnemy(e) {
     if (e.isElite && (e.type === 'elite_shooter' || e.type === 'elite_tararan' || e.type === 'elite_kuma') && !e._exploded) {
         e._exploded = true;
         // explosion
-        for (let en of enemies) {
-            if (Math.hypot(en.x - e.x, en.y - e.y) < 80) {
-                en.hp -= 40;
-                spawnDamageText(en.x, en.y, { amount: 40, isCrit: false, isOvercrit: false });
-                if (en.hp <= 0) killEnemy(en);
-            }
-        }
+        forEnemiesNear(e.x, e.y, 80, function (en) {
+            if (en === e) return;
+            en.hp -= 40;
+            spawnDamageText(en.x, en.y, { amount: 40, isCrit: false, isOvercrit: false });
+            if (en.hp <= 0) killEnemy(en);
+        });
         // explosion visual
         activeAttacks.push({ type: 'bazooka', x: e.x, y: e.y, radius: 80, life: 0.3, maxLife: 0.3, baseDamage: 0 });
     }
@@ -2961,6 +3035,26 @@ function spawnDamageText(x, y, dmgInfo) {
         isOvercrit: dmgInfo.isOvercrit,
         life: 0.6
     });
+}
+
+// update de partículas compartido (update() principal + cutscene de evolución)
+function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= dt;
+        if (p.shape === 'ring') {
+            p.size += 150 * dt;
+        } else {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vx *= 0.92;
+            p.vy *= 0.92;
+            if (p.grav) p.vy += p.grav * dt;
+        }
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+    // cap de partículas (VS usa pooling: evita acumulación en partidas largas)
+    if (particles.length > 600) particles.splice(0, particles.length - 600);
 }
 
 // === Sistema de particulas pulido (estilo VS: formas con proposito) ===
@@ -3073,6 +3167,20 @@ function evolveWeapon(id) {
     else if (id === 'poundho') { sk.baseDamage *= 2.0; sk.range += 120; }
     else if (id === 'concasse') { sk.baseDamage *= 1.8; sk.radius += 25; }
     else if (id === 'partycourse') { sk.baseDamage *= 1.9; sk.radius += 35; sk.duration += 0.4; }
+    // VS: cutscene de evolución — el mundo se congela, lluvia de confetti y cartel
+    window._evolveCut = { life: 1.3 };
+    window.spawnBanner = { text: '◆ ¡' + EVOLUTIONS[id].name.toUpperCase() + ' ◆', life: 1.3, color: '#c084fc' };
+    playSound('levelup');
+    cameraShake = 2;
+    // burst inicial: anillo + confetti de 5 colores
+    fxRing(player.x, player.y, '#c084fc', 24, 0.9);
+    fxOrb(player.x, player.y, '#ffffff', 26, 0.6);
+    const confettiCols = ['#f43f5e', '#facc15', '#38bdf8', '#a78bfa', '#ffffff'];
+    for (let k = 0; k < 30; k++) {
+        particles.push({ x: player.x + (Math.random() * 160 - 80), y: player.y - 30 - Math.random() * 50,
+            vx: (Math.random() - 0.5) * 160, vy: -60 + Math.random() * 120,
+            life: 1.1, maxLife: 1.1, color: confettiCols[k % 5], shape: 'star', size: 2.5 + Math.random() * 3.5, grav: 170 });
+    }
 }
 function checkEvolutions() {
     // Se llama SOLO al abrir cofres capaces de evolucionar (VS: cofres de plata)

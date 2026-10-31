@@ -12,7 +12,8 @@
 ## Sprites ya integrados (local)
 - assets/extracted/<personaje>_gba/ (extraídos de los PNG locales)
 - assets/sprites/ (representativos para el juego)
+- source-art/ (hojas originales y frames limpios; no se cargan en el juego)
 
 ## Notas
-- Si se descargan nuevos sheets, procesar con extract.py (tratar fondo como transparente).
-- Añadir nuevos personajes a CHAR_ANIMS y SPRITE_PATHS en OPSURVIVOR.html.
+- Si se descargan nuevos sheets, procesar con source-art/process_animations.py (tratar fondo como transparente).
+- Añadir nuevos personajes a CHAR_ANIMS y SPRITE_PATHS en js/core.js.

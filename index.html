@@ -570,8 +570,26 @@
             white-space: nowrap;
         }
         .char-card.selected .char-bounty { background: #7a4a08; color: #fff2c0; }
-        .char-locked-label {
-            font-size: 12px; letter-spacing: 1px; color: #7a4a08; font-weight: 700;
+        .char-card.locked img { filter: grayscale(0.8) brightness(0.5); }
+        .char-locked-overlay {
+            position: absolute; inset: 0; z-index: 3;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.45);
+            pointer-events: none;
+        }
+        .char-locked-banner {
+            background: linear-gradient(135deg, #f43f5e, #be123c);
+            color: #fff;
+            font-family: 'Bangers', sans-serif;
+            font-size: 16px;
+            letter-spacing: 2px;
+            padding: 6px 18px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            transform: rotate(-18deg);
+            text-shadow: 0 1px 2px #000;
+            white-space: nowrap;
         }
 
         /* --- Botones de mapa: fichas de isla --- */
@@ -1206,16 +1224,14 @@ function refreshCharCards() {
     document.querySelectorAll('#char-select .char-card').forEach(b => {
         const unlocked = meta.unlocked[b.dataset.char];
         b.classList.toggle('locked', !unlocked);
-        let label = b.querySelector('.char-locked-label');
-        if (!unlocked && !label) {
-            const tag = document.createElement('span');
-            tag.className = 'char-locked-label';
-            tag.innerHTML = `${ICONS.lock} BLOQUEADO — TIENDA ฿1000`;
-            b.appendChild(tag);
-            b.querySelector('.char-bounty').style.display = 'none';
-        } else if (unlocked && label) {
-            label.remove();
-            b.querySelector('.char-bounty').style.display = '';
+        let overlay = b.querySelector('.char-locked-overlay');
+        if (!unlocked && !overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'char-locked-overlay';
+            overlay.innerHTML = '<span class="char-locked-banner">BLOQUEADO — TIENDA ฿1000</span>';
+            b.appendChild(overlay);
+        } else if (unlocked && overlay) {
+            overlay.remove();
         }
     });
 }

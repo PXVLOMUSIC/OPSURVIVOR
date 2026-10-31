@@ -1916,7 +1916,13 @@ const skills = {
     partycourse: { level: 0, baseDamage: 9, cooldown: 4.2, timer: 0, radius: 90, duration: 1.6, evolved: false },
     // Armas compartidas (disponibles para todos los personajes)
     cuchillo: { level: 0, baseDamage: 14, cooldown: 1.0, timer: 0, range: 220, evolved: false },
-    granada: { level: 0, baseDamage: 38, cooldown: 5.0, timer: 0, radius: 60, evolved: false }
+    granada: { level: 0, baseDamage: 38, cooldown: 5.0, timer: 0, radius: 60, evolved: false },
+    rifle: { level: 0, baseDamage: 22, cooldown: 1.4, timer: 0, range: 320, evolved: false },
+    ballesta: { level: 0, baseDamage: 28, cooldown: 2.8, timer: 0, range: 400, speed: 620, evolved: false },
+    lanza: { level: 0, baseDamage: 18, cooldown: 0.7, timer: 0, range: 90, evolved: false },
+    hacha: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, radius: 70, evolved: false },
+    shuriken: { level: 0, baseDamage: 16, cooldown: 1.8, timer: 0, range: 280, speed: 560, evolved: false },
+    hakiPulse: { level: 0, baseDamage: 12, cooldown: 4.0, timer: 0, radius: 90, duration: 1.0, evolved: false }
 };
 
 let enemies = [];
@@ -2181,7 +2187,7 @@ function mergeRunStats() {
     // VS: snapshot de la Ficha de Singladura (resumen estilo WANTED) — ANTES del merge
     const pool = window.UPGRADE_POOL_MAP || {};
     // fallback si todavia paso por ninguna pantalla de mejoras (nivel bajo)
-    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gear 2', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
+    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gear 2', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', rifle:'Rifle de la Marina', ballesta:'Ballesta', lanza:'Lanza de Abordaje', hacha:'Hacha Pirata', shuriken:'Shuriken', hakiPulse:'Pulso de Haoshoku', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
     const charNames = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji' };
     const mapNames = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea' };
     window.lastRun = {
@@ -2488,7 +2494,7 @@ function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
     if (!wEl || !pEl) return;
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
     const icons = ICONS;
     wEl.innerHTML = '';
@@ -2613,6 +2619,12 @@ function resetGame() {
     // Armas compartidas (disponibles para todos los personajes)
     skills.cuchillo.level = 0; skills.cuchillo.baseDamage = 14; skills.cuchillo.evolved = false;
     skills.granada.level = 0; skills.granada.baseDamage = 38; skills.granada.evolved = false;
+    skills.rifle.level = 0; skills.rifle.baseDamage = 22; skills.rifle.evolved = false;
+    skills.ballesta.level = 0; skills.ballesta.baseDamage = 28; skills.ballesta.evolved = false;
+    skills.lanza.level = 0; skills.lanza.baseDamage = 18; skills.lanza.evolved = false;
+    skills.hacha.level = 0; skills.hacha.baseDamage = 60; skills.hacha.evolved = false;
+    skills.shuriken.level = 0; skills.shuriken.baseDamage = 16; skills.shuriken.evolved = false;
+    skills.hakiPulse.level = 0; skills.hakiPulse.baseDamage = 12; skills.hakiPulse.evolved = false;
 
     enemies = []; enemyBullets = []; drops = []; particles = []; damageTexts = []; activeAttacks = [];
     gameTime = 0; scoreBeli = 0; bossSpawned = false;
@@ -3193,6 +3205,125 @@ function handleAttacks(dt) {
             });
             fxRing(bx, by, '#f43f5e', 22, 0.4);
             fxSpark(bx, by, '#fb923c', 8, 120, 0.35, 2, 70);
+            player.attackTimer = 0.2;
+        }
+    }
+
+    // Arma compartida: Rifle (disparo preciso a largo alcance)
+    if (skills.rifle.level > 0) {
+        skills.rifle.timer += dt;
+        if (skills.rifle.timer >= skills.rifle.cooldown * cdMult) {
+            skills.rifle.timer = 0;
+            player.attackTimer = 0.25;
+            let target = getNearestEnemy();
+            let angle = player.facing === 1 ? 0 : Math.PI;
+            if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
+            playSound('pistol');
+            activeAttacks.push({
+                type: 'pistol', startX: player.x, startY: player.y,
+                angle: angle, speed: 900, currentRange: 0,
+                maxRange: skills.rifle.range * player.areaBonus,
+                baseDamage: skills.rifle.baseDamage,
+                hitEnemies: new Set()
+            });
+        }
+    }
+
+    // Arma compartida: Ballesta (virote perforante)
+    if (skills.ballesta.level > 0) {
+        skills.ballesta.timer += dt;
+        if (skills.ballesta.timer >= skills.ballesta.cooldown * cdMult) {
+            skills.ballesta.timer = 0;
+            player.attackTimer = 0.25;
+            let target = getNearestEnemy();
+            let angle = player.facing === 1 ? 0 : Math.PI;
+            if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
+            playSound('slash');
+            activeAttacks.push({
+                type: 'poundho', startX: player.x, startY: player.y,
+                angle: angle, speed: skills.ballesta.speed, currentRange: 0,
+                maxRange: skills.ballesta.range * player.areaBonus,
+                baseDamage: skills.ballesta.baseDamage,
+                hitEnemies: new Set()
+            });
+        }
+    }
+
+    // Arma compartida: Lanza de abordaje (estocada rápida)
+    if (skills.lanza.level > 0) {
+        skills.lanza.timer += dt;
+        if (skills.lanza.timer >= skills.lanza.cooldown * cdMult) {
+            skills.lanza.timer = 0;
+            player.attackTimer = 0.2;
+            let target = getNearestEnemy();
+            let angle = player.facing === 1 ? 0 : Math.PI;
+            if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
+            playSound('slash');
+            activeAttacks.push({
+                type: 'collier', startX: player.x, startY: player.y,
+                angle: angle, speed: 700, currentRange: 0,
+                maxRange: skills.lanza.range * player.areaBonus,
+                baseDamage: skills.lanza.baseDamage,
+                hitEnemies: new Set()
+            });
+        }
+    }
+
+    // Arma compartida: Hacha pirata (tajo pesado en área)
+    if (skills.hacha.level > 0) {
+        skills.hacha.timer += dt;
+        if (skills.hacha.timer >= skills.hacha.cooldown * cdMult) {
+            skills.hacha.timer = 0;
+            let target = getNearestEnemy();
+            let bx = target ? target.x : player.x;
+            let by = target ? target.y : player.y;
+            playSound('boom');
+            activeAttacks.push({
+                type: 'bazooka', x: bx, y: by,
+                radius: skills.hacha.radius * player.areaBonus,
+                life: 0.35, maxLife: 0.35,
+                baseDamage: skills.hacha.baseDamage,
+                hitEnemies: new Set()
+            });
+            fxRing(bx, by, '#f43f5e', 20, 0.4);
+            player.attackTimer = 0.2;
+        }
+    }
+
+    // Arma compartida: Shuriken (proyectil arrojadizo)
+    if (skills.shuriken.level > 0) {
+        skills.shuriken.timer += dt;
+        if (skills.shuriken.timer >= skills.shuriken.cooldown * cdMult) {
+            skills.shuriken.timer = 0;
+            player.attackTimer = 0.2;
+            let target = getNearestEnemy();
+            let angle = player.facing === 1 ? 0 : Math.PI;
+            if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
+            playSound('slash');
+            activeAttacks.push({
+                type: 'flyingslash', startX: player.x, startY: player.y,
+                angle: angle, speed: skills.shuriken.speed, currentRange: 0,
+                maxRange: skills.shuriken.range * player.areaBonus,
+                baseDamage: skills.shuriken.baseDamage,
+                hitEnemies: new Set()
+            });
+        }
+    }
+
+    // Arma compartida: Pulso de Haoshoku (onda de Haki)
+    if (skills.hakiPulse.level > 0) {
+        skills.hakiPulse.timer += dt;
+        if (skills.hakiPulse.timer >= skills.hakiPulse.cooldown * cdMult) {
+            skills.hakiPulse.timer = 0;
+            playSound('haoshoku');
+            activeAttacks.push({
+                type: 'tatsumaki', x: player.x, y: player.y,
+                radius: skills.hakiPulse.radius * player.areaBonus,
+                duration: skills.hakiPulse.duration, life: skills.hakiPulse.duration,
+                baseDamage: skills.hakiPulse.baseDamage,
+                hitEnemies: new Set()
+            });
+            fxRing(player.x, player.y, '#a78bfa', 22, 0.5);
             player.attackTimer = 0.2;
         }
     }
@@ -3935,7 +4066,7 @@ function showUpgradeScreen(count, isChest) {
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
@@ -3960,6 +4091,12 @@ function showUpgradeScreen(count, isChest) {
         { id: 'partycourse', type: 'weapon', chars: ['sanji'], title: 'Party Table Kick Course', icon: ICONS.partycourse, desc: 'Tanda de patadas giratorias en 360 grados: limpieza masiva.' },
         { id: 'cuchillo', type: 'weapon', chars: 'all', title: 'Cuchillo de Marina', icon: ICONS.pistol, desc: 'Arma compartida: disparo rápido a un enemigo.' },
         { id: 'granada', type: 'weapon', chars: 'all', title: 'Granada de Mano', icon: ICONS.bazooka, desc: 'Arma compartida: explosión en área.' },
+        { id: 'rifle', type: 'weapon', chars: 'all', title: 'Rifle de la Marina', icon: ICONS.pistol, desc: 'Arma compartida: disparo preciso a largo alcance.' },
+        { id: 'ballesta', type: 'weapon', chars: 'all', title: 'Ballesta', icon: ICONS.poundho, desc: 'Arma compartida: virote que perfora en línea recta.' },
+        { id: 'lanza', type: 'weapon', chars: 'all', title: 'Lanza de Abordaje', icon: ICONS.collier, desc: 'Arma compartida: estocada rápida a corta distancia.' },
+        { id: 'hacha', type: 'weapon', chars: 'all', title: 'Hacha Pirata', icon: ICONS.concasse, desc: 'Arma compartida: tajo pesado en área cercana.' },
+        { id: 'shuriken', type: 'weapon', chars: 'all', title: 'Shuriken', icon: ICONS.flyingslash, desc: 'Arma compartida: proyectil arrojadizo veloz.' },
+        { id: 'hakiPulse', type: 'weapon', chars: 'all', title: 'Pulso de Haoshoku', icon: ICONS.tatsumaki, desc: 'Arma compartida: onda de Haki que daña a los cercanos.' },
         { id: 'haki_buso', type: 'passive', chars: 'all', title: 'Busoshoku Haki', icon: ICONS.haki_buso, desc: 'Aumenta daño y armadura.' },
         { id: 'haki_ken', type: 'passive', chars: 'all', title: 'Kenbunshoku Haki', icon: ICONS.haki_ken, desc: 'Aumenta crit y evasión.' },
         { id: 'haki_hao', type: 'passive', chars: 'all', title: 'Haoshoku Haki', icon: ICONS.haki_hao, desc: 'Pulso cada 6s que aturde 1.5s a los enemigos cercanos (no bosses).' },
@@ -4192,6 +4329,30 @@ function selectUpgrade(id) {
     else if (id === 'granada') {
         skills.granada.level = Math.min(5, skills.granada.level + 1);
         skills.granada.baseDamage += 12; skills.granada.radius += 6;
+    }
+    else if (id === 'rifle') {
+        skills.rifle.level = Math.min(5, skills.rifle.level + 1);
+        skills.rifle.baseDamage += 10; skills.rifle.range += 20;
+    }
+    else if (id === 'ballesta') {
+        skills.ballesta.level = Math.min(5, skills.ballesta.level + 1);
+        skills.ballesta.baseDamage += 12; skills.ballesta.range += 30;
+    }
+    else if (id === 'lanza') {
+        skills.lanza.level = Math.min(5, skills.lanza.level + 1);
+        skills.lanza.baseDamage += 9; skills.lanza.range += 8;
+    }
+    else if (id === 'hacha') {
+        skills.hacha.level = Math.min(5, skills.hacha.level + 1);
+        skills.hacha.baseDamage += 20; skills.hacha.radius += 6;
+    }
+    else if (id === 'shuriken') {
+        skills.shuriken.level = Math.min(5, skills.shuriken.level + 1);
+        skills.shuriken.baseDamage += 7; skills.shuriken.range += 20;
+    }
+    else if (id === 'hakiPulse') {
+        skills.hakiPulse.level = Math.min(5, skills.hakiPulse.level + 1);
+        skills.hakiPulse.baseDamage += 6; skills.hakiPulse.radius += 8;
     }
     else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
     else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }

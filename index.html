@@ -676,20 +676,14 @@
                 </div>
             </div>
 
-            <div class="stats-panel">
-                <div><span class="op-slot" data-ico="power"></span> Poder: <b id="stat-power">+0%</b></div>
-                <div><span class="op-slot" data-ico="crit"></span> Crítico: <b id="stat-crit">5%</b></div>
-                <div><span class="op-slot" data-ico="cd"></span> Cooldown: <b id="stat-cd">-0%</b></div>
-                <div><span class="op-slot" data-ico="armor"></span> Armadura: <b id="stat-armor">0%</b></div>
-            </div>
-
             <div class="stats-box">
                 <div class="stat-item">฿ <span id="score-txt">0</span> Beli</div>
-                <div class="stat-item" style="font-size: 13px; color: #94a3b8; margin-top: 4px;">
-                    <span data-ico="clock"></span> <span id="time-txt">00:00</span>
-                </div>
                 <button id="pause-btn" onclick="togglePause()" style="display:none; background:rgba(28,17,7,0.95); border:2px solid #b45309; color:#f6e2b8; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:14px; margin-top:8px; width:100%; text-align:center;"><span data-ico="pauseIco"></span> Pausa</button>
             </div>
+        </div>
+
+        <div id="time-top" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:6; background:rgba(28,17,7,0.88); border:2px solid #b45309; border-radius:10px; padding:4px 16px; color:#facc15; font-family:'Bangers',sans-serif; font-size:22px; letter-spacing:2px; text-shadow:0 1px 2px #000; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.6);">
+            <span data-ico="clock"></span> <span id="time-txt">00:00</span>
         </div>
 
         <div id="joystick-zone"><div id="joystick-knob"></div></div>
@@ -706,6 +700,12 @@
                 <div id="pause-weapons" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;"></div>
                 <h3 style="color:#3d2314; font-size:14px; margin:10px 0 6px;">PASIVAS</h3>
                 <div id="pause-passives" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;"></div>
+            </div>
+            <div class="stats-panel" style="margin: 8px auto; max-width: 320px;">
+                <div><span class="op-slot" data-ico="power"></span> Poder: <b id="stat-power">+0%</b></div>
+                <div><span class="op-slot" data-ico="crit"></span> Crítico: <b id="stat-crit">5%</b></div>
+                <div><span class="op-slot" data-ico="cd"></span> Cooldown: <b id="stat-cd">-0%</b></div>
+                <div><span class="op-slot" data-ico="armor"></span> Armadura: <b id="stat-armor">0%</b></div>
             </div>
             <div class="wanted-title" style="font-size: 32px;">PAUSA</div>
             <div class="wanted-subtitle">JUEGO EN PAUSA</div>
@@ -2808,7 +2808,7 @@ function update(dt) {
             player.hitTimer = 0.12;
             // VS: destello rojo + sacudida MUY breve (pulso con cooldown, no constante)
             if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
-            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 0.85); player._hurtShakeCd = 0.35; }
+            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.4); player._hurtShakeCd = 0.35; }
             if (!player._dmgSoundCd || player._dmgSoundCd <= 0) { playSound('hurt'); player._dmgSoundCd = 0.25; }
             if (player.hp <= 0) { triggerGameOver(); return; }
             updateUI();
@@ -2832,7 +2832,7 @@ function update(dt) {
             const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion);
             player.hp -= b.damage * dmgMult; player.hitTimer = 0.12; playSound('hurt'); updateUI();
             if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
-            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 0.85); player._hurtShakeCd = 0.35; }
+            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.4); player._hurtShakeCd = 0.35; }
             enemyBullets.splice(i, 1);
             if (player.hp <= 0) { triggerGameOver(); return; }
             continue;
@@ -5049,7 +5049,7 @@ function render() {
     let vignetteAlpha = 0;
     if (player._hurtFlash > 0) {
         const fa = Math.max(0, Math.min(1, player._hurtFlash / 0.35));
-        vignetteAlpha += 0.26 * fa * flashMult;
+        vignetteAlpha += 0.45 * fa * flashMult;
     }
     if (hpPctNow > 0 && hpPctNow <= 0.3) {
         // latido suave ~1Hz entre alpha 0.09 y 0.15

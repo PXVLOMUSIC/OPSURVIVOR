@@ -1,6 +1,7 @@
 // Simulador de balance: un bot juega partidas completas en Chromium headless y mide winrate.
 // Requisitos: servir el repo (python3 -m http.server 8765) y tener Playwright.
-// Uso: node tools/balance-sim.js http://localhost:8765/index.html <partidas por combo> <mejoras: 0 nada | 2 medias | 1 todas> [personajes] [mapas] [paralelo] 2> runs.log
+// Uso: node tools/balance-sim.js http://localhost:8765/index.html <partidas por combo> <mejoras: 0 nada | 2 medias | 1 todas> [personajes] [mapas] [paralelo] [gear max 2-5] 2> runs.log
+// El bot activa el Gear de Luffy en cuanto el medidor está lleno. [gear max] fija los Gears desbloqueados (por defecto 2).
 //      python3 tools/balance-report.py runs.log
 const { chromium } = require('playwright');
 const URL_ = process.argv[2];
@@ -9,21 +10,24 @@ const META = +process.argv[4] || 0;
 const CHARS = (process.argv[5] || 'luffy,zoro,sanji').split(',');
 const MAPS = (process.argv[6] || 'baratie,alabasta,skypiea,thrillerbark').split(',');
 const PAR = +process.argv[7] || 8;
+const GEAR = +process.argv[8] || 2;
+// [forzar] = 'evo': a partir del minuto 4 Luffy tiene la carta Gears evolucionada (mide el techo de Gear 4/5)
+const FORCE_EVO = process.argv[9] === 'evo';
 
 async function runOne(browser, ch, map, meta) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
-    await page.addInitScript(({ meta }) => {
-        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true } };
+    await page.addInitScript(({ meta, gear }) => {
+        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true }, gear: { unlocked: gear, up: { meter: 0, charge: 0, recover: 0 } } };
         if (meta === 2) Object.assign(m.upgrades, { damage: 5, hp: 5, speed: 3, area: 3, cooldown: 5, armor: 5, luck: 3, pickup: 3, growth: 3, revival: 0, reroll: 0, skip: 0, banish: 0 });
         else if (meta) Object.assign(m.upgrades, { damage: 10, hp: 10, speed: 10, area: 10, cooldown: 10, armor: 10, luck: 10, pickup: 10, growth: 10, revival: 1, greed: 10, curse: 0, reroll: 10, skip: 10, banish: 10 });
         localStorage.setItem('op_survivor_meta', JSON.stringify(m));
         window.requestAnimationFrame = () => 0;
-    }, { meta });
+    }, { meta, gear: GEAR });
     page.on('pageerror', e => console.error('ERR', ch, map, e.message));
     await page.goto(URL_);
     await page.waitForFunction(() => typeof startGame === 'function' && assetsLoaded, null, { timeout: 60000 }).catch(() => {});
-    const res = await page.evaluate(async ({ ch, map }) => {
+    const res = await page.evaluate(async ({ ch, map, forceEvo }) => {
         window.playSound = () => {}; window.updateMusic = () => {};
         selectedCharacter = ch; selectedMap = map; runCurseRank = 0;
         startGame();
@@ -52,6 +56,7 @@ async function runOne(browser, ch, map, meta) {
         const DT = 1 / 30;
         const samples = [];
         let t0 = performance.now();
+        const gu = {};
         let maxOn = 0, lastSample = 0, minHp = 999, dmgTaken = 0, lastHp = player.hp;
         const src = {}; let wTime = 0, kills = 0, bossT = null, bossDead = null;
         while (true) {
@@ -93,6 +98,8 @@ async function runOne(browser, ch, map, meta) {
             }
             const ml = Math.hypot(mx, my);
             joystick.active = ml > 0.05; joystick.dx = ml ? mx / ml : 0; joystick.dy = ml ? my / ml : 0;
+            if (forceEvo && ch === 'luffy' && gameTime > 240 && !skills.gear2.evolved) { skills.gear2.level = 5; skills.gear2.evolved = true; }
+            if (ch === 'luffy' && typeof gearReady === 'function' && gearReady()) { const gv = gearAvailable(); gearActivate(); gu[gv] = (gu[gv] || 0) + 1; }
             const preHp = player.hp;
             update(DT);
             { const loss = preHp - player.hp; if (loss > 0) { let big = enemies.some(e => (e.isBoss||e.isMiniboss) && Math.hypot(e.x-player.x,e.y-player.y) < 40); let c = enemies.filter(e => Math.hypot(e.x-player.x,e.y-player.y) < 22).length; const key = big ? 'boss' : (c ? (c >= 5 ? 'swarm' : 'contact') : 'bullet'); src[key] = (src[key]||0) + loss; } }
@@ -113,9 +120,10 @@ async function runOne(browser, ch, map, meta) {
         const boss = enemies.find(e => e.isBoss);
         return { ch, map, state: gameState, time: Math.round(gameTime), lvl: player.level, kills, minHp: Math.round(minHp), src: Object.fromEntries(Object.entries(src).map(([k,v])=>[k,Math.round(v)])),
             maxOn, dmgTaken: Math.round(dmgTaken), bossHpLeft: boss ? Math.round(boss.hp / boss.maxHp * 100) : null,
+            gearMax: (typeof meta !== 'undefined' && meta.gear) ? meta.gear.unlocked : null, gearUses: gu,
             weapons: Object.keys(skills).filter(k => skills[k].level > 0).map(k => k + skills[k].level + (skills[k].evolved ? '*' : '')).join(' '),
             samples, realMs: Math.round(performance.now() - t0) };
-    }, { ch, map });
+    }, { ch, map, forceEvo: FORCE_EVO });
     await ctx.close();
     return res;
 }
@@ -126,7 +134,7 @@ async function runOne(browser, ch, map, meta) {
     for (const ch of CHARS) for (const map of MAPS) for (let i = 0; i < RUNS; i++) jobs.push([ch, map]);
     const out = [];
     let idx = 0;
-    async function worker() { while (idx < jobs.length) { const j = jobs[idx++]; try { const r = await runOne(browser, j[0], j[1], META); out.push(r); console.error(JSON.stringify({ ch: r.ch, map: r.map, st: r.state, t: r.time, lvl: r.lvl, k: r.kills, on: r.maxOn, boss: r.bossHpLeft })); } catch (e) { console.error('fail', j, e.message); } } }
+    async function worker() { while (idx < jobs.length) { const j = jobs[idx++]; try { const r = await runOne(browser, j[0], j[1], META); out.push(r); console.error(JSON.stringify({ ch: r.ch, map: r.map, st: r.state, t: r.time, lvl: r.lvl, k: r.kills, on: r.maxOn, boss: r.bossHpLeft, gears: r.gearUses })); } catch (e) { console.error('fail', j, e.message); } } }
     await Promise.all(Array.from({ length: PAR }, worker));
     await browser.close();
     console.log(JSON.stringify(out));

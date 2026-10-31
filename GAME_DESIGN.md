@@ -75,5 +75,7 @@ Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frame
 ## Gears de Luffy (js/gears.js)
 - La carta "Gears" (id interno `gear2`) ocupa un solo slot. Llena un medidor (kills + carga pasiva) que se activa con ESPACIO o con el botón G.
 - Techo dentro de la partida: carta nv1 → G2, nv3 → G3, evolución → G4, G4 + minuto 6 → G5 (que se recarga en 3 min).
-- Efectos: G2 da +vel., −40% CD y drena vida. G3 da daño ×1.6, área ×1.6 y Elephant Gun; al acabar, Luffy queda encogido 4 s. G4 da daño ×1.8, −50% daño recibido y Kong Gun; al acabar, agotado 10 s. G5 da daño ×2.2, invulnerabilidad, enemigos al 50% de velocidad, Bajrang Gun y Dawn Whip; al acabar, agotado 12 s y vida máxima al 40%.
+- Efectos: G2 da +vel., −40% CD y drena vida. G3 da daño ×1.6, área ×1.6 y Elephant Gun (puño de Gigant Battle); al acabar, Luffy queda encogido 4 s (daño ×0.7, velocidad ×0.8). G4 da daño ×2.2, CD ×0.7, −50% daño recibido y Kong Gun; al acabar, agotado 8 s (velocidad ×0.8, CD ×1.3). G5 da daño ×2.6, CD ×0.6, invulnerabilidad, enemigos al 50% de velocidad, Bajrang Gun y Dawn Whip; al acabar, agotado 12 s.
+- Sprites: G4 (Boundman, Great Pirate Colosseum 3DS) y G5 (TheCube513) en assets/sprites/gears; G2 conserva el sprite base con piel rosada y vapor.
+- Balance medido con bot (tools/balance-sim.js, argumentos [gear max] y 'evo'): Luffy 73% solo con G2, 79% con todos los Gears desbloqueados; con la carta evolucionada desde el minuto 4, G2 y G4/G5 quedan parejos (90% y 89%).
 - Persistente (`meta.gear`): G3, G4 y G5 se desbloquean con logros (ganar con Luffy; ganar con Luffy en Clima 2 o más; ganar con Luffy en Clima 4). La tienda vende 3 mejoras menores (medidor inicial, carga y recuperación) que no dan daño.

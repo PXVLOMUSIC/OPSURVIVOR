@@ -31,6 +31,30 @@ function gearMetaInit() {
     if (meta.stats && meta.stats.luffyBestCurse === undefined) meta.stats.luffyBestCurse = -1;
 }
 
+// ---- sprites reales (assets/sprites/gears) ----
+// G4 Boundman: Great Pirate Colosseum (3DS). G5: hoja de TheCube513 (fan sprite).
+// G3: puño gigante y Luffy encogido de Gigant Battle (DS). G2 usa el sprite base con piel rosada y vapor, como en el anime.
+const GEAR_SPR = (function () {
+    const L = (n, c) => Array.from({ length: c }, (_, i) => { const im = new Image(); im.src = 'assets/sprites/gears/' + n + '_' + i + '.png'; return im; });
+    const fist = new Image(); fist.src = 'assets/sprites/gears/g3_fist.png';
+    return {
+        4: { idle: L('g4_idle', 6), walk: L('g4_idle', 6), attack: L('g4_attack', 3), h: 78, fps: 9 },
+        5: { idle: L('g5_idle', 3), walk: L('g5_walk', 8), attack: L('g5_attack', 3), h: 76, fps: 8 },
+        chibi: { idle: L('g3_chibi', 3), walk: L('g3_chibi', 3), attack: L('g3_chibi', 3), h: 24, fps: 6 },
+        fist
+    };
+})();
+// Frame del Gear actual, o null si se dibuja el sprite normal de Luffy
+function gearSpriteFrame() {
+    if (!gearIsLuffy()) return null;
+    const set = gearState.active >= 4 ? GEAR_SPR[gearState.active] : (gearState.penalty === 'chibi' ? GEAR_SPR.chibi : null);
+    if (!set) return null;
+    const st = player.animState === 'attack' ? 'attack' : (player.animState === 'walk' ? 'walk' : 'idle');
+    const arr = set[st];
+    const img = arr[Math.floor(performance.now() / 1000 * set.fps) % arr.length];
+    return (img && img.complete && img.naturalWidth) ? { img, h: set.h } : null;
+}
+
 // ---- estado de la partida ----
 const gearState = { meter: 0, active: 0, remain: 0, penalty: null, penaltyRemain: 0, g5cd: 0, atkTimer: 0, fx: [], areaMul: 1, steam: 0 };
 
@@ -95,10 +119,10 @@ function gearEnd() {
     const rec = 1 - 0.15 * gearUp('recover');
     // coste canon de cada Gear
     if (g === 3) { gearState.penalty = 'chibi'; gearState.penaltyRemain = 4 * rec; window.spawnBanner = { text: '¡LUFFY ENCOGIDO!', life: 1.2, color: '#fb923c' }; }
-    else if (g === 4) { gearState.penalty = 'exhausted'; gearState.penaltyRemain = 10 * rec; window.spawnBanner = { text: '¡SIN HAKI! AGOTADO', life: 1.4, color: '#94a3b8' }; }
+    else if (g === 4) { gearState.penalty = 'exhausted'; gearState.penaltyRemain = 8 * rec; window.spawnBanner = { text: '¡SIN HAKI! AGOTADO', life: 1.4, color: '#94a3b8' }; }
     else if (g === 5) {
         gearState.penalty = 'exhausted'; gearState.penaltyRemain = 12 * rec;
-        player.hp = Math.min(player.hp, player.maxHp * 0.4);
+        // canon: el coste es el agotamiento (Luffy arrugado y sin fuerzas), no perder vida
         window.spawnBanner = { text: 'NIKA SE APAGA... AGOTADO', life: 1.6, color: '#94a3b8' };
     }
     fxRing(player.x, player.y, '#94a3b8', 18, 0.5);
@@ -175,7 +199,7 @@ function gearTarget() {
 function gearElephantGun() {
     const t = gearTarget(); if (!t) { gearState.atkTimer = 0.3; return; }
     const r = 95 * player.areaBonus;
-    gearState.fx.push({ kind: 'fist', x0: player.x, y0: player.y, x: t.x, y: t.y, r: r * 0.55, color: '#fb923c', life: 0.35, max: 0.35 });
+    gearState.fx.push({ kind: 'fist', spr: true, x0: player.x, y0: player.y, x: t.x, y: t.y, r: r * 0.55, color: '#fb923c', life: 0.35, max: 0.35 });
     gearHitArea(t.x, t.y, r, 80 + 20 * gearCardLevel(), 60);
     fxRing(t.x, t.y, '#fb923c', r * 0.4, 0.45);
     fxSpark(t.x, t.y, '#fdba74', 14, 200, 0.4, 3, 60);
@@ -208,8 +232,8 @@ function gearBajrangGun() {
 // ---- modificadores que lee el bucle principal ----
 function gearDamageMult() {
     const g = gearState.active;
-    let m = g === 2 ? 1.15 : g === 3 ? 1.6 : g === 4 ? 1.8 : g === 5 ? 2.2 : 1;
-    if (gearState.penalty === 'chibi') m *= 0.5;
+    let m = g === 2 ? 1.15 : g === 3 ? 1.6 : g === 4 ? 2.2 : g === 5 ? 2.6 : 1;
+    if (gearState.penalty === 'chibi') m *= 0.7;
     return m;
 }
 function gearSpeedMult() {
@@ -218,14 +242,15 @@ function gearSpeedMult() {
     if (g === 2) m = 1 + (skills.gear2.speedBonus || 0.3);
     else if (g === 4) m = 1.2;
     else if (g === 5) m = 1.3;
-    if (gearState.penalty === 'chibi') m *= 0.6;
-    else if (gearState.penalty === 'exhausted') m *= 0.5;
+    if (gearState.penalty === 'chibi') m *= 0.8;
+    else if (gearState.penalty === 'exhausted') m *= 0.8; // sin Haki y sin aire (medido con bot: x0.5 lo hacía perder)
     return m;
 }
 function gearCdMult() {
     const g = gearState.active;
-    let m = g === 2 ? 0.6 : g === 3 ? 1.15 : g === 5 ? 0.8 : 1;
-    if (gearState.penalty === 'exhausted') m *= 2.5;
+    // cada Gear supera al anterior (medido con bot): con 1.15/1.0 el G3 y el G4 rendían menos que el G2
+    let m = g === 2 ? 0.6 : g === 3 ? 1.0 : g === 4 ? 0.7 : g === 5 ? 0.6 : 1;
+    if (gearState.penalty === 'exhausted') m *= 1.3;
     return m;
 }
 function gearDamageTakenMult() {
@@ -262,13 +287,15 @@ function gearDrawAura(ctx) {
 function gearSpriteTransform(ctx) {
     const g = gearState.active;
     const t = performance.now() / 1000;
+    // con sprite propio (G4, G5, encogido) no se reescala ni se tiñe: solo el rebote
+    const spr = !!gearSpriteFrame();
     if (g === 3) ctx.scale(1.15, 1.15);
-    else if (g === 4) { ctx.translate(0, -Math.abs(Math.sin(t * 7)) * 12); ctx.scale(1.35, 1.35); }
-    else if (g === 5) { ctx.translate(0, Math.sin(t * 4) * 4); ctx.scale(1.3, 1.3); }
-    else if (gearState.penalty === 'chibi') ctx.scale(0.62, 0.62);
+    else if (g === 4) { ctx.translate(0, -Math.abs(Math.sin(t * 7)) * 12); if (!spr) ctx.scale(1.35, 1.35); }
+    else if (g === 5) { ctx.translate(0, Math.sin(t * 4) * 4); if (!spr) ctx.scale(1.3, 1.3); }
+    else if (gearState.penalty === 'chibi' && !spr) ctx.scale(0.62, 0.62);
     if (g === 2) ctx.filter = 'saturate(1.6) hue-rotate(-15deg) brightness(1.1)';
-    else if (g === 4) ctx.filter = 'brightness(0.55) sepia(0.6) saturate(3) hue-rotate(-35deg)';
-    else if (g === 5) ctx.filter = 'grayscale(1) brightness(1.9) contrast(1.1)';
+    else if (g === 4 && !spr) ctx.filter = 'brightness(0.55) sepia(0.6) saturate(3) hue-rotate(-35deg)';
+    else if (g === 5 && !spr) ctx.filter = 'grayscale(1) brightness(1.9) contrast(1.1)';
     else if (gearState.penalty === 'exhausted') ctx.filter = 'grayscale(0.6) brightness(0.85)';
 }
 // Puños gigantes y ondas (espacio de mundo)
@@ -276,7 +303,16 @@ function gearDrawWorld(ctx) {
     for (const f of gearState.fx) {
         const a = Math.max(0, f.life / f.max);
         ctx.save();
-        if (f.kind === 'fist') {
+        if (f.kind === 'fist' && f.spr && GEAR_SPR.fist.complete && GEAR_SPR.fist.naturalWidth) {
+            // Gear 3: brazo de hueso inflado (sprite de Gigant Battle) que se estira hasta el objetivo
+            const p = Math.min(1, (1 - a) * 2.2);
+            const len = Math.max(20, Math.hypot(f.x - f.x0, f.y - f.y0) * p + f.r);
+            const im = GEAR_SPR.fist, hh = f.r * 2;
+            ctx.globalAlpha = Math.min(1, a * 1.6);
+            ctx.translate(f.x0, f.y0); ctx.rotate(Math.atan2(f.y - f.y0, f.x - f.x0));
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(im, 0, -hh / 2, len, hh);
+        } else if (f.kind === 'fist') {
             const p = Math.min(1, (1 - a) * 2.2);
             const x = f.x0 + (f.x - f.x0) * p, y = f.y0 + (f.y - f.y0) * p;
             ctx.globalAlpha = Math.min(1, a * 1.6);

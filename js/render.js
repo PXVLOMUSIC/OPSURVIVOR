@@ -250,15 +250,22 @@ function render() {
     gearSpriteTransform(ctx);
     if (player.facing === 1) ctx.scale(-1, 1);
     const set = (assetsLoaded && CHAR_IMG[selectedCharacter]) ? CHAR_IMG[selectedCharacter] : null;
+    const gearFrame = (typeof gearSpriteFrame === 'function') ? gearSpriteFrame() : null;
     let img = null;
     if (set) {
         const arr = set[player.animState] && set[player.animState].length ? set[player.animState] : set.idle;
         if (arr && arr.length) img = arr[player.animIndex % arr.length];
     }
-    if (img && img.complete) {
+    if (gearFrame) {
+        // Gear 4 / Gear 5 / Luffy encogido: sprite propio a su altura
+        const gi = gearFrame.img, ph = gearFrame.h, pw = ph * (gi.width / gi.height);
+        ctx.drawImage(gi, -pw / 2, 24 - ph, pw, ph);
+        ctx.filter = 'none';
+    } else if (img && img.complete) {
         const ph = 48;
         const pw = ph * (img.width / img.height);
-        ctx.filter = playerSpriteFilter();
+        // respeta el filtro que haya puesto el Gear (agotado, Gear 2)
+        if (!ctx.filter || ctx.filter === 'none') ctx.filter = playerSpriteFilter();
         ctx.drawImage(img, -pw/2, -ph/2, pw, ph);
         ctx.filter = 'none';
     } else if (assetsLoaded && IMG.player && IMG.player.complete) {

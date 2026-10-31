@@ -751,9 +751,23 @@
             #curse-select { margin: 2px 0 6px; gap: 6px; }
             .side-deco { display: none; }
         }
+        /* Gears de Luffy: boton tactil */
+        #gear-btn { position: fixed; right: 18px; bottom: 70px; z-index: 40; width: 62px; height: 62px; border-radius: 50%;
+            display: none; align-items: center; justify-content: center; font-family: 'Bangers', sans-serif; font-size: 22px; letter-spacing: 1px;
+            background: rgba(28,17,7,0.85); color: #8a7350; border: 3px solid #5b4630; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+        #gear-btn.ready { color: #1a0f06; background: radial-gradient(circle, #fde68a, #f472b6); border-color: #b45309; box-shadow: 0 0 16px #f472b6; animation: gearPulse 0.9s ease-in-out infinite; }
+        @keyframes gearPulse { 50% { transform: scale(1.08); } }
+        .gear-shop-head { width: 100%; margin: 14px 0 4px; font-family: 'Bangers', sans-serif; letter-spacing: 1px; color: #b45309; font-size: 16px; text-align: center; }
+        /* Pulsa para empezar (desbloquea el audio: el navegador lo exige) */
+        #tap-to-start { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)), url('assets/bg/start-bg.jpg') center/cover no-repeat; cursor: pointer; }
+        #tap-to-start h1 { font-family: 'Bangers', sans-serif; color: #facc15; font-size: clamp(36px, 9vw, 72px); letter-spacing: 3px; margin: 0; text-shadow: 3px 3px 0 #000; text-align: center; }
+        #tap-to-start p { font-family: 'Bangers', sans-serif; color: #fff7e0; font-size: clamp(18px, 4vw, 26px); letter-spacing: 2px; margin: 0; animation: tapBlink 1.2s ease-in-out infinite; text-align: center; padding: 0 16px; }
+        @keyframes tapBlink { 50% { opacity: 0.35; } }
     </style>
 </head>
 <body>
+<div id="tap-to-start"><h1>GRAND LINE SURVIVOR</h1><p>PULSA PARA ZARPAR</p></div>
 
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
@@ -1613,6 +1627,7 @@ function loadMeta() {
             else meta.wins.baratie = 1; // guardado antiguo: Baratie ya conquistado
             if (parsed.achievements) meta.achievements = parsed.achievements;
             meta.curseUnlocked = parsed.curseUnlocked || 0;
+            if (parsed.gear) meta.gear = parsed.gear;
             if (parsed.stats) meta.stats = { ...meta.stats, ...parsed.stats,
                 maxTime: { ...meta.stats.maxTime, ...(parsed.stats.maxTime || {}) },
                 winsByChar: { ...meta.stats.winsByChar, ...(parsed.stats.winsByChar || {}) },
@@ -1622,7 +1637,7 @@ function loadMeta() {
     } catch (e) {}
 }
 function saveMeta() {
-    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats, curseUnlocked: meta.curseUnlocked })); } catch (e) {}
+    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats, curseUnlocked: meta.curseUnlocked, gear: meta.gear })); } catch (e) {}
 }
 loadMeta();
 let gameTime = 0, lastTime = performance.now();
@@ -2288,6 +2303,7 @@ function renderShop() {
         }
         container.appendChild(card);
     });
+    renderGearShop(container);
 }
 function buyUpgrade(id) {
     const u = META_UPGRADES.find(x => x.id === id);
@@ -2333,7 +2349,7 @@ function mergeRunStats() {
     // VS: snapshot de la Ficha de Singladura (resumen estilo WANTED) — ANTES del merge
     const pool = window.UPGRADE_POOL_MAP || {};
     // fallback si todavia paso por ninguna pantalla de mejoras (nivel bajo)
-    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gear 2', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', rifle:'Rifle de la Marina', ballesta:'Ballesta', lanza:'Lanza de Abordaje', hacha:'Hacha Pirata', shuriken:'Shuriken', hakiPulse:'Pulso de Haoshoku', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
+    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gears', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', rifle:'Rifle de la Marina', ballesta:'Ballesta', lanza:'Lanza de Abordaje', hacha:'Hacha Pirata', shuriken:'Shuriken', hakiPulse:'Pulso de Haoshoku', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
     const charNames = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji' };
     const mapNames = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea' };
     window.lastRun = {
@@ -2422,8 +2438,9 @@ function checkAchievements() {
             meta.achievements[a.id] = true;
             meta.beli += a.reward;
             if (a.unlock) meta.unlocked[a.unlock] = true;
+            if (a.gear) gearOnAchievement(a);
             saveMeta();
-            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Berries' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : ''));
+            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Berries' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : '') + (a.gear ? '  ◉ GEAR ' + a.gear + ' DESBLOQUEADO' : ''));
         }
     }
 }
@@ -2753,6 +2770,7 @@ function resetGame() {
     player.runBeliMult = 1;
     window.endlessMode = false; window.endlessBossKills = 0; window.nextBossAt = 0;
     initRunStats();
+    gearReset();
     // apply meta upgrades
     META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
@@ -2802,7 +2820,7 @@ function gameLoop(now) {
     const _pb = document.getElementById('pause-btn');
     if (_pb) _pb.style.display = (gameState === 'PLAYING') ? 'block' : 'none';
     // música: solo al cambiar de estado (evita .play() cada frame)
-    if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); }
+    if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); gearUpdateButton(); }
 
     if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA') {
         requestAnimationFrame(gameLoop);
@@ -2810,7 +2828,7 @@ function gameLoop(now) {
 }
 
 function calculateDamage(baseAtk) {
-    let dmg = baseAtk * (1 + player.powerPct / 100);
+    let dmg = baseAtk * (1 + player.powerPct / 100) * gearDamageMult();
     let isCrit = false, isOvercrit = false;
     let roll = Math.random();
 
@@ -2832,10 +2850,7 @@ function update(dt) {
     }
     // Decaimiento de la sacudida de cámara (clamp para evitar valores negativos -> temblor eterno)
     if (cameraShake > 0) cameraShake = Math.max(0, cameraShake - dt * 15);
-    if (skills.gear2.active) {
-        skills.gear2.remain -= dt;
-        if (skills.gear2.remain <= 0) skills.gear2.active = false;
-    }
+    gearUpdate(dt);
     if (player.attackTimer > 0) player.attackTimer -= dt;
     if (player.hitTimer > 0) player.hitTimer -= dt;
     if (player._dmgSoundCd > 0) player._dmgSoundCd -= dt;
@@ -2901,7 +2916,7 @@ function update(dt) {
 
     const len = Math.hypot(moveX, moveY);
     if (len > 0) {
-        const speedMult = skills.gear2.active ? (1 + skills.gear2.speedBonus) : 1;
+        const speedMult = gearSpeedMult();
         const stepX = (moveX / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const stepY = (moveY / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const newX = player.x + stepX;
@@ -2948,8 +2963,8 @@ function update(dt) {
         }
 
         if (edist > 0) {
-            e.x += (edx / edist) * e.speed * dt;
-            e.y += (edy / edist) * e.speed * dt;
+            e.x += (edx / edist) * e.speed * gearEnemySpeedMult() * dt;
+            e.y += (edy / edist) * e.speed * gearEnemySpeedMult() * dt;
         }
         if (e.isBoss && edist < 40) e.attackTimer = 0.4;
         if (e.attackTimer > 0) { e.attackTimer -= dt; e.animState = 'attack'; }
@@ -2962,7 +2977,7 @@ function update(dt) {
         }
 
         if (edist < 22) {
-            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion);
+            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
             player.hp -= e.damage * dt * dmgMult;
             player.hitTimer = 0.12;
             // VS: destello rojo + sacudida MUY breve (pulso con cooldown, no constante)
@@ -2988,7 +3003,7 @@ function update(dt) {
         const b = enemyBullets[i];
         b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt;
         if (Math.hypot(player.x - b.x, player.y - b.y) < 16) {
-            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion);
+            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
             player.hp -= b.damage * dmgMult; player.hitTimer = 0.12; playSound('hurt'); updateUI();
             if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
             if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.8); player._hurtShakeCd = 0.35; }
@@ -3269,7 +3284,7 @@ function update(dt) {
 }
 
 function handleAttacks(dt) {
-    const cdMult = 1 - (player.cdReduction / 100);
+    const cdMult = (1 - (player.cdReduction / 100)) * gearCdMult();
 
     if (CHAR_SKILLS[selectedCharacter].includes('pistol')) skills.pistol.timer += dt;
     if (CHAR_SKILLS[selectedCharacter].includes('pistol') && skills.pistol.timer >= skills.pistol.cooldown * cdMult) {
@@ -3488,16 +3503,7 @@ function handleAttacks(dt) {
         }
     }
 
-    if (skills.gear2.level > 0 && CHAR_SKILLS[selectedCharacter].includes('gear2')) {
-        skills.gear2.timer += dt;
-        if (skills.gear2.timer >= skills.gear2.cooldown * cdMult) {
-            skills.gear2.timer = 0;
-            skills.gear2.active = true;
-            skills.gear2.remain = skills.gear2.duration;
-            playSound('gear2');
-            player.attackTimer = 0.2;
-        }
-    }
+    // Gears: ya no son automaticos — medidor + activacion manual (js/gears.js)
 
     if (skills.santoryu.level > 0 && CHAR_SKILLS[selectedCharacter].includes('santoryu')) {
         skills.santoryu.timer += dt;
@@ -3952,6 +3958,7 @@ function killEnemy(e) {
     // sobre el mismo enemigo antes del filtro de muertos -> drops/beli/victoria duplicados
     if (e._dead) return;
     e._dead = true;
+    gearOnKill(e);
     // estadisticas de run para logros y bestiario
     if (window.runStats) {
         window.runStats.kills++;
@@ -4149,7 +4156,7 @@ const EVOLUTIONS = {
     pistol:      { passive: 'power',  name: 'Red Hawk (Gomu Gomu no Pistol)' },
     gatling:     { passive: 'cd',     name: 'Jet Gatling' },
     bazooka:     { passive: 'area',   name: 'Gorilla Bazooka' },
-    gear2:       { passive: 'speed',  name: 'Gear 2: Boundman' },
+    gear2:       { passive: 'speed',  name: 'Gear 4: Boundman' },
     muchi:       { passive: 'speed',  name: 'Black Whip' },
     ono:         { passive: 'power',  name: 'Gomu Gomu no Gigant Ono' },
     santoryu:    { passive: 'crit',   name: 'Asura (Santoryu Ogi)' },
@@ -4236,7 +4243,7 @@ function showUpgradeScreen(count, isChest) {
         { id: 'cd', type: 'passive', chars: 'all', title: 'Sake de Bink (Cooldown)', icon: ICONS.cd, desc: 'Reduce el tiempo de recarga de todas las habilidades un -12%.' },
         { id: 'armor', type: 'passive', chars: 'all', title: 'Armadura de Haki', icon: ICONS.armor, desc: 'Reduce el daño recibido un +8% (max 60%).' },
         { id: 'bazooka', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Bazooka', icon: ICONS.bazooka, desc: 'Desbloquea un ataque de área explosivo.' },
-        { id: 'gear2', type: 'weapon', chars: ['luffy'], title: 'Gear 2', icon: ICONS.gear2, desc: 'Aumenta velocidad y daño temporalmente.' },
+        { id: 'gear2', type: 'weapon', chars: ['luffy'], title: 'Gears (Luffy)', icon: ICONS.gear2, desc: 'Llena el medidor y pulsa ESPACIO o el botón G. Nv1: Gear 2 · Nv3: Gear 3 · Evolución: Gear 4 · Min 6: Gear 5 (si están desbloqueados).' },
         { id: 'santoryu', type: 'weapon', chars: ['zoro'], title: 'Santoryu', icon: ICONS.santoryu, desc: 'Desbloquea corte triple (Zoro).' },
         { id: 'onigiri', type: 'weapon', chars: ['zoro'], title: 'Oni Giri', icon: ICONS.onigiri, desc: 'Desbloquea dash con daño (Zoro).' },
         { id: 'flyingslash', type: 'weapon', chars: ['zoro'], title: 'Flying Slash', icon: ICONS.flyingslash, desc: 'Desbloquea corte a distancia (Zoro).' },
@@ -4582,6 +4589,7 @@ function triggerVictory() {
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
     meta.stats.winsByCurse[runCurseRank] = (meta.stats.winsByCurse[runCurseRank] || 0) + 1;
+    gearOnVictory();
     // VS: vencer con el clima N desbloquea el N+1 (una vez)
     if (runCurseRank === meta.curseUnlocked && meta.curseUnlocked < 4) {
         meta.curseUnlocked++;
@@ -4646,7 +4654,7 @@ function updateWeaponsHUD() {
         { id: 'pistol', icon: ICONS.pistol, name: 'Pistol' },
         { id: 'gatling', icon: ICONS.gatling, name: 'Gatling' },
         { id: 'bazooka', icon: ICONS.bazooka, name: 'Bazooka' },
-        { id: 'gear2', icon: ICONS.gear2, name: 'Gear 2' },
+        { id: 'gear2', icon: ICONS.gear2, name: 'Gears' },
         { id: 'santoryu', icon: ICONS.santoryu, name: 'Santoryu' },
         { id: 'onigiri', icon: ICONS.onigiri, name: 'Oni Giri' },
         { id: 'flyingslash', icon: ICONS.flyingslash, name: 'Flying Slash' },
@@ -5119,13 +5127,7 @@ function render() {
     // Player with Dynamic Shadow
     ctx.save();
     ctx.translate(player.x, player.y);
-    if (skills.gear2 && skills.gear2.active) {
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
-        ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.fill();
-    }
+    gearDrawAura(ctx);
     if (skills.diablejambe && skills.diablejambe.level > 0) {
         ctx.fillStyle = 'rgba(244, 63, 94, 0.3)';
         ctx.beginPath(); ctx.arc(0, 14, 12, 0, Math.PI * 2); ctx.fill();
@@ -5133,6 +5135,7 @@ function render() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill();
 
+    gearSpriteTransform(ctx);
     if (player.facing === 1) ctx.scale(-1, 1);
     const set = (assetsLoaded && CHAR_IMG[selectedCharacter]) ? CHAR_IMG[selectedCharacter] : null;
     let img = null;
@@ -5152,6 +5155,7 @@ function render() {
         ctx.drawImage(Sprites.luffy, player.animFrame * 32, 0, 32, 32, -16, -16, 32, 32);
     }
     ctx.restore();
+    gearDrawWorld(ctx);
 
     // Particles (formas: spark / orb / ring / star / ghost)
     for (let p of particles) {
@@ -5223,6 +5227,7 @@ function render() {
         const beat = (0.09 + 0.06 * (0.5 + 0.5 * Math.sin(gameTime * 6.3))) * flashMult;
         vignetteAlpha = Math.max(vignetteAlpha, beat);
     }
+    gearDrawHUD(ctx);
     if (vignetteAlpha > 0.001) {
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -5255,7 +5260,27 @@ document.addEventListener('click', function (e) {
         try { updateMusic(); } catch (err) {}
     }
 }, true);
+// Pantalla "Pulsa para zarpar": el navegador no deja sonar nada hasta el primer gesto,
+// asi que ese primer gesto es este (click/toque lo gestiona el listener de arriba; tecla aqui).
+(function () {
+    const tap = document.getElementById('tap-to-start');
+    if (!tap) return;
+    function closeTap() {
+        if (!window._audioUnlocked) {
+            window._audioUnlocked = true;
+            if (!audioCtx) initAudio();
+            try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+            try { menuMusic.muted = false; updateMusic(); } catch (e) {}
+        }
+        tap.style.display = 'none';
+        window.removeEventListener('keydown', closeTap);
+    }
+    tap.addEventListener('click', closeTap);
+    window.addEventListener('keydown', closeTap);
+})();
 </script>
+<script src="js/gears.js"></script>
+<button id="gear-btn" onclick="gearActivate()" aria-label="Activar Gear">G2</button>
 <div id="ach-toast"></div>
 </body>
 </html>

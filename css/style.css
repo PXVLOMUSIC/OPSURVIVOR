@@ -976,3 +976,11 @@ body.opt-calm .btn-sail { animation: none; }
 }
 @keyframes ps-wave { to { background-position: 60px 0; } }
 @media (prefers-reduced-motion: reduce) { .ps-rays, .ps-jolly, .ps-banner, .ps-waves { animation: none; } }
+
+/* Gears de Luffy: botón táctil y cabecera en la tienda */
+#gear-btn { position: fixed; right: 18px; bottom: 70px; z-index: 40; width: 62px; height: 62px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center; font-family: 'Bangers', sans-serif; font-size: 22px; letter-spacing: 1px;
+    background: rgba(28,17,7,0.85); color: #8a7350; border: 3px solid #5b4630; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+#gear-btn.ready { color: #1a0f06; background: radial-gradient(circle, #fde68a, #f472b6); border-color: #b45309; box-shadow: 0 0 16px #f472b6; animation: gearPulse 0.9s ease-in-out infinite; }
+@keyframes gearPulse { 50% { transform: scale(1.08); } }
+.gear-shop-head { width: 100%; margin: 14px 0 4px; font-family: 'Bangers', sans-serif; letter-spacing: 1px; color: #b45309; font-size: 16px; text-align: center; }

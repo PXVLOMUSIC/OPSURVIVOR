@@ -71,3 +71,9 @@ Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frame
 - Los valores globales viven en `BALANCE` (js/core.js): daño por contacto, crecimiento de vida enemiga, tope de 300 enemigos, intervalo mínimo de spawn, primer evento, fusileros y distancia mínima de spawn. Cada mapa tiene `hpMult` en `MAP_ENEMIES`.
 - `ENEMY_DRAW_SCALE` (js/core.js) ajusta el tamaño de dibujo de sprites desproporcionados (Tararan a 0.36).
 - Medir el balance: `tools/balance-sim.js` (bot en Chromium headless) y `tools/balance-report.py`. Referencia tras el ajuste: ~65% de victorias sin mejoras permanentes, ~100% con la mitad o todas.
+
+## Gears de Luffy (js/gears.js)
+- La carta "Gears" (id interno `gear2`) ocupa un solo slot. Llena un medidor (kills + carga pasiva) que se activa con ESPACIO o con el botón G.
+- Techo dentro de la partida: carta nv1 → G2, nv3 → G3, evolución → G4, G4 + minuto 6 → G5 (que se recarga en 3 min).
+- Efectos: G2 da +vel., −40% CD y drena vida. G3 da daño ×1.6, área ×1.6 y Elephant Gun; al acabar, Luffy queda encogido 4 s. G4 da daño ×1.8, −50% daño recibido y Kong Gun; al acabar, agotado 10 s. G5 da daño ×2.2, invulnerabilidad, enemigos al 50% de velocidad, Bajrang Gun y Dawn Whip; al acabar, agotado 12 s y vida máxima al 40%.
+- Persistente (`meta.gear`): G3, G4 y G5 se desbloquean con logros (ganar con Luffy; ganar con Luffy en Clima 2 o más; ganar con Luffy en Clima 4). La tienda vende 3 mejoras menores (medidor inicial, carga y recuperación) que no dan daño.

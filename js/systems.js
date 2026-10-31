@@ -230,6 +230,7 @@ function renderShop() {
         }
         container.appendChild(card);
     });
+    if (typeof renderGearShop === 'function') renderGearShop(container);
 }
 function buyUpgrade(id) {
     const u = META_UPGRADES.find(x => x.id === id);
@@ -275,7 +276,7 @@ function mergeRunStats() {
     // VS: snapshot de la Ficha de Singladura (resumen estilo WANTED) — ANTES del merge
     const pool = window.UPGRADE_POOL_MAP || {};
     // fallback si todavia paso por ninguna pantalla de mejoras (nivel bajo)
-    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gear 2', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', rifle:'Rifle de la Marina', ballesta:'Ballesta', lanza:'Lanza de Abordaje', hacha:'Hacha Pirata', shuriken:'Shuriken', hakiPulse:'Pulso de Haoshoku', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
+    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gears', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', rifle:'Rifle de la Marina', ballesta:'Ballesta', lanza:'Lanza de Abordaje', hacha:'Hacha Pirata', shuriken:'Shuriken', hakiPulse:'Pulso de Haoshoku', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
     const charNames = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji' };
     const mapNames = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea' };
     window.lastRun = {
@@ -364,8 +365,9 @@ function checkAchievements() {
             meta.achievements[a.id] = true;
             meta.beli += a.reward;
             if (a.unlock) meta.unlocked[a.unlock] = true;
+            if (a.gear) gearOnAchievement(a);
             saveMeta();
-            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Berries' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : ''));
+            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Berries' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : '') + (a.gear ? '  ◉ GEAR ' + a.gear + ' DESBLOQUEADO' : ''));
         }
     }
 }

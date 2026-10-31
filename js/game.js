@@ -8,7 +8,7 @@ function gameLoop(now) {
     const _pb = document.getElementById('pause-btn');
     if (_pb) _pb.style.display = (gameState === 'PLAYING') ? 'block' : 'none';
     // música: solo al cambiar de estado (evita .play() cada frame)
-    if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); }
+    if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); gearUpdateButton(); }
 
     if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA') {
         requestAnimationFrame(gameLoop);
@@ -16,7 +16,7 @@ function gameLoop(now) {
 }
 
 function calculateDamage(baseAtk) {
-    let dmg = baseAtk * (1 + player.powerPct / 100);
+    let dmg = baseAtk * (1 + player.powerPct / 100) * gearDamageMult();
     let isCrit = false, isOvercrit = false;
     let roll = Math.random();
 
@@ -38,10 +38,7 @@ function update(dt) {
     }
     // Decaimiento de la sacudida de cámara (clamp para evitar valores negativos -> temblor eterno)
     if (cameraShake > 0) cameraShake = Math.max(0, cameraShake - dt * 15);
-    if (skills.gear2.active) {
-        skills.gear2.remain -= dt;
-        if (skills.gear2.remain <= 0) skills.gear2.active = false;
-    }
+    gearUpdate(dt);
     if (player.attackTimer > 0) player.attackTimer -= dt;
     if (player.hitTimer > 0) player.hitTimer -= dt;
     if (player._dmgSoundCd > 0) player._dmgSoundCd -= dt;
@@ -107,7 +104,7 @@ function update(dt) {
 
     const len = Math.hypot(moveX, moveY);
     if (len > 0) {
-        const speedMult = skills.gear2.active ? (1 + skills.gear2.speedBonus) : 1;
+        const speedMult = gearSpeedMult();
         const stepX = (moveX / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const stepY = (moveY / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const newX = player.x + stepX;
@@ -159,8 +156,8 @@ function update(dt) {
         }
 
         if (edist > 0) {
-            e.x += (edx / edist) * e.speed * dt;
-            e.y += (edy / edist) * e.speed * dt;
+            e.x += (edx / edist) * e.speed * gearEnemySpeedMult() * dt;
+            e.y += (edy / edist) * e.speed * gearEnemySpeedMult() * dt;
             // Los enemigos normales rodean rejas y barandillas; jefes y minijefes las atraviesan
             if (hasObstacles && !e.isBoss && !e.isMiniboss) [e.x, e.y] = pushOutOfObstacles(e.x, e.y, 10);
         }
@@ -175,7 +172,7 @@ function update(dt) {
         }
 
         if (edist < 22) {
-            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion);
+            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
             player.hp -= e.damage * BALANCE.contactMult * dt * dmgMult;
             player.hitTimer = 0.12;
             // VS: destello rojo + sacudida MUY breve (pulso con cooldown, no constante)
@@ -201,7 +198,7 @@ function update(dt) {
         const b = enemyBullets[i];
         b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt;
         if (Math.hypot(player.x - b.x, player.y - b.y) < 16) {
-            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion);
+            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
             player.hp -= b.damage * dmgMult; player.hitTimer = 0.12; playSound('hurt'); updateUI();
             if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
             if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.8); player._hurtShakeCd = 0.35; }
@@ -480,7 +477,7 @@ function update(dt) {
 }
 
 function handleAttacks(dt) {
-    const cdMult = 1 - (player.cdReduction / 100);
+    const cdMult = (1 - (player.cdReduction / 100)) * gearCdMult();
 
     if (CHAR_SKILLS[selectedCharacter].includes('pistol')) skills.pistol.timer += dt;
     if (CHAR_SKILLS[selectedCharacter].includes('pistol') && skills.pistol.timer >= skills.pistol.cooldown * cdMult) {
@@ -690,16 +687,7 @@ function handleAttacks(dt) {
         }
     }
 
-    if (skills.gear2.level > 0 && CHAR_SKILLS[selectedCharacter].includes('gear2')) {
-        skills.gear2.timer += dt;
-        if (skills.gear2.timer >= skills.gear2.cooldown * cdMult) {
-            skills.gear2.timer = 0;
-            skills.gear2.active = true;
-            skills.gear2.remain = skills.gear2.duration;
-            playSound('gear2');
-            player.attackTimer = 0.2;
-        }
-    }
+    // Gears: medidor + activacion manual (js/gears.js)
 
     if (skills.santoryu.level > 0 && CHAR_SKILLS[selectedCharacter].includes('santoryu')) {
         skills.santoryu.timer += dt;
@@ -1108,6 +1096,7 @@ function killEnemy(e) {
     // sobre el mismo enemigo antes del filtro de muertos -> drops/beli/victoria duplicados
     if (e._dead) return;
     e._dead = true;
+    gearOnKill(e);
     // estadisticas de run para logros y bestiario
     if (window.runStats) {
         window.runStats.kills++;
@@ -1307,7 +1296,7 @@ const EVOLUTIONS = {
     pistol:      { passive: 'power',  name: 'Red Hawk (Gomu Gomu no Pistol)' },
     gatling:     { passive: 'cd',     name: 'Jet Gatling' },
     bazooka:     { passive: 'area',   name: 'Jet Bazooka' },
-    gear2:       { passive: 'speed',  name: 'Gear 2: Jet' },
+    gear2:       { passive: 'speed',  name: 'Gear 4: Boundman' },
     muchi:       { passive: 'speed',  name: 'Jet Whip' },
     ono:         { passive: 'power',  name: 'Gomu Gomu no Gigant Ono' },
     santoryu:    { passive: 'crit',   name: 'Asura (Santoryu Ogi)' },
@@ -1394,7 +1383,7 @@ function showUpgradeScreen(count, isChest) {
         { id: 'cd', type: 'passive', chars: 'all', title: 'Sake de Bink (Cooldown)', icon: ICONS.cd, desc: 'Reduce el tiempo de recarga de todas las habilidades un -12%.' },
         { id: 'armor', type: 'passive', chars: 'all', title: 'Armadura de Haki', icon: ICONS.armor, desc: 'Reduce el daño recibido un +8% (max 60%).' },
         { id: 'bazooka', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Bazooka', icon: ICONS.bazooka, desc: 'Desbloquea un ataque de área explosivo.' },
-        { id: 'gear2', type: 'weapon', chars: ['luffy'], title: 'Gear 2', icon: ICONS.gear2, desc: 'Aumenta velocidad y daño temporalmente.' },
+        { id: 'gear2', type: 'weapon', chars: ['luffy'], title: 'Gears (Luffy)', icon: ICONS.gear2, desc: 'Llena el medidor y pulsa ESPACIO o el botón G. Nv1: Gear 2 · Nv3: Gear 3 · Evolución: Gear 4 · Min 6: Gear 5 (si están desbloqueados).' },
         { id: 'santoryu', type: 'weapon', chars: ['zoro'], title: 'Santoryu', icon: ICONS.santoryu, desc: 'Desbloquea corte triple (Zoro).' },
         { id: 'onigiri', type: 'weapon', chars: ['zoro'], title: 'Oni Giri', icon: ICONS.onigiri, desc: 'Desbloquea dash con daño (Zoro).' },
         { id: 'flyingslash', type: 'weapon', chars: ['zoro'], title: 'Flying Slash', icon: ICONS.flyingslash, desc: 'Desbloquea corte a distancia (Zoro).' },
@@ -1739,6 +1728,7 @@ function triggerVictory() {
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
     meta.stats.winsByCurse[runCurseRank] = (meta.stats.winsByCurse[runCurseRank] || 0) + 1;
+    gearOnVictory();
     // VS: vencer con el clima N desbloquea el N+1 (una vez)
     if (runCurseRank === meta.curseUnlocked && meta.curseUnlocked < 4) {
         meta.curseUnlocked++;
@@ -1803,7 +1793,7 @@ function updateWeaponsHUD() {
         { id: 'pistol', icon: ICONS.pistol, name: 'Pistol' },
         { id: 'gatling', icon: ICONS.gatling, name: 'Gatling' },
         { id: 'bazooka', icon: ICONS.bazooka, name: 'Bazooka' },
-        { id: 'gear2', icon: ICONS.gear2, name: 'Gear 2' },
+        { id: 'gear2', icon: ICONS.gear2, name: 'Gears' },
         { id: 'santoryu', icon: ICONS.santoryu, name: 'Santoryu' },
         { id: 'onigiri', icon: ICONS.onigiri, name: 'Oni Giri' },
         { id: 'flyingslash', icon: ICONS.flyingslash, name: 'Flying Slash' },

@@ -240,9 +240,11 @@ function render() {
     drawPlayerAuraBack();
     ctx.save();
     ctx.translate(player.x, player.y);
+    gearDrawAura(ctx);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill();
 
+    gearSpriteTransform(ctx);
     if (player.facing === 1) ctx.scale(-1, 1);
     const set = (assetsLoaded && CHAR_IMG[selectedCharacter]) ? CHAR_IMG[selectedCharacter] : null;
     let img = null;
@@ -264,6 +266,7 @@ function render() {
         ctx.drawImage(Sprites.luffy, player.animFrame * 32, 0, 32, 32, -16, -16, 32, 32);
     }
     ctx.restore();
+    gearDrawWorld(ctx);
 
     // Partículas (js/vfx.js)
     drawParticles();
@@ -296,6 +299,7 @@ function render() {
         const beat = (0.09 + 0.06 * (0.5 + 0.5 * Math.sin(gameTime * 6.3))) * flashMult;
         vignetteAlpha = Math.max(vignetteAlpha, beat);
     }
+    gearDrawHUD(ctx);
     if (vignetteAlpha > 0.001) {
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);

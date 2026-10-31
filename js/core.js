@@ -193,8 +193,8 @@ function selectMap(id) {
 }
 // VS: las etapas se desbloquean por logros — aquí, venciendo al boss del mapa anterior
 function mapLocked(id) {
-    // Alabasta y Skypiea en desarrollo (PRÓXIMAMENTE) — mapas en revision.
-    if (id === 'alabasta' || id === 'skypiea') return true;
+    // Skypiea en desarrollo (PRÓXIMAMENTE) — mapa en revision.
+    if (id === 'skypiea') return true;
     return false;
 }
 // === CLIMA PELIGROSO (rango de Maldición 0-4, estilo VS) ===

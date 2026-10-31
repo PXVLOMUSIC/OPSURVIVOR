@@ -1,4 +1,15 @@
 // --- RENDER ENGINE (Sea of Stars Aesthetic Pipeline) ---
+// Píxel vertical de la imagen de cada mapa que cae en y=0 del mundo (x=0 es el centro de la imagen)
+const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 478 };
+function cameraCenter() {
+    const img = IMG[selectedMap + 'Map'];
+    if (!assetsLoaded || !img || !img.complete || !img.width) return [player.x, player.y];
+    const halfW = img.width * MAP_SCALE / 2;
+    const top = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, bottom = top + img.height * MAP_SCALE;
+    const clampAxis = (v, lo, hi, view) => (hi - lo <= view) ? (lo + hi) / 2 : Math.min(Math.max(v, lo + view / 2), hi - view / 2);
+    return [clampAxis(player.x, -halfW, halfW, VIEW_W), clampAxis(player.y, top, bottom, VIEW_H)];
+}
+
 function render() {
     ctx.fillStyle = '#030712';
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
@@ -8,8 +19,10 @@ function render() {
     let shakeX = (Math.random() - 0.5) * cameraShake * 4 * shakeMult;
     let shakeY = (Math.random() - 0.5) * cameraShake * 4 * shakeMult;
     
-    const camX = VIEW_W / 2 - player.x + shakeX;
-    const camY = VIEW_H / 2 - player.y + shakeY;
+    // Cámara: sigue al jugador pero no enseña el vacío fuera de la imagen del mapa
+    const [camCX, camCY] = cameraCenter();
+    const camX = VIEW_W / 2 - camCX + shakeX;
+    const camY = VIEW_H / 2 - camCY + shakeY;
     ctx.translate(camX, camY);
 
     // Map Background
@@ -17,7 +30,7 @@ function render() {
         const imgW = IMG.baratieMap.width * MAP_SCALE;
         const imgH = IMG.baratieMap.height * MAP_SCALE;
         const offX = -IMG.baratieMap.width * MAP_SCALE / 2;
-        const offY = -430 * MAP_SCALE;
+        const offY = -MAP_ORIGIN_Y.baratie * MAP_SCALE;
         ctx.imageSmoothingEnabled = true;
         ctx.drawImage(IMG.baratieMap, offX, offY, imgW, imgH);
         ctx.imageSmoothingEnabled = false;
@@ -28,7 +41,7 @@ function render() {
             const imgW = IMG.alabastaMap.width * MAP_SCALE;
             const imgH = IMG.alabastaMap.height * MAP_SCALE;
             const offX = -IMG.alabastaMap.width * MAP_SCALE / 2;
-            const offY = -494 * MAP_SCALE;
+            const offY = -MAP_ORIGIN_Y.alabasta * MAP_SCALE; // mismo origen que ALABASTA_POLY
             ctx.imageSmoothingEnabled = true;
             ctx.drawImage(IMG.alabastaMap, offX, offY, imgW, imgH);
             ctx.imageSmoothingEnabled = false;
@@ -43,7 +56,7 @@ function render() {
             const imgW = IMG.skypieaMap.width * MAP_SCALE;
             const imgH = IMG.skypieaMap.height * MAP_SCALE;
             const offX = -IMG.skypieaMap.width * MAP_SCALE / 2;
-            const offY = -478 * MAP_SCALE;
+            const offY = -MAP_ORIGIN_Y.skypiea * MAP_SCALE;
             ctx.imageSmoothingEnabled = true;
             ctx.drawImage(IMG.skypieaMap, offX, offY, imgW, imgH);
             ctx.imageSmoothingEnabled = false;

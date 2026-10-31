@@ -36,9 +36,9 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 ## Mapas
 - Tienen que ser lugares reconocibles de One Piece.
 - **Baratie** (jugable): jefe Don Krieg (9000 PV). El Capitán Morgan aparece hacia el minuto 1. Moria es miniboss en el minuto 4 y Kuma en el 6. Los enemigos de Thriller Bark se mantienen hasta que haya sprites del East Blue (decisión del 31-10-2026).
-- **Alabasta** (bloqueado): jefe Crocodile (14000 PV). Faltan las imágenes nuevas del mapa, ajustar las colisiones y el sprite de Crocodile.
+- **Alabasta** (jugable): jefe Crocodile (14000 PV). Mapa nuevo y colisiones `ALABASTA_POLY` sacadas de la línea verde de referencia. Falta el sprite de Crocodile, que ahora usa el de Krieg.
 - **Skypiea** (bloqueado): jefe Enel (18000 PV). Faltan las imágenes nuevas del mapa, ajustar las colisiones y el sprite de Enel.
-- Se desbloquean en `mapLocked()` (`js/core.js`). Las colisiones están en `WALK_POLYS` y `ARENA_POLY` (`js/maps.js`).
+- Se desbloquean en `mapLocked()` (`js/core.js`). Las colisiones están en `WALK_POLYS` (`js/maps.js`). El origen vertical de cada imagen está en `MAP_ORIGIN_Y` (`js/render.js`). La cámara no deja ver nada fuera de la imagen.
 
 ## Progreso permanente
 Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, 12 logros y 15 evoluciones de armas. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).

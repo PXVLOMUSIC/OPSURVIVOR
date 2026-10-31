@@ -2630,6 +2630,7 @@ function resumeGame() {
     document.getElementById('pause-screen').style.display = 'none';
     document.getElementById('controls-screen').style.display = 'none';
     gameState = 'PLAYING';
+    saveOpts();
     lastTime = performance.now();
 }
 function toggleSound() {
@@ -5175,9 +5176,14 @@ updateMusic();
 document.addEventListener('click', function (e) {
     const t = e.target;
     if (!t) return;
-    const hit = t.closest('button, .upgrade-card, .map-btn, .curse-btn, .char-card, .btn-start, input[type="range"]');
+    const hit = t.closest('button, [onclick], .upgrade-card, .map-btn, .curse-btn, .char-card, .btn-start, input[type="range"]');
     if (hit) {
         try { playSound('ui'); } catch (err) {}
+    }
+    // Arranca la música en el primer gesto del usuario (política de autoplay del navegador)
+    if (!window._audioUnlocked) {
+        window._audioUnlocked = true;
+        try { updateMusic(); } catch (err) {}
     }
 }, true);
 </script>

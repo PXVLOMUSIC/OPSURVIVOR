@@ -166,12 +166,14 @@ function closeShop() {
     document.getElementById('start-screen').style.display = 'flex';
     updateMetaUI();
 }
+// Precio único para mostrar y cobrar (antes la tienda mostraba cost*1.25^nv y cobraba cost*(nv+1))
+function metaUpgradeCost(u, lvl) { return Math.round(u.cost * Math.pow(1.25, lvl)); }
 function renderShop() {
     const container = document.getElementById('shop-options');
     container.innerHTML = '';
     document.getElementById('shop-beli').innerText = fmtBeli(meta.beli);    META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
-        const cost = Math.round(u.cost * Math.pow(1.25, lvl));
+        const cost = metaUpgradeCost(u, lvl);
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.style.display = 'flex';
@@ -236,7 +238,7 @@ function buyUpgrade(id) {
     const u = META_UPGRADES.find(x => x.id === id);
     const lvl = meta.upgrades[id] || 0;
     if (lvl >= u.max) return;
-    const cost = u.cost * (lvl + 1);
+    const cost = metaUpgradeCost(u, lvl);
     if (meta.beli < cost) return;
     meta.beli -= cost;
     meta.upgrades[id] = lvl + 1;

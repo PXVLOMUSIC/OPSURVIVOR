@@ -730,3 +730,210 @@ input[type="range"]::-moz-range-track {
     #curse-select { margin: 2px 0 6px; gap: 6px; }
     .side-deco { display: none; }
 }
+
+/* ============================================================
+   INTERFAZ v2 — HUD de cartel de Se Busca, cartas de viñeta de
+   manga y menú con una sola tipografía (Bangers / Pirata One)
+   ============================================================ */
+:root {
+    --ink: #17110a;
+    --paper: #f3e2bd;
+    --paper-dark: #dcc08a;
+    --wood: #3b2412;
+    --gold: #facc15;
+    --luffy: #d62828;
+    --zoro: #2f9e44;
+    --sanji: #f2c230;
+    --shared: #6b7280;
+}
+
+/* --- HUD: cartel de Se Busca con la recompensa de la partida --- */
+.player-status {
+    background:
+        radial-gradient(circle at 12% 85%, rgba(110,70,25,0.14) 0 9px, transparent 10px),
+        radial-gradient(circle at 92% 20%, rgba(110,70,25,0.12) 0 7px, transparent 8px),
+        linear-gradient(160deg, #f8e9c8 0%, var(--paper) 45%, var(--paper-dark) 100%);
+    border: 3px solid var(--wood);
+    border-radius: 4px;
+    padding: 8px 12px 8px 8px;
+    gap: 10px;
+    color: var(--ink);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 0 18px rgba(110,70,25,0.25);
+}
+.avatar-box {
+    width: 54px;
+    height: 76px;
+    background: #efe0bd;
+    border: 2px solid var(--wood) !important;
+    border-radius: 2px;
+    box-shadow: inset 0 0 6px rgba(70,40,10,0.5);
+}
+.bars-container { width: 190px; gap: 3px; }
+.poster-head { display: flex; justify-content: space-between; align-items: center; }
+.poster-wanted { font-family: 'Pirata One', 'Impact', serif; font-size: 21px; letter-spacing: 3px; color: var(--ink); line-height: 1; }
+.poster-lv {
+    font-family: 'Bangers', sans-serif; font-size: 13px; letter-spacing: 1px;
+    background: var(--ink); color: var(--gold); padding: 1px 8px; border-radius: 2px; transform: skew(-6deg);
+}
+.poster-name {
+    font-family: 'Bangers', sans-serif; font-size: 13px; letter-spacing: 1.5px; color: var(--wood);
+    border-bottom: 1px solid rgba(59,36,18,0.35); padding-bottom: 1px; margin-bottom: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.player-status .bar-label { color: var(--wood); text-shadow: none; font-family: 'Bangers', sans-serif; font-weight: 400; font-size: 12px; letter-spacing: 1px; }
+#hp-text { color: var(--wood); }
+#hp-text.warn { color: #b45309; }
+#hp-text.danger { color: #b91c1c; text-shadow: none; }
+.player-status .bar-outer { height: 9px; background: #4a3420; border: 1px solid var(--ink); border-radius: 2px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.7); }
+.player-status .bar-outer.bar-xp { height: 5px; margin-top: 2px; }
+.poster-bounty {
+    font-family: 'Bangers', sans-serif; font-size: 21px; letter-spacing: 1px; color: var(--ink);
+    line-height: 1; margin-top: 4px; display: flex; gap: 4px; align-items: baseline;
+}
+.poster-bounty .beli { font-size: 17px; }
+
+.stats-box { background: none; border: none; box-shadow: none; padding: 0; }
+#pause-btn {
+    padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 15px; margin: 0; text-align: center;
+    background: var(--ink) !important; border: 2px solid #b45309 !important; color: var(--paper) !important;
+}
+#pause-btn:hover { filter: brightness(1.25); }
+
+#time-top {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 6;
+    background: var(--ink); border: 2px solid #b45309; border-radius: 4px; padding: 3px 16px;
+    color: var(--gold); font-family: 'Bangers', sans-serif; font-size: 22px; letter-spacing: 2px;
+    text-shadow: 0 1px 2px #000; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+/* --- Armas equipadas: fichas de papel con el color del personaje --- */
+#weapons-hud {
+    position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 6px; z-index: 5; pointer-events: none; flex-wrap: wrap; justify-content: center; max-width: 94vw;
+}
+.wslot {
+    --c: var(--shared);
+    width: 46px; position: relative; overflow: hidden;
+    background: linear-gradient(#f8e9c8, var(--paper-dark));
+    border: 2px solid var(--wood); border-radius: 4px;
+    display: flex; flex-direction: column; align-items: center; padding: 5px 0 2px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.45);
+}
+.wslot::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--c); }
+.wslot[data-char="luffy"] { --c: var(--luffy); }
+.wslot[data-char="zoro"] { --c: var(--zoro); }
+.wslot[data-char="sanji"] { --c: var(--sanji); }
+.wslot .hud-ico svg.op-ico { color: var(--ink); width: 22px; height: 22px; }
+.wslot-lv { font-family: 'Bangers', sans-serif; font-size: 12px; letter-spacing: 1px; color: var(--ink); line-height: 1.2; }
+.wslot.evo {
+    background: linear-gradient(#fff3c4, var(--sanji)); border-color: #7a4a08;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.45), 0 0 10px rgba(250,204,21,0.6);
+}
+
+/* --- Cartas de mejora: viñetas de manga con tinta, trama y onomatopeya --- */
+#upgrade-options .upgrade-card, #arcana-options .upgrade-card {
+    --c: var(--ink);
+    position: relative; overflow: hidden;
+    background:
+        linear-gradient(112deg, #fbf7ec 64%, rgba(251,247,236,0) 64.5%),
+        radial-gradient(rgba(0,0,0,0.22) 1px, transparent 1.5px) 0 0 / 5px 5px,
+        #fbf7ec;
+    border: 3px solid var(--ink);
+    border-radius: 2px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 12px 16px 12px 22px;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+#upgrade-options .upgrade-card::before, #arcana-options .upgrade-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--c);
+}
+#upgrade-options .upgrade-card::after, #arcana-options .upgrade-card::after {
+    content: 'GOGOGO';
+    position: absolute; right: 10px; top: 6px; transform: rotate(-8deg);
+    font-family: 'Bangers', sans-serif; font-size: 24px; letter-spacing: 1px; line-height: 1;
+    color: #fff; -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill;
+    pointer-events: none; opacity: 0.92;
+}
+#upgrade-options .upgrade-card[data-char="luffy"] { --c: var(--luffy); }
+#upgrade-options .upgrade-card[data-char="luffy"]::after { content: 'DON!!'; color: #ffd4d4; }
+#upgrade-options .upgrade-card[data-char="zoro"] { --c: var(--zoro); }
+#upgrade-options .upgrade-card[data-char="zoro"]::after { content: 'ZUBA!!'; color: #d6f5dc; }
+#upgrade-options .upgrade-card[data-char="sanji"] { --c: var(--sanji); }
+#upgrade-options .upgrade-card[data-char="sanji"]::after { content: 'DOGA!!'; color: #fff1c2; }
+#upgrade-options .upgrade-card[data-kind="passive"]::after { content: 'GOGOGO'; color: #fff; }
+#arcana-options .upgrade-card { --c: #7c2d12; }
+#arcana-options .upgrade-card::after { content: 'D'; font-family: 'Pirata One', serif; font-size: 44px; color: #fde68a; }
+#upgrade-options .upgrade-card.evo {
+    --c: linear-gradient(#fde68a, #b45309);
+    border-color: #7a4a08;
+    box-shadow: 4px 4px 0 #7a4a08, 0 0 18px rgba(250,204,21,0.55);
+}
+#upgrade-options .upgrade-card.evo::after { content: 'DODODO'; color: #fde68a; }
+#upgrade-options .upgrade-card:hover, #arcana-options .upgrade-card:hover {
+    transform: translate(-2px, -2px) rotate(-0.4deg);
+    background:
+        linear-gradient(112deg, #fffdf6 64%, rgba(255,253,246,0) 64.5%),
+        radial-gradient(rgba(0,0,0,0.26) 1px, transparent 1.5px) 0 0 / 5px 5px,
+        #fffdf6;
+    border-color: var(--ink);
+    box-shadow: 7px 7px 0 var(--ink);
+}
+#upgrade-options .upgrade-card:active, #arcana-options .upgrade-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+#upgrade-options .upgrade-icon, #arcana-options .upgrade-icon {
+    background: var(--ink); border: 2px solid var(--ink); border-radius: 2px; box-shadow: none;
+}
+#upgrade-options .upgrade-icon svg.op-ico, #arcana-options .upgrade-icon svg.op-ico { color: #fbf7ec; }
+#upgrade-options .upgrade-info, #arcana-options .upgrade-info { position: relative; z-index: 1; }
+#upgrade-options .upgrade-info h4, #arcana-options .upgrade-info h4 { padding-right: 84px; }
+#upgrade-options .upgrade-info h4, #arcana-options .upgrade-info h4 {
+    color: var(--ink); font-size: 19px; letter-spacing: 1px; font-weight: 400; text-shadow: none;
+}
+#upgrade-options .upgrade-info p, #arcana-options .upgrade-info p { color: #2b2620; }
+
+/* --- Menú principal: una tipografía, un panel y una jerarquía de botones --- */
+.menu-name {
+    font-family: 'Bangers', sans-serif; font-size: 20px; letter-spacing: 3px; color: var(--gold);
+    text-shadow: 2px 2px 0 var(--ink); margin: 2px 0 10px;
+}
+.menu-hidden { display: none; }
+.menu-panel {
+    background: rgba(23,17,10,0.74); border: 2px solid rgba(180,83,9,0.7); border-radius: 8px;
+    padding: 10px 18px 2px; display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5); margin-bottom: 12px;
+}
+.menu-panel #map-select, .menu-panel #curse-select { margin: 0 0 8px !important; }
+.menu-panel .map-btn:not(.selected) { background: rgba(23,17,10,0.85); border-color: #6b4423; box-shadow: 0 3px 0 #120b05; }
+.menu-label { font-family: 'Bangers', sans-serif; letter-spacing: 2px; font-size: 15px; color: #f6e2b8; }
+#curse-desc { font-family: 'Bangers', sans-serif; letter-spacing: 1px; color: #dcc596; font-size: 14px; min-width: 150px; }
+.menu-secondary { display: flex; gap: 10px; margin: 0 0 14px; flex-wrap: wrap; justify-content: center; }
+.menu-secondary .map-btn {
+    font-size: 13px; padding: 7px 12px; background: rgba(23,17,10,0.78); border-color: #6b4423; box-shadow: 0 3px 0 #120b05;
+}
+.btn-sail { font-size: 24px !important; padding: 12px 46px !important; margin-top: 0 !important; animation: sailPulse 2.2s ease-in-out infinite; }
+@keyframes sailPulse {
+    0%, 100% { box-shadow: 0 6px 0 #5a1010, 0 12px 24px rgba(0,0,0,0.55), 0 0 0 rgba(226,50,25,0); }
+    50% { box-shadow: 0 6px 0 #5a1010, 0 12px 24px rgba(0,0,0,0.55), 0 0 26px rgba(226,50,25,0.6); }
+}
+body.opt-calm .btn-sail { animation: none; }
+.btn-gold {
+    font-family: 'Bangers', sans-serif; font-size: 16px; letter-spacing: 2px; margin-top: 12px;
+    padding: 9px 22px; border-radius: 8px; cursor: pointer; color: var(--ink);
+    background: linear-gradient(135deg, #fde68a, #d4a017); border: 2px solid #7a4a08;
+    box-shadow: 0 4px 0 #5a3606, 0 10px 18px rgba(0,0,0,0.5); transition: transform 0.15s, filter 0.15s;
+}
+.btn-gold:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.btn-gold #meta-beli { color: #7a1d0e !important; }
+.btn-gold svg.op-ico { color: var(--ink); }
+
+@media (max-width: 600px) {
+    .hud-top { flex-direction: row; align-items: flex-start; gap: 6px; margin-top: 38px; }
+    .player-status { width: auto; flex: 1; min-width: 0; }
+    .bars-container { width: 100%; min-width: 0; }
+    #time-top { top: 6px; font-size: 18px; padding: 2px 12px; }
+    #upgrade-options .upgrade-card::after, #arcana-options .upgrade-card::after { font-size: 20px; right: 8px; }
+    #upgrade-options .upgrade-info h4, #arcana-options .upgrade-info h4 { padding-right: 58px; font-size: 17px; }
+    #arcana-options .upgrade-card::after { font-size: 30px; }
+    #upgrade-options .upgrade-card, #arcana-options .upgrade-card { padding: 10px 10px 10px 18px; gap: 10px; }
+    .menu-panel { padding: 8px 10px 2px; }
+    .btn-sail { font-size: 20px !important; padding: 10px 28px !important; }
+}

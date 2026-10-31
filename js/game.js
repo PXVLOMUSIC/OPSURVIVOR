@@ -1483,25 +1483,24 @@ function showUpgradeScreen(count, isChest) {
         // Destello de color por personaje para armas especiales (rojo Luffy, verde Zoro, amarillo Sanji);
         // las armas/pasivas compartidas (chars === 'all') no llevan destello.
         // Las armas EVOLUCIONADAS llevan un destello multicolor "legendario".
-        let titleStyle = '';
+        // Color de personaje (rojo Luffy, verde Zoro, amarillo Sanji) y carta dorada si está evolucionada:
+        // se aplica por CSS con data-char / .evo
         const sk = skills[up.id];
-        if (up.type === 'weapon' && sk && sk.evolved) {
-            titleStyle = 'text-shadow: 0 0 6px #ff4d4d, 0 0 12px #ffaa00, 0 0 18px #4dff4d, 0 0 24px #4d9fff, 0 0 30px #d94dff; color: #000;';
-        } else if (up.type === 'weapon' && Array.isArray(up.chars) && up.chars.length === 1) {
-            const col = up.chars[0] === 'luffy' ? '#ef4444' : (up.chars[0] === 'zoro' ? '#22c55e' : (up.chars[0] === 'sanji' ? '#facc15' : ''));
-            if (col) titleStyle = 'text-shadow: 0 0 8px ' + col + ', 0 0 14px ' + col + '; color: #000;';
-        }
+        const cardChar = (up.type === 'weapon' && Array.isArray(up.chars) && up.chars.length === 1) ? up.chars[0] : 'all';
+        const cardEvo = up.type === 'weapon' && sk && sk.evolved;
         if (up.type === 'weapon' && EVOLUTIONS[up.id]) {
             const ev = EVOLUTIONS[up.id];
             const pname = (possible.find(x => x.id === ev.passive) || {}).title || ev.passive;
             desc += skills[up.id].evolved ? `<span style="color:#b45309">◆ EVOLUCIONADA — ${ev.name} ✔</span>` : `<span style="color:#1d4ed8">◆ Evolución: ${ev.name}</span> <span style="color:#7a4a28">(requiere: ${pname})</span>`;
         }
         const card = document.createElement('div');
-        card.className = 'upgrade-card';
+        card.className = 'upgrade-card' + (cardEvo ? ' evo' : '');
+        card.dataset.char = cardChar;
+        card.dataset.kind = up.type;
         card.innerHTML = `
             <div class="upgrade-icon">${up.icon}</div>
             <div class="upgrade-info">
-                <h4 style="${titleStyle}">${up.title}</h4>
+                <h4>${up.title}</h4>
                 <p>${desc}</p>
             </div>
         `;
@@ -1842,18 +1841,24 @@ function updateWeaponsHUD() {
         { id: 'concasse', icon: ICONS.concasse, name: 'Concassé' },
         { id: 'partycourse', icon: ICONS.partycourse, name: 'Party Table' }
     ];
+    // armas compartidas (disponibles para todos)
+    weapons.push(
+        { id: 'cuchillo', icon: ICONS.pistol, name: 'Cuchillo' }, { id: 'granada', icon: ICONS.bazooka, name: 'Granada' },
+        { id: 'rifle', icon: ICONS.pistol, name: 'Rifle' }, { id: 'ballesta', icon: ICONS.poundho, name: 'Ballesta' },
+        { id: 'lanza', icon: ICONS.collier, name: 'Lanza' }, { id: 'hacha', icon: ICONS.concasse, name: 'Hacha' },
+        { id: 'shuriken', icon: ICONS.flyingslash, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.tatsumaki, name: 'Haoshoku' }
+    );
     el.innerHTML = '';
     weapons.forEach(w => {
         const sk = skills[w.id];
         if (!sk || sk.level <= 0) return;
+        // ranura con el color del personaje dueño de la técnica (gris = compartida)
+        const owner = Object.keys(CHAR_SKILLS).find(c => CHAR_SKILLS[c].includes(w.id)) || 'all';
         const div = document.createElement('div');
-        if (sk.evolved) {
-            div.style.cssText = 'background:rgba(15,23,42,0.9);border:1px solid #fbbf24;border-radius:6px;padding:4px 6px;font-size:12px;color:#fbbf24;display:flex;flex-direction:column;align-items:center;min-width:44px;box-shadow:0 0 8px rgba(251,191,36,0.4);';
-            div.title = sk.evolvedName || w.name;
-        } else {
-            div.style.cssText = 'background:rgba(15,23,42,0.9);border:1px solid #38bdf8;border-radius:6px;padding:4px 6px;font-size:12px;color:#fff;display:flex;flex-direction:column;align-items:center;min-width:44px;';
-        }
-        div.innerHTML = `<div class="hud-ico">${w.icon}</div><div>Lv ${sk.level}${sk.evolved ? ' ◆' : ''}</div>`;
+        div.className = 'wslot' + (sk.evolved ? ' evo' : '');
+        div.dataset.char = owner;
+        div.title = sk.evolved ? (sk.evolvedName || w.name) : w.name;
+        div.innerHTML = `<div class="hud-ico">${w.icon}</div><div class="wslot-lv">${sk.evolved ? '◆' : 'Nv ' + sk.level}</div>`;
         el.appendChild(div);
     });
 }

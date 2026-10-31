@@ -266,7 +266,11 @@ const CHAR_PORTRAIT = {
 function updateHudPortrait() {
     const img = document.getElementById('hud-portrait');
     if (img) img.src = CHAR_PORTRAIT[selectedCharacter] || CHAR_PORTRAIT.luffy;
+    const name = document.getElementById('hud-name');
+    if (name) name.innerText = CHAR_FULLNAME[selectedCharacter] || '';
 }
+// Nombre completo como aparece en los carteles de Se Busca
+const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI' };
 function selectCharacter(id) {
     if (!meta.unlocked[id]) {
         alert('Personaje bloqueado. Cómpralo en la tienda.');

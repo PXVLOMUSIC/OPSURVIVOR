@@ -30,6 +30,11 @@
             <div class="player-status">
                 <div class="avatar-box"><img id="hud-portrait" src="assets/sprites/ui/sprite_000.png" alt="Personaje" onerror="this.style.display='none'"></div>
                 <div class="bars-container">
+                    <div class="poster-head">
+                        <span class="poster-wanted">WANTED</span>
+                        <span class="poster-lv">NV. <span id="level-txt">1</span></span>
+                    </div>
+                    <div class="poster-name" id="hud-name">MONKEY D. LUFFY</div>
                     <div class="bar-label">
                         <span>SALUD</span>
                         <span id="hp-text">100/100</span>
@@ -37,22 +42,19 @@
                     <div class="bar-outer">
                         <div id="hp-bar" class="bar-inner-hp"></div>
                     </div>
-                    <div class="bar-label">
-                        <span>EXP (NIVEL <span id="level-txt">1</span>)</span>
-                    </div>
-                    <div class="bar-outer">
+                    <div class="bar-outer bar-xp" title="Experiencia">
                         <div id="xp-bar" class="bar-inner-xp"></div>
                     </div>
+                    <div class="poster-bounty"><span class="beli">฿</span><span id="score-txt">0</span>-</div>
                 </div>
             </div>
 
             <div class="stats-box">
-                <div class="stat-item">฿ <span id="score-txt">0</span> Berries</div>
-                <button id="pause-btn" onclick="togglePause()" style="display:none; background:rgba(28,17,7,0.95); border:2px solid #b45309; color:#f6e2b8; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:14px; margin-top:8px; width:100%; text-align:center;"><span data-ico="pauseIco"></span> Pausa</button>
+                <button id="pause-btn" onclick="togglePause()" style="display:none;"><span data-ico="pauseIco"></span> Pausa</button>
             </div>
         </div>
 
-        <div id="time-top" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:6; background:rgba(28,17,7,0.88); border:2px solid #b45309; border-radius:10px; padding:4px 16px; color:#facc15; font-family:'Bangers',sans-serif; font-size:22px; letter-spacing:2px; text-shadow:0 1px 2px #000; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.6);">
+        <div id="time-top">
             <span data-ico="clock"></span> <span id="time-txt">00:00</span>
         </div>
 
@@ -60,7 +62,7 @@
     </div>
 
     <!-- Weapons HUD -->
-    <div id="weapons-hud" style="position:absolute; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:5; pointer-events:none;"></div>
+    <div id="weapons-hud"></div>
 
     <!-- Pause Screen -->
     <div id="pause-screen" class="overlay-screen" style="display: none;">
@@ -166,31 +168,33 @@
                 <img src="assets/wanted/sanji.jpg" alt="Sanji" onerror="this.style.display='none'">
             </button>
         </div>
-        <div id="char-selected" style="color:#dcc596; font-size:14px; margin-bottom:10px; letter-spacing:1px;">Personaje: Luffy</div>
+        <div id="char-selected" class="menu-name">Personaje: Luffy</div>
+        <div class="menu-panel">
         <div id="map-select" style="display:flex; gap:16px; margin: 8px 0 12px; flex-wrap:wrap; justify-content:center; align-items:center;">
-            <span style="color:#dcc596; letter-spacing:2px; font-size:13px;">ELIGE ISLA:</span>
+            <span class="menu-label">ELIGE ISLA</span>
             <button class="map-btn" data-map="baratie" onclick="selectMap('baratie')"><span class="op-slot" data-ico="ship"></span> Baratie</button>
             <button class="map-btn" data-map="alabasta" onclick="selectMap('alabasta')"><span class="op-slot" data-ico="dune"></span> Alabasta</button>
             <button class="map-btn" data-map="skypiea" onclick="selectMap('skypiea')"><span class="op-slot" data-ico="cloud"></span> Skypiea · PRÓXIMAMENTE</button>
         </div>
-        <div id="map-selected" style="color:#dcc596; font-size:14px; margin-bottom:6px;">Mapa: Baratie</div>
+        <div id="map-selected" class="menu-hidden">Mapa: Baratie</div>
         <div id="curse-select" style="display:flex; gap:12px; margin: 4px 0 12px; flex-wrap:wrap; justify-content:center; align-items:center;">
-            <span style="color:#dcc596; letter-spacing:2px; font-size:13px;">CLIMA PELIGROSO:</span>
+            <span class="menu-label">CLIMA PELIGROSO</span>
             <button class="map-btn curse-btn" data-curse="0" onclick="selectCurse(0)">0</button>
             <button class="map-btn curse-btn" data-curse="1" onclick="selectCurse(1)">1</button>
             <button class="map-btn curse-btn" data-curse="2" onclick="selectCurse(2)">2</button>
             <button class="map-btn curse-btn" data-curse="3" onclick="selectCurse(3)">3</button>
             <button class="map-btn curse-btn" data-curse="4" onclick="selectCurse(4)">4</button>
-            <span id="curse-desc" style="color:#cbd5e1; font-size:12px; font-family:Segoe UI, sans-serif;"></span>
+            <span id="curse-desc"></span>
         </div>
-        <div style="display:flex; gap:14px; margin: 4px 0 12px; flex-wrap:wrap; justify-content:center;">
+        </div>
+        <div class="menu-secondary">
             <button class="map-btn" onclick="showAchievements()"><span class="op-slot" data-ico="hat"></span> LOGROS</button>
             <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="clock"></span> REGISTRO MARINO</button>
             <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
             <button class="map-btn" id="btn-menu-music" onclick="toggleMenuMusic()"><span class="op-slot" id="menu-music-ico" data-ico="sound"></span> MÚSICA: <span id="menu-music-label">ON</span></button>
         </div>
-        <button class="map-btn" style="padding: 12px 24px; font-size: 16px; border-color: #facc15; animation: pulseGlow 2s ease-in-out infinite;" onclick="startGame()">☠ ¡ZARPAR AL COMBATE! ☠</button>
-        <button class="map-btn" style="margin-top: 10px; padding: 12px 24px; font-size: 16px; border-color: #facc15; animation: pulseGlow 2s ease-in-out infinite;" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Berries: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
+        <button class="btn-start btn-sail" onclick="startGame()">¡ZARPAR AL COMBATE!</button>
+        <button class="btn-gold" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Berries: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
     </div>
 
     <!-- Shop Screen -->

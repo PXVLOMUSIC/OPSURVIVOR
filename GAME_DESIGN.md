@@ -30,6 +30,12 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - Polvo y restos según el mapa (`VFX_MAP`): astillas en Baratie, arena en Alabasta, nubes en Skypiea.
 - Las armas compartidas reutilizan la lógica de otro tipo y se distinguen con `vis` (knife, rifle, bolt, spear, axe, grenade, shuriken, haki).
 
+## Interfaz
+- HUD como cartel de Se Busca: retrato, nombre completo, nivel, vida, experiencia y los Berries de la partida como recompensa.
+- Armas equipadas en fichas de papel con una franja del color del personaje (rojo Luffy, verde Zoro, amarillo Sanji, gris compartida) y dorada si están evolucionadas.
+- Cartas de mejora como viñetas de manga: tinta negra, trama y onomatopeya según el personaje (DON!! Luffy, ZUBA!! Zoro, DOGA!! Sanji). Se pinta por CSS con `data-char`, `data-kind` y `.evo`.
+- Menú con una sola tipografía (Bangers y Pirata One), las opciones de isla y clima en un panel, y un botón principal rojo para zarpar.
+
 ## Partida
 - Dura 8 minutos. Al minuto 8 aparece el jefe del mapa, y la victoria llega al derrotarlo.
 - Hay un Modo Infinito, con un jefe nuevo cada 5 minutos y un 60% más de vida cada vez.

@@ -694,7 +694,7 @@
             </div>
 
             <div class="stats-box">
-                <div class="stat-item">฿ <span id="score-txt">0</span> Beli</div>
+                <div class="stat-item">฿ <span id="score-txt">0</span> Berries</div>
                 <button id="pause-btn" onclick="togglePause()" style="display:none; background:rgba(28,17,7,0.95); border:2px solid #b45309; color:#f6e2b8; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:14px; margin-top:8px; width:100%; text-align:center;"><span data-ico="pauseIco"></span> Pausa</button>
             </div>
         </div>
@@ -798,7 +798,7 @@
         </div>
         <p class="op-tagline" style="max-width: 520px; text-align: center; margin-bottom: 24px; font-size: 17px; line-height: 1.4;">
             ¡Monta tu tripulación de un solo hombre y sobrevive 10 minutos al caos del Grand Line!<br>
-            Recoge Beli, forja tu build y derrota al boss del mapa.
+            Recoge Berries, forja tu build y derrota al boss del mapa.
         </p>
         <div id="char-select" style="display: flex; gap: 32px; margin: 12px 0 16px; flex-wrap: wrap; justify-content: center; align-items: stretch;">
             <button class="char-card" data-char="luffy" onclick="selectCharacter('luffy')">
@@ -844,14 +844,14 @@
             <button class="map-btn" id="btn-menu-music" onclick="toggleMenuMusic()"><span class="op-slot" id="menu-music-ico" data-ico="sound"></span> MÚSICA: <span id="menu-music-label">ON</span></button>
         </div>
         <button class="map-btn" style="padding: 12px 24px; font-size: 16px; border-color: #facc15; animation: pulseGlow 2s ease-in-out infinite;" onclick="startGame()">☠ ¡ZARPAR AL COMBATE! ☠</button>
-        <button class="map-btn" style="margin-top: 10px; padding: 12px 24px; font-size: 16px; border-color: #facc15; animation: pulseGlow 2s ease-in-out infinite;" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Beli: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
+        <button class="map-btn" style="margin-top: 10px; padding: 12px 24px; font-size: 16px; border-color: #facc15; animation: pulseGlow 2s ease-in-out infinite;" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Berries: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
     </div>
 
     <!-- Shop Screen -->
     <div id="shop-screen" class="overlay-screen" style="display: none;">
         <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
             <div class="wanted-title">TIENDA</div>
-            <div class="wanted-subtitle">MEJORAS PERMANENTES — BELI: <span id="shop-beli">0</span>฿</div>
+            <div class="wanted-subtitle">MEJORAS PERMANENTES — BERRIES: <span id="shop-beli">0</span>฿</div>
             <div class="upgrade-list" id="shop-options"></div>
             <button class="btn-start" style="margin-top:12px; background: linear-gradient(135deg, #f43f5e, #be123c);" onclick="resetMeta()">RESETEAR MEJORAS</button>
             <button class="btn-start" style="margin-top:12px;" onclick="closeShop()">VOLVER</button>
@@ -1149,7 +1149,7 @@ function selectCurse(n) {
         if (n >= 2) extras.push('oleadas frecuentes');
         if (n >= 3) extras.push('2º Shichibukai');
         if (n >= 4) extras.push('boss doble');
-        desc.innerText = '+' + (n * 25) + '% Beli · +' + (n * 25) + '% peligro' + (extras.length ? ' · ' + extras.join(' · ') : '');
+        desc.innerText = '+' + (n * 25) + '% Berries · +' + (n * 25) + '% peligro' + (extras.length ? ' · ' + extras.join(' · ') : '');
     }
 }
 function applyRunCurse() {
@@ -1500,7 +1500,7 @@ const META_UPGRADES = [
     { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 400, max: 10, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
     { id: 'growth', name: 'Crecimiento', desc: '+5% XP por nivel', cost: 500, max: 10, apply: (p, lvl) => { p.growthBonus += lvl * 0.05; } },
     { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 50% HP', cost: 2000, max: 1, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
-    { id: 'greed', name: 'Avaricia', desc: '+20% Beli por nivel', cost: 300, max: 10, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
+    { id: 'greed', name: 'Avaricia', desc: '+20% Berries por nivel', cost: 300, max: 10, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
     { id: 'curse', name: 'Maldición', desc: '+10% enemigos/HP/vel (riesgo/recompensa)', cost: 1000, max: 5, apply: (p, lvl) => { p.curse += lvl * 0.10; } },
     { id: 'reroll', name: 'Rerolls', desc: '+3 rerolls de opciones por partida', cost: 500, max: 10, apply: (p, lvl) => { p.rerollUses += lvl * 3; } },
     { id: 'skip', name: 'Saltos', desc: '+3 saltos de subida de nivel por partida', cost: 100, max: 10, apply: (p, lvl) => { p.skipUses += lvl * 3; } },
@@ -2066,7 +2066,7 @@ const ARCANA_POOL = [
     { id: 'log_pose', name: 'Log Pose', desc: 'Navegas la ruta mas corta: -25% Cooldown.', apply: () => { player.cdReduction = Math.min(80, player.cdReduction + 25); } },
     { id: 'mandoble_wano', name: 'Mandoble de Wano', desc: 'Te ganza un samurai: +20% Critico.', apply: () => { player.critChance = Math.min(1.0, player.critChance + 0.2); } },
     { id: 'campana_dorada', name: 'Campana Dorada', desc: 'Resuena sobre la selva: +100% rango de recogida.', apply: () => { player.pickupBonus += 1.0; } },
-    { id: 'bolsa_avaro', name: 'Bolsa del Avaro', desc: 'El oro llama al oro: +30% Beli.', apply: () => { player.greedBonus += 0.3; } },
+    { id: 'bolsa_avaro', name: 'Bolsa del Avaro', desc: 'El oro llama al oro: +30% Berries.', apply: () => { player.greedBonus += 0.3; } },
     { id: 'sangre_celestial', name: 'Sangre Celestial', desc: 'La sangre de Mariejois blindia: +15% Armadura.', apply: () => { player.armor = Math.min(70, player.armor + 15); } },
     { id: 'viento_alabasta', name: 'Viento de Alabasta', desc: 'El viento empuja las velas: +15% Velocidad.', apply: () => { player.speed *= 1.15; } },
     { id: 'haki_rey', name: 'Haki del Emperador', desc: 'Impones tu voluntad: +15% Poder y +10% Critico.', apply: () => { player.powerPct += 15; player.critChance = Math.min(1.0, player.critChance + 0.1); } },
@@ -2143,7 +2143,7 @@ function renderShop() {
             <div class="upgrade-icon">${ICONS.up}</div>
             <div class="upgrade-info">
                 <h4>${u.name} (Nv ${lvl}/${u.max})</h4>
-                <p>${u.desc} — Coste: ${cost} Beli</p>
+                <p>${u.desc} — Coste: ${cost} Berries</p>
             </div>
         `;
         if (lvl < u.max && meta.beli >= cost) {
@@ -2164,7 +2164,7 @@ function renderShop() {
             <div class="upgrade-icon">${ICONS.unlock}</div>
             <div class="upgrade-info">
                 <h4>Desbloquear ${ch === 'zoro' ? 'Zoro' : 'Sanji'}</h4>
-                <p>Coste: ${cost} Beli</p>
+                <p>Coste: ${cost} Berries</p>
             </div>
         `;
         if (meta.beli >= cost) {
@@ -2190,7 +2190,7 @@ function buyUpgrade(id) {
     updateMetaUI();
 }
 function resetMeta() {
-    if (!confirm('¿Resetear todas las mejoras permanentes? (No devuelve Beli)')) return;
+    if (!confirm('¿Resetear todas las mejoras permanentes? (No devuelve Berries)')) return;
     META_UPGRADES.forEach(u => meta.upgrades[u.id] = 0);
     saveMeta();
     renderShop();
@@ -2205,7 +2205,7 @@ const ACHIEVEMENTS = [
     { id: 'hunt_500',     name: 'Cazamarinos',         desc: 'Derrota 500 enemigos en total.',                check: s => s.kills >= 500,  reward: 1000 },
     { id: 'elites_25',    name: 'Cabezas de Cartel',   desc: 'Derrota 25 élites con nombre propio.',          check: s => s.elites >= 25,  reward: 1000 },
     { id: 'survive_10',   name: 'Hasta el Fondo del Mar', desc: 'Sobrevive los 10 minutos completos.',        check: s => Math.max(...Object.values(s.maxTime)) >= 480, reward: 1500 },
-    { id: 'gold_20k',     name: 'Sueño del Gold Roger', desc: 'Acumula 20,000 Beli en total.',                check: s => s.beliTotal >= 20000, reward: 2000 },
+    { id: 'gold_20k',     name: 'Sueño del Gold Roger', desc: 'Acumula 20,000 Berries en total.',                check: s => s.beliTotal >= 20000, reward: 2000 },
     { id: 'win_luffy',    name: 'Hay Que Ser Leyenda', desc: 'Conquista una isla con Luffy, el Hombre-Goma.', check: s => s.winsByChar.luffy >= 1, reward: 2000, unlock: 'zoro' },
     { id: 'win_zoro',     name: 'El Mejor Espadachín del Mundo', desc: 'Conquista una isla con Zoro.',        check: s => s.winsByChar.zoro >= 1, reward: 2000, unlock: 'sanji' },
     { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 3000 },
@@ -2310,7 +2310,7 @@ function checkAchievements() {
             meta.beli += a.reward;
             if (a.unlock) meta.unlocked[a.unlock] = true;
             saveMeta();
-            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Beli' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : ''));
+            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Berries' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : ''));
         }
     }
 }
@@ -2353,7 +2353,7 @@ function renderAchievements() {
             <div class="upgrade-icon">${got ? '◉' : '○'}</div>
             <div class="upgrade-info">
                 <h4>${a.name}${got ? ' — ¡SELLADO!' : ''}</h4>
-                <p>${a.desc} · Recompensa: ${a.reward} Beli${a.unlock ? ' · Desbloquea: ' + a.unlock.toUpperCase() : ''}</p>
+                <p>${a.desc} · Recompensa: ${a.reward} Berries${a.unlock ? ' · Desbloquea: ' + a.unlock.toUpperCase() : ''}</p>
             </div>
         `;
         list.appendChild(card);
@@ -2488,7 +2488,7 @@ function updateMetaUI() {
         const n = parseInt(b.dataset.curse, 10);
         const locked = n > meta.curseUnlocked;
         b.classList.toggle('locked', locked);
-        b.title = locked ? 'Vence el Clima ' + (n - 1) + ' para desbloquear' : 'Clima ' + n + ': +' + (n * 25) + '% Beli y peligro';
+        b.title = locked ? 'Vence el Clima ' + (n - 1) + ' para desbloquear' : 'Clima ' + n + ': +' + (n * 25) + '% Berries y peligro';
         if (locked && runCurseRank === n) { runCurseRank = 0; document.querySelectorAll('#curse-select .curse-btn').forEach(bb => bb.classList.toggle('selected', bb.dataset.curse === '0')); }
     });
 }
@@ -4147,12 +4147,12 @@ function showUpgradeScreen(count, isChest) {
         { id: 'speed', type: 'passive', chars: 'all', title: 'Velocidad', icon: ICONS.speed, desc: 'Aumenta la velocidad de movimiento +8%.' },
         { id: 'pickup', type: 'passive', chars: 'all', title: 'Recogida', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida de drops.' },
         { id: 'growth', type: 'passive', chars: 'all', title: 'Crecimiento', icon: ICONS.growth, desc: 'Aumenta la XP ganada +8%.' },
-        { id: 'luck', type: 'passive', chars: 'all', title: 'Suerte', icon: ICONS.luck, desc: 'Mejora la calidad de los cofres y el Beli; +5% crítico.' },
+        { id: 'luck', type: 'passive', chars: 'all', title: 'Suerte', icon: ICONS.luck, desc: 'Mejora la calidad de los cofres y los Berries; +5% crítico.' },
         { id: 'maxhp', type: 'passive', chars: 'all', title: 'Vitalidad', icon: ICONS.armor, desc: 'Aumenta la vida máxima +20 y la regeneración.' },
         { id: 'regen', type: 'passive', chars: 'all', title: 'Regeneración', icon: ICONS.power, desc: 'Recupera +2 HP por segundo.' },
         { id: 'evasion', type: 'passive', chars: 'all', title: 'Esquiva', icon: ICONS.speed, desc: 'Reduce el daño recibido un +6% (acumulable).' },
         { id: 'magnet', type: 'passive', chars: 'all', title: 'Imán', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida +20%.' },
-        { id: 'greed', type: 'passive', chars: 'all', title: 'Avaricia', icon: ICONS.luck, desc: 'Aumenta el Beli ganado +12%.' },
+        { id: 'greed', type: 'passive', chars: 'all', title: 'Avaricia', icon: ICONS.luck, desc: 'Aumenta los Berries ganados +12%.' },
         { id: 'vamp', type: 'passive', chars: 'all', title: 'Vampirismo', icon: ICONS.crit, desc: 'Sana 2 HP al derrotar a un enemigo (probabilidad).' },
     ];
     // snapshot del pool completo (titulo + icono) — la Ficha de Singladura lo usa
@@ -4233,8 +4233,8 @@ function showUpgradeScreen(count, isChest) {
         card.innerHTML = `
             <div class="upgrade-icon">${ICONS.cart}</div>
             <div class="upgrade-info">
-                <h4>Bolsa de Beli</h4>
-                <p>No queda nada que mejorar en este cofre. El botín se convierte en <b style="color:#b45309">+${goldVal.toLocaleString('en-US')} Beli</b>.</p>
+                <h4>Bolsa de Berries</h4>
+                <p>No queda nada que mejorar en este cofre. El botín se convierte en <b style="color:#b45309">+${goldVal.toLocaleString('en-US')} Berries</b>.</p>
             </div>
         `;
         card.onclick = () => {
@@ -4451,7 +4451,7 @@ function triggerGameOver() {
     const st = meta.stats;
     document.getElementById('gameover-stats').innerText =
         'Tiempo: ' + formatTime(gameTime) + ' · Enemigos derrotados esta singladura: ' + endKills +
-        ' · Beli conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0);
+        ' · Berries conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0);
     renderRunSummary('gameover-summary');
     document.getElementById('gameover-screen').style.display = 'flex';
 }
@@ -4468,7 +4468,7 @@ function triggerVictory() {
     // VS: vencer con el clima N desbloquea el N+1 (una vez)
     if (runCurseRank === meta.curseUnlocked && meta.curseUnlocked < 4) {
         meta.curseUnlocked++;
-        showAchToast('CLIMA PELIGROSO ' + meta.curseUnlocked + ' DESBLOQUEADO — más Beli, más peligro');
+        showAchToast('CLIMA PELIGROSO ' + meta.curseUnlocked + ' DESBLOQUEADO — más Berries, más peligro');
         updateMetaUI();
     }
     checkAchievements();
@@ -4477,7 +4477,7 @@ function triggerVictory() {
     const st = meta.stats;
     const record = gameTime > prevBest ? ' · ¡NUEVO RÉCORD!' : '';
     document.getElementById('victory-stats').innerText =
-        'Tiempo: ' + formatTime(gameTime) + ' · Beli conseguido: ' + fmtBeli(scoreBeli) +
+        'Tiempo: ' + formatTime(gameTime) + ' · Berries conseguido: ' + fmtBeli(scoreBeli) +
         ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0) + record;
     renderRunSummary('victory-summary');
     document.getElementById('victory-screen').style.display = 'flex';

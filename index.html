@@ -697,20 +697,21 @@
 
     <!-- Pause Screen -->
     <div id="pause-screen" class="overlay-screen" style="display: none;">
-        <div class="wanted-board" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
-            <div style="max-height: 180px; overflow-y: auto; margin-bottom: 12px;">
-                <h3 style="color:#3d2314; font-size:14px; margin-bottom:6px;">ARMAS</h3>
-                <div id="pause-weapons" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;"></div>
-                <h3 style="color:#3d2314; font-size:14px; margin:10px 0 6px;">PASIVAS</h3>
-                <div id="pause-passives" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;"></div>
+        <div id="pause-info-panel" style="position:absolute; top:16px; left:16px; max-width: 340px; max-height: 90vh; overflow-y: auto; background: rgba(28,17,7,0.95); border: 2px solid #b45309; border-radius: 12px; padding: 12px 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.75); z-index: 2;">
+            <div style="max-height: 160px; overflow-y: auto; margin-bottom: 10px;">
+                <h3 style="color:#f6e2b8; font-size:13px; margin-bottom:6px; letter-spacing:1px;">ARMAS</h3>
+                <div id="pause-weapons" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-start;"></div>
+                <h3 style="color:#f6e2b8; font-size:13px; margin:10px 0 6px; letter-spacing:1px;">PASIVAS</h3>
+                <div id="pause-passives" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-start;"></div>
             </div>
-            <div class="stats-panel" style="margin: 8px auto; max-width: 320px;">
+            <div class="stats-panel" style="margin: 0; max-width: 100%;">
                 <div><span class="op-slot" data-ico="power"></span> Poder: <b id="stat-power">+0%</b></div>
                 <div><span class="op-slot" data-ico="crit"></span> Crítico: <b id="stat-crit">5%</b></div>
                 <div><span class="op-slot" data-ico="cd"></span> Cooldown: <b id="stat-cd">-0%</b></div>
                 <div><span class="op-slot" data-ico="armor"></span> Armadura: <b id="stat-armor">0%</b></div>
             </div>
-            <div class="wanted-title" style="font-size: 32px;">PAUSA</div>
+        </div>
+        <div class="wanted-board" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
             <div class="wanted-subtitle">JUEGO EN PAUSA</div>
             <div class="upgrade-list">
                 <div class="upgrade-card" onclick="resumeGame()">

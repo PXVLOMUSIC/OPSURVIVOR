@@ -2176,7 +2176,7 @@ function renderShop() {
     // character unlocks
     ['zoro','sanji'].forEach(ch => {
         if (meta.unlocked[ch]) return;
-        const cost = ch === 'zoro' ? 10000 : 15000;
+        const cost = ch === 'zoro' ? 15000 : 10000;
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.innerHTML = `

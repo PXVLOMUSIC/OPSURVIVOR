@@ -2659,6 +2659,8 @@ function update(dt) {
     if (player.regenRate > 0 && player.hp > 0 && player.hp < player.maxHp) {
         player.hp = Math.min(player.maxHp, player.hp + player.regenRate * dt);
     }
+    // Decaimiento de la sacudida de cámara (clamp para evitar valores negativos -> temblor eterno)
+    if (cameraShake > 0) cameraShake = Math.max(0, cameraShake - dt * 15);
     if (skills.gear2.active) {
         skills.gear2.remain -= dt;
         if (skills.gear2.remain <= 0) skills.gear2.active = false;

@@ -512,7 +512,7 @@
         .char-card {
             font-family: 'Bangers', sans-serif;
             width: min(190px, 36vw);
-            min-height: 260px;
+            min-height: 280px;
             padding: 10px 8px 8px;
             border-radius: 4px;
             cursor: pointer;
@@ -796,11 +796,11 @@
             <div class="op-logo-main">ONE PIECE</div>
             <div class="op-logo-sub">SURVIVOR</div>
         </div>
-        <p class="op-tagline" style="max-width: 480px; text-align: center; margin-bottom: 18px; font-size: 16px; line-height: 1.4;">
+        <p class="op-tagline" style="max-width: 520px; text-align: center; margin-bottom: 24px; font-size: 17px; line-height: 1.4;">
             ¡Monta tu tripulación de un solo hombre y sobrevive 10 minutos al caos del Grand Line!<br>
             Recoge Beli, forja tu build y derrota al boss del mapa.
         </p>
-        <div id="char-select" style="display: flex; gap: 24px; margin: 10px 0 14px; flex-wrap: wrap; justify-content: center; align-items: stretch;">
+        <div id="char-select" style="display: flex; gap: 32px; margin: 12px 0 16px; flex-wrap: wrap; justify-content: center; align-items: stretch;">
             <button class="char-card" data-char="luffy" onclick="selectCharacter('luffy')">
                 <img src="assets/sprites/ui/sprite_000.png" alt="Luffy" onerror="this.style.display='none'">
                 <span class="char-name">LUFFY</span>
@@ -821,14 +821,14 @@
             </button>
         </div>
         <div id="char-selected" style="color:#dcc596; font-size:14px; margin-bottom:10px; letter-spacing:1px;">Personaje: Luffy</div>
-        <div id="map-select" style="display:flex; gap:12px; margin: 6px 0 10px; flex-wrap:wrap; justify-content:center; align-items:center;">
+        <div id="map-select" style="display:flex; gap:16px; margin: 8px 0 12px; flex-wrap:wrap; justify-content:center; align-items:center;">
             <span style="color:#dcc596; letter-spacing:2px; font-size:13px;">ELIGE ISLA:</span>
             <button class="map-btn" data-map="baratie" onclick="selectMap('baratie')"><span class="op-slot" data-ico="ship"></span> Baratie</button>
             <button class="map-btn" data-map="alabasta" onclick="selectMap('alabasta')"><span class="op-slot" data-ico="dune"></span> Alabasta</button>
             <button class="map-btn" data-map="skypiea"><span class="op-slot" data-ico="cloud"></span> Skypiea · PRÓXIMAMENTE</button>
         </div>
         <div id="map-selected" style="color:#dcc596; font-size:14px; margin-bottom:6px;">Mapa: Baratie</div>
-        <div id="curse-select" style="display:flex; gap:8px; margin: 2px 0 10px; flex-wrap:wrap; justify-content:center; align-items:center;">
+        <div id="curse-select" style="display:flex; gap:12px; margin: 4px 0 12px; flex-wrap:wrap; justify-content:center; align-items:center;">
             <span style="color:#dcc596; letter-spacing:2px; font-size:13px;">CLIMA PELIGROSO:</span>
             <button class="map-btn curse-btn" data-curse="0" onclick="selectCurse(0)">0</button>
             <button class="map-btn curse-btn" data-curse="1" onclick="selectCurse(1)">1</button>
@@ -837,7 +837,7 @@
             <button class="map-btn curse-btn" data-curse="4" onclick="selectCurse(4)">4</button>
             <span id="curse-desc" style="color:#cbd5e1; font-size:12px; font-family:Segoe UI, sans-serif;"></span>
         </div>
-        <div style="display:flex; gap:10px; margin: 2px 0 10px; flex-wrap:wrap; justify-content:center;">
+        <div style="display:flex; gap:14px; margin: 4px 0 12px; flex-wrap:wrap; justify-content:center;">
             <button class="map-btn" onclick="showAchievements()"><span class="op-slot" data-ico="hat"></span> LOGROS</button>
             <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="clock"></span> REGISTRO MARINO</button>
             <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
@@ -1162,8 +1162,9 @@ function applyRunCurse() {
 // toggle de solo la musica del menu (batalla sigue con su propio slider en OPCIONES)
 function toggleMenuMusic() {
     windowOpts.menuMusicMuted = !windowOpts.menuMusicMuted;
-    saveOpts(); // saveOpts -> applyOpts; updateMusic se llama en closeOptions
+    saveOpts();
     updateMenuMusicBtn();
+    updateMusic();
 }
 function updateMenuMusicBtn() {
     const ico = document.getElementById('menu-music-ico');

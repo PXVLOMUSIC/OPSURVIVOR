@@ -231,7 +231,7 @@ function resetGame() {
 
     enemies = []; enemyBullets = []; drops = []; particles = []; damageTexts = []; activeAttacks = [];
     gameTime = 0; scoreBeli = 0; bossSpawned = false;
-    window.moriaSpawned = false; window.kumaSpawned = false; window.morganSpawned = false; window.mirrorMinibossSpawned = false;
+    window.minibossesSpawned = {}; window.mirrorMinibossSpawned = false;
     window.spawnBanner = null;
     updateUI();
 }

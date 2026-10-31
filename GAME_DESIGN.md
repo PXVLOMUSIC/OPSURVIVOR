@@ -34,12 +34,15 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - Las habilidades tienen que ser fieles al manga y al anime.
 
 ## Mapas
-- Tienen que ser lugares reconocibles de One Piece.
-- **Baratie** (jugable): jefe Don Krieg (9000 PV). El Capitán Morgan aparece hacia el minuto 1. Moria es miniboss en el minuto 4 y Kuma en el 6. Los enemigos de Thriller Bark se mantienen hasta que haya sprites del East Blue (decisión del 31-10-2026).
-- **Alabasta** (jugable): jefe Crocodile (14000 PV). Mapa nuevo y colisiones `ALABASTA_POLY` sacadas de la línea verde de referencia. Falta el sprite de Crocodile, que ahora usa el de Krieg.
-- **Skypiea** (bloqueado): jefe Enel (18000 PV). Faltan las imágenes nuevas del mapa, ajustar las colisiones y el sprite de Enel.
-- Se desbloquean en `mapLocked()` (`js/core.js`). Las colisiones están en `WALK_POLYS` (`js/maps.js`). El origen vertical de cada imagen está en `MAP_ORIGIN_Y` (`js/render.js`). La cámara no deja ver nada fuera de la imagen.
-- Obstáculos: `MAP_OBSTACLES` (`js/maps.js`) son cápsulas (rejas, barandillas, farolas, palmeras, bancos...) detectadas sobre cada imagen. Bloquean al jugador y a los enemigos normales; los jefes y minijefes las atraviesan. Punto de restauración previo a obstáculos: commit `7fe313e`.
+- Tienen que ser lugares reconocibles de One Piece. Todas las imágenes miden 1408x768 y se dibujan con `MAP_SCALE` 2.
+- Solo hay colisiones en el borde de la arena, sin obstáculos en el interior (decisión de Pablo del 31-10-2026). Las cápsulas de obstáculos detectadas están en el commit `a863eaa`, y `MAP_OBSTACLES` sigue disponible pero vacío.
+- **Baratie**: borde detectado por color (madera frente a agua). Jefe Don Krieg (9000 PV) y minijefe el Capitán Morgan (min 3).
+- **Alabasta**, **Skypiea** y **Thriller Bark** comparten el trazado de plaza de palacio (`PALACE_ARENA_POLY`, sacado de la línea verde de Alabasta).
+  - Alabasta: jefe Crocodile (14000 PV).
+  - Skypiea: jefe Enel (18000 PV).
+  - Thriller Bark: jefe Gekko Moria (16000 PV) y minijefes Absalom (min 4) y Kuma (min 6). Todo el roster de zombis de Thriller Bark (Inuppen, Tararan, Kumashi, Hogback, Cindry, Perona, Absalom y Ryuma).
+- Enemigos por mapa: `MAP_ENEMIES` y `ENEMY_STATS` (`js/core.js`), que definen la lista de aparición, los minijefes, el jefe y las oleadas. Baratie, Alabasta y Skypiea usan marines de relleno hasta tener sprites de su arco (piratas de Krieg, Baroque Works y el ejército de Enel). Crocodile y Enel siguen usando el sprite de Krieg.
+- El origen vertical de cada imagen está en `MAP_ORIGIN_Y` (`js/render.js`). La cámara no deja ver nada fuera de la imagen. `mapLocked()` (`js/core.js`) permite bloquear un mapa.
 
 ## Progreso permanente
 Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, 12 logros y 15 evoluciones de armas. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).

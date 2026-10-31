@@ -1001,46 +1001,13 @@ function handleSpawning(dt) {
         if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
 
         const hpScale = Math.pow(1.28, minutes) * player.curse;
-        let type = 'grunt', hp = 32 * hpScale, speed = 78 + Math.random() * 22, damage = 16;
-
+        // ===== Pools por mapa (MAP_ENEMIES en core.js) =====
+        const cfg = mapEnemies();
         const rand = Math.random();
-        // ===== Pools con lógica del mundo One Piece =====
-        // Baratie  — piratas de Krieg + zombies de Thriller Bark a la deriva
-        // Alabasta — agentes de Baroque Works (Billions/Millions)
-        // Skypiea  — ejército divino de Enel + monstruos celestiales
-        if (selectedMap === 'baratie') {
-            if (minutes >= 6 && rand < 0.07) { type = 'ryuma'; hp = 130 * hpScale; speed = 48; damage = 26; }
-            else if (minutes >= 6 && rand < 0.14) { type = 'absalom'; hp = 120 * hpScale; speed = 45; damage = 24; }
-            else if (minutes >= 5 && rand < 0.21) { type = 'pellona'; hp = 110 * hpScale; speed = 54; damage = 24; }
-            else if (minutes >= 5 && rand < 0.28) { type = 'kuma'; hp = 150 * hpScale; speed = 50; damage = 28; }
-            else if (minutes >= 4 && rand < 0.35) { type = 'cindry'; hp = 120 * hpScale; speed = 48; damage = 22; }
-            else if (minutes >= 4 && rand < 0.42) { type = 'kumashi'; hp = 100 * hpScale; speed = 52; damage = 20; }
-            else if (minutes >= 4 && rand < 0.49) { type = 'moria'; hp = 200 * hpScale; speed = 40; damage = 30; }
-            else if (minutes >= 3 && rand < 0.61) { type = 'inupen'; hp = 70 * hpScale; speed = 60; damage = 18; }
-            else if (minutes >= 3 && rand < 0.76) { type = 'pacifista'; hp = 300 * hpScale; speed = 46; damage = 40; }
-            else if (minutes >= 2 && rand < 0.84) { type = 'tararan'; hp = 80 * hpScale; speed = 55; damage = 20; }
-            else if (minutes >= 2 && rand < 0.92) { type = 'hogback'; hp = 90 * hpScale; speed = 50; damage = 24; }
-            else if (minutes >= 1) { type = 'shooter'; hp = 48 * hpScale; speed = 62; damage = 22; }
-        } else if (selectedMap === 'alabasta') {
-            // Baroque Works: Billions (fodder) + agentes variados que reutilizan el roster
-            if (minutes >= 5 && rand < 0.08) { type = 'ryuma'; hp = 130 * hpScale; speed = 48; damage = 26; }     // ~ Mr. 1 (espadachín)
-            else if (minutes >= 4 && rand < 0.16) { type = 'absalom'; hp = 120 * hpScale; speed = 45; damage = 24; }
-            else if (minutes >= 4 && rand < 0.24) { type = 'pellona'; hp = 110 * hpScale; speed = 54; damage = 24; }
-            else if (minutes >= 3 && rand < 0.32) { type = 'hogback'; hp = 90 * hpScale; speed = 50; damage = 24; }
-            else if (minutes >= 3 && rand < 0.40) { type = 'cindry'; hp = 120 * hpScale; speed = 48; damage = 22; }
-            else if (minutes >= 2 && rand < 0.55) { type = 'pacifista'; hp = 300 * hpScale; speed = 46; damage = 40; }
-            else if (minutes >= 1 && rand < 0.86) { type = 'shooter'; hp = 48 * hpScale; speed = 62; damage = 22; }
-        } else { // skypiea
-            // Ejército divino de Enel + bestias de la Montaña del Trueno reutilizando el roster
-            if (minutes >= 6 && rand < 0.07) { type = 'ryuma'; hp = 130 * hpScale; speed = 48; damage = 26; }
-            else if (minutes >= 5 && rand < 0.15) { type = 'pellona'; hp = 110 * hpScale; speed = 54; damage = 24; }
-            else if (minutes >= 5 && rand < 0.23) { type = 'absalom'; hp = 120 * hpScale; speed = 45; damage = 24; }
-            else if (minutes >= 4 && rand < 0.31) { type = 'hogback'; hp = 90 * hpScale; speed = 50; damage = 24; }
-            else if (minutes >= 4 && rand < 0.41) { type = 'kumashi'; hp = 100 * hpScale; speed = 52; damage = 20; }
-            else if (minutes >= 3 && rand < 0.51) { type = 'tararan'; hp = 80 * hpScale; speed = 55; damage = 20; }
-            else if (minutes >= 3 && rand < 0.66) { type = 'pacifista'; hp = 300 * hpScale; speed = 46; damage = 40; }
-            else if (minutes >= 1 && rand < 0.86) { type = 'shooter'; hp = 48 * hpScale; speed = 62; damage = 22; }
-        }
+        let type = cfg.base;
+        for (const en of cfg.pool) { if (minutes >= en.min && rand < en.p) { type = en.type; break; } }
+        const _st = ENEMY_STATS[type] || ENEMY_STATS.grunt;
+        let hp = _st[0] * hpScale, speed = type === 'grunt' ? _st[1] + Math.random() * 22 : _st[1], damage = _st[2];
 
         // === Élites con lore: personajes ICÓNICOS =====
         // Fodder (marines/agentes/soldados): 2-3% de élite (x18 HP).
@@ -1079,32 +1046,24 @@ function handleSpawning(dt) {
         speed *= 1 + (player.curse - 1) / 2;
         const eName = !isElite ? null : (ELITE_INFO[type] ? ELITE_INFO[type].name[selectedMap] : null);
         enemies.push({ x: ex, y: ey, type, hp, maxHp: hp, speed, damage, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite, damageTaken: type === 'elite_marine' ? 0.5 : 1, name: eName });
-        // Morgan (Baratie): capitán icónico de la Marina de la 153, élite garantizado (~1:30)
-        if (selectedMap === 'baratie' && minutes >= 1 && !window.morganSpawned) {
-            window.morganSpawned = true;
-            const mhp = 400 * hpScale;
-            enemies.push({ x: ex + 40, y: ey, type: 'morgan', hp: mhp, maxHp: mhp, speed: 42, damage: 26, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: true, damageTaken: 1, name: ELITE_INFO.morgan.name[selectedMap] });
+        // Minijefes del mapa (una vez por partida)
+        if (!window.minibossesSpawned) window.minibossesSpawned = {};
+        for (const mb of cfg.minibosses) {
+            if (minutes >= mb.min && !window.minibossesSpawned[mb.type]) {
+                window.minibossesSpawned[mb.type] = true;
+                const mhp = mb.hp * hpScale;
+                enemies.push(makeEnemy(mb.type, ex, ey, 1, { hp: mhp, maxHp: mhp, speed: mb.speed, damage: mb.damage, isMiniboss: true, name: MINIBOSS_INFO[mb.type] }));
+                window.spawnBanner = { text: MINIBOSS_INFO[mb.type], life: 2.0, color: '#ffa500' };
+                playSound('boss');
+            }
         }
-        // Moria y Kuma ya no son fodder: son Shichibukai (minibosses) ver abajo
-        // miniboss spawns
-        if (minutes >= 4 && !window.moriaSpawned) {
-            window.moriaSpawned = true;
-            enemies.push({ x: ex, y: ey, type: 'moria', hp: 600 * hpScale, maxHp: 600 * hpScale, speed: 35, damage: 30, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isMiniboss: true, damageTaken: 1, name: MINIBOSS_INFO.moria });
-            window.spawnBanner = { text: MINIBOSS_INFO.moria, life: 2.0, color: '#ffa500' };
-            playSound('boss');
-        }
-        if (minutes >= 6 && !window.kumaSpawned) {
-            window.kumaSpawned = true;
-            enemies.push({ x: ex, y: ey, type: 'kuma', hp: 800 * hpScale, maxHp: 800 * hpScale, speed: 45, damage: 35, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isMiniboss: true, damageTaken: 1, name: MINIBOSS_INFO.kuma });
-            window.spawnBanner = { text: MINIBOSS_INFO.kuma, life: 2.0, color: '#ffa500' };
-            playSound('boss');
-        }
-        // Clima 3+: con los Shichibukai llega una segunda bestia espejo (80% HP)
-        if (runCurseRank >= 3 && minutes >= 5 && !window.mirrorMinibossSpawned) {
+        // Clima 3+: segundo ejemplar del primer minijefe (80% PV)
+        const mb0 = cfg.minibosses[0];
+        if (mb0 && runCurseRank >= 3 && minutes >= mb0.min + 1 && !window.mirrorMinibossSpawned) {
             window.mirrorMinibossSpawned = true;
-            const mhp = Math.round(700 * hpScale * 0.8);
-            enemies.push({ x: ex - 120, y: ey - 60, type: 'moria', hp: mhp, maxHp: mhp, speed: 35, damage: 30, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isMiniboss: true, damageTaken: 1, name: MINIBOSS_INFO.moria });
-            window.spawnBanner = { text: '¡SEGUNDO SHICHIBUKAI APARECE!', life: 2.0, color: '#ffa500' };
+            const mhp = Math.round(mb0.hp * hpScale * 0.8);
+            enemies.push(makeEnemy(mb0.type, ex - 120, ey - 60, 1, { hp: mhp, maxHp: mhp, speed: mb0.speed, damage: mb0.damage, isMiniboss: true, name: MINIBOSS_INFO[mb0.type] }));
+            window.spawnBanner = { text: '¡SEGUNDO ' + MINIBOSS_INFO[mb0.type].split(' —')[0].toUpperCase() + '!', life: 2.0, color: '#ffa500' };
             playSound('boss');
         }
     }
@@ -1114,9 +1073,7 @@ function handleSpawning(dt) {
 
 function spawnBoss() {
     bossSpawned = true;
-    let bossType = 'boss_krieg';
-    if (selectedMap === 'alabasta') bossType = 'boss_crocodile';
-    else if (selectedMap === 'skypiea') bossType = 'boss_enel';
+    const bossType = mapEnemies().boss;
     let hpv = BOSS_HP[bossType];
     // Modo Infinito: cada boss nuevo es un 60% mas fuerte que el anterior
     if (window.endlessMode) hpv = Math.round(hpv * (1 + 0.6 * (window.endlessBossKills || 0)));
@@ -1143,30 +1100,32 @@ function updateEvents(dt) {
     const kind = Math.random() < 0.5 ? 'ring' : 'charge';
     if (kind === 'ring') {
         // Emboscada: anillo de piratas cierra TODO el contorno hacia el jugador
-        window.spawnBanner = { text: '¡EMBOSCADA PIRATA!', life: 2.0, color: '#ef4444' };
+        const ev = mapEnemies().events;
+        window.spawnBanner = { text: ev.ringText, life: 2.0, color: '#ef4444' };
         playSound('levelup');
         const n = 24 + minutes * 2;
         for (let k = 0; k < n; k++) {
             const ang = (Math.PI * 2 * k) / n;
             let ex = player.x + Math.cos(ang) * 560, ey = player.y + Math.sin(ang) * 560;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push({ x: ex, y: ey, type: 'grunt', hp: 32 * hpScale, maxHp: 32 * hpScale, speed: 110 + minutes * 10, damage: 16, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isEvent: true, damageTaken: 1, name: 'X' });
+            enemies.push(makeEnemy(ev.ring, ex, ey, hpScale, { speed: 110 + minutes * 10, isEvent: true, name: 'X' }));
         }
     } else {
         // Carga de la Armada: filas cruzando el mapa desde un costado
-        window.spawnBanner = { text: '¡CARGA DE LA ARMADA!', life: 2.0, color: '#38bdf8' };
+        const ev = mapEnemies().events;
+        window.spawnBanner = { text: ev.chargeText, life: 2.0, color: '#38bdf8' };
         playSound('levelup');
         const side = Math.random() < 0.5 ? -1 : 1;
         const n = 20 + minutes * 2;
         for (let k = 0; k < n; k++) {
             let ex = player.x + side * 640, ey = player.y - 360 + k * 34;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push({ x: ex, y: ey, type: 'shooter', hp: 48 * hpScale, maxHp: 48 * hpScale, speed: 70, damage: 16, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isEvent: true, damageTaken: 1, name: 'X' });
+            enemies.push(makeEnemy(ev.charge, ex, ey, hpScale, { speed: 70, damage: 16, isEvent: true, name: 'X' }));
         }
         for (let k = 0; k < 10; k++) {
             let ex = player.x + side * 640, ey = player.y - 200 + k * 40;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push({ x: ex, y: ey, type: 'inupen', hp: 70 * hpScale, maxHp: 70 * hpScale, speed: 130, damage: 18, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, isEvent: true, damageTaken: 1, name: 'X' });
+            enemies.push(makeEnemy(ev.runners, ex, ey, hpScale, { speed: 130, isEvent: true, name: 'X' }));
         }
     }
 }
@@ -1226,7 +1185,7 @@ function killEnemy(e) {
     }
     // VS: Mini flag de Doble Ejecucion (2 Shichibukai en la misma singladura)
     if (e.isMiniboss) {
-        if (e.type === 'moria' && window.runStats) window.runStats.moriaThis = true;
+        if ((e.type === 'moria' || e.type === 'boss_moria') && window.runStats) window.runStats.moriaThis = true;
         if (e.type === 'kuma' && window.runStats) window.runStats.kumaThis = true;
     }
     // VS: AVALANCHA DE BELI al caer un Shichibukai/boss — monedas doradas en arco

@@ -13,9 +13,9 @@ function updateMusic() {
         battleMusic.pause();
         // toggle del menu: silencia solo la musica del menu (la batalla sigue su slider)
         if (windowOpts && windowOpts.menuMusicMuted) { menuMusic.pause(); return; }
-        // autoplay con sonido esta bloqueado por el navegador hasta el primer gesto:
-        // arrancamos silenciado y activamos el sonido en el primer click.
-        menuMusic.muted = !window._audioUnlocked;
+        // la musica no arranca (ni silenciada) hasta el primer clic o toque en la pagina
+        if (!window._audioUnlocked) { menuMusic.pause(); return; }
+        menuMusic.muted = false;
         menuMusic.volume = vol;
         menuMusic.play().catch(() => {});
     } else if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'GAMEOVER' || gameState === 'VICTORY') {

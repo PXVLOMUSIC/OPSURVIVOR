@@ -24,9 +24,8 @@ document.addEventListener('click', function (e) {
 }, true);
 
 // --- Desbloqueo de audio ---
-// Los navegadores solo dejan sonar audio tras un gesto (tecla, toque o clic).
-// Se escucha cualquiera de ellos, no solo el clic, y la pantalla de titulo
-// "Pulsa cualquier tecla" garantiza ese gesto antes del menu.
+// La musica arranca solo con el primer clic o toque en la pagina (no con teclas).
+// La pantalla de titulo pide ese clic antes de mostrar el menu.
 function unlockAudio() {
     if (!audioCtx) initAudio();
     try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
@@ -35,7 +34,7 @@ function unlockAudio() {
     try { menuMusic.muted = false; } catch (e) {}
     try { updateMusic(); } catch (err) {}
 }
-['keydown', 'pointerdown', 'touchend'].forEach(ev =>
+['pointerdown', 'touchend'].forEach(ev =>
     window.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
 
 (function setupPressStart() {
@@ -43,21 +42,17 @@ function unlockAudio() {
     if (!ps) return;
     const touch = window.matchMedia && matchMedia('(pointer: coarse)').matches;
     const txt = document.getElementById('press-start-txt');
-    if (touch && txt) txt.innerText = 'TOCA LA PANTALLA';
+    if (txt) txt.innerText = touch ? 'TOCA LA PANTALLA' : 'HAZ CLIC PARA ZARPAR';
     let done = false;
     function dismiss(e) {
         if (done) return;
-        if (e && e.type === 'keydown' && ['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
         done = true;
         if (e) { e.preventDefault(); e.stopPropagation(); }
         unlockAudio();
         try { playSound('ui'); } catch (err) {}
         ps.classList.add('ps-out');
-        window.removeEventListener('keydown', dismiss, true);
         setTimeout(() => ps.remove(), 500);
     }
     // el clic (no pointerdown) evita que el mismo gesto pulse un boton del menu de debajo
     ps.addEventListener('click', dismiss);
-    window.addEventListener('keydown', dismiss, true);
-    ps.focus();
 })();

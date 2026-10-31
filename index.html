@@ -581,15 +581,17 @@
             background: linear-gradient(135deg, #f43f5e, #be123c);
             color: #fff;
             font-family: 'Bangers', sans-serif;
-            font-size: 16px;
-            letter-spacing: 2px;
-            padding: 6px 18px;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            padding: 5px 14px;
             border: 2px solid #fff;
             border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.6);
             transform: rotate(-18deg);
             text-shadow: 0 1px 2px #000;
-            white-space: nowrap;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.1;
         }
 
         /* --- Botones de mapa: fichas de isla --- */
@@ -1228,7 +1230,7 @@ function refreshCharCards() {
         if (!unlocked && !overlay) {
             overlay = document.createElement('div');
             overlay.className = 'char-locked-overlay';
-            overlay.innerHTML = '<span class="char-locked-banner">BLOQUEADO — TIENDA ฿1000</span>';
+            overlay.innerHTML = '<span class="char-locked-banner">BLOQUEADO<br><span style="font-size:9px; letter-spacing:1px;">TIENDA ฿1000</span></span>';
             b.appendChild(overlay);
         } else if (unlocked && overlay) {
             overlay.remove();

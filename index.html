@@ -529,10 +529,6 @@
             box-shadow: 0 10px 26px rgba(0,0,0,0.7), inset 0 0 24px rgba(110,70,25,0.18);
             transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
             filter: brightness(0.92) saturate(0.85);
-            text-shadow: 0 0 2px #000, 0 1px 2px #000;
-        }
-        .char-card * {
-            text-shadow: 0 0 2px #000, 0 1px 2px #000;
         }
         .char-card:hover { transform: translateY(-4px) scale(1.03); filter: brightness(1.05) saturate(1); }
         .char-card.selected {
@@ -832,8 +828,8 @@
             <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
             <button class="map-btn" id="btn-menu-music" onclick="toggleMenuMusic()"><span class="op-slot" id="menu-music-ico" data-ico="sound"></span> MÚSICA: <span id="menu-music-label">ON</span></button>
         </div>
-        <button class="btn-start" onclick="startGame()">☠ ¡ZARPAR AL COMBATE! ☠</button>
-        <button class="btn-start" style="margin-top: 10px;" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Beli: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
+        <button class="btn-start" style="text-shadow: 0 0 2px #000, 0 1px 2px #000;" onclick="startGame()">☠ ¡ZARPAR AL COMBATE! ☠</button>
+        <button class="btn-start" style="margin-top: 10px; text-shadow: 0 0 2px #000, 0 1px 2px #000;" onclick="showShop()"><span class="op-slot" data-ico="cart"></span> TIENDA DEL MUNDO — Beli: <span id="meta-beli" style="color:#ffd94a">฿0</span></button>
     </div>
 
     <!-- Shop Screen -->

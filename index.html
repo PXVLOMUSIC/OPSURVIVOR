@@ -68,6 +68,7 @@
             justify-content: space-between;
             align-items: flex-start;
             width: 100%;
+            pointer-events: auto;
         }
 
         .player-status {
@@ -738,7 +739,7 @@
                     <div class="upgrade-icon" data-ico="gauge"></div>
                     <div class="upgrade-info">
                         <h4>Efectos (SFX)</h4>
-                        <input type="range" min="0" max="100" value="80" id="vol-sfx" oninput="setVolSfx(this.value)" style="width:100%;">
+                        <input type="range" min="0" max="100" value="80" id="vol-sfx" oninput="setVolSfx(this.value)" onchange="playSound('ui')" style="width:100%;">
                     </div>
                 </div>
                 <div class="upgrade-card" onclick="toggleFullscreen()">
@@ -908,9 +909,9 @@
             <div class="wanted-subtitle">AJUSTES DE NAVEGACIÓN</div>
             <div style="display:flex; flex-direction:column; gap:14px; margin:14px 6px; font-family:'Segoe UI',sans-serif; color:#3d2314; font-size:14px; text-align:left;">
                 <label>Música: <span id="opt-music-val">80</span>%</label>
-                <input type="range" id="opt-music" min="0" max="100" value="80" style="width:100%;">
+                <input type="range" id="opt-music" min="0" max="100" value="80" style="width:100%;" oninput="setVolMusic(this.value)">
                 <label>EFECTOS (SFX): <span id="opt-sfx-val">80</span>%</label>
-                <input type="range" id="opt-sfx" min="0" max="100" value="80" style="width:100%;">
+                <input type="range" id="opt-sfx" min="0" max="100" value="80" style="width:100%;" oninput="setVolSfx(this.value)">
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-shake" checked> Sacudida de cámara</label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-particles"> Partículas reducidas (dispositivos lentos)</label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-flashes"> Menos destellos (fotosensibilidad)</label>
@@ -2498,7 +2499,7 @@ var soundEnabled = true;
 // sliders de opciones independiente: masterVolume es el volumen global heredado
 var masterVolume = 0.8;
 function setVolume(v) { masterVolume = Math.max(0, Math.min(1, v / 100)); updateMusic(); }
-function setVolMaster(v) { windowOpts.master = Math.max(0, Math.min(1, v / 100)); masterVolume = windowOpts.master; saveOpts(); }
+function setVolMaster(v) { windowOpts.master = Math.max(0, Math.min(1, v / 100)); masterVolume = windowOpts.master; saveOpts(); updateMusic(); }
 function setVolMusic(v) { windowOpts.music = Math.max(0, Math.min(1, v / 100)); saveOpts(); updateMusic(); }
 function setVolSfx(v) { windowOpts.sfx = Math.max(0, Math.min(1, v / 100)); saveOpts(); }
 function togglePause() {
@@ -5096,6 +5097,15 @@ function render() {
     ctx.restore();
 }
 updateMusic();
+// Sonido de "click" en cada pulsación con el ratón sobre elementos interactivos
+document.addEventListener('click', function (e) {
+    const t = e.target;
+    if (!t) return;
+    const hit = t.closest('button, .upgrade-card, .map-btn, .curse-btn, .char-card, .btn-start, input[type="range"]');
+    if (hit) {
+        try { playSound('ui'); } catch (err) {}
+    }
+}, true);
 </script>
 <div id="ach-toast"></div>
 </body>

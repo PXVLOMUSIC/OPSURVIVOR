@@ -510,7 +510,7 @@
         /* --- Cartas WANTED de personajes (pantalla de selección) --- */
         #char-select { align-items: stretch; }
                 .char-card {
-            width: min(160px, 30vw);
+            width: min(220px, 28vw);
             min-height: 0;
             padding: 4px;
             border: 3px solid #8b5e3c;
@@ -677,8 +677,21 @@
             0%, 100% { box-shadow: 0 0 14px rgba(250,204,21,0.55), 0 4px 0 #0c1a26; }
             50% { box-shadow: 0 0 22px rgba(250,204,21,0.85), 0 4px 0 #0c1a26; }
         }
-        @media (max-width: 600px) {
-            .hud-top { flex-direction: column; gap: 6px; }
+        .side-deco {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 72px;
+            color: rgba(250, 204, 21, 0.18);
+            pointer-events: none;
+            user-select: none;
+            z-index: 0;
+        }
+        .side-deco.side-left { left: -60px; }
+        .side-deco.side-right { right: -60px; }
+        @media (max-width: 900px) {
+            .side-deco { display: none; }
+        }
             .player-status { width: 100%; }
             .bars-container { width: 100%; }
             #time-top { font-size: 16px; padding: 3px 10px; top: 6px; }
@@ -822,7 +835,9 @@
             ¡Monta tu tripulación de un solo hombre y sobrevive 10 minutos al caos del Grand Line!<br>
             Recoge Berries, forja tu build y derrota al boss del mapa.
         </p>
-        <div id="char-select" style="display: flex; gap: 32px; margin: 12px 0 16px; flex-wrap: wrap; justify-content: center; align-items: stretch;">
+        <div id="char-select" style="display: flex; gap: 40px; margin: 14px 0 18px; flex-wrap: wrap; justify-content: center; align-items: stretch; position: relative; width: 100%; max-width: 960px;">
+            <span class="side-deco side-left" aria-hidden="true">⚓</span>
+            <span class="side-deco side-right" aria-hidden="true">⚓</span>
             <button class="char-card" data-char="zoro" onclick="selectCharacter('zoro')">
                 <img src="assets/wanted/zoro.jpg" alt="Zoro" onerror="this.style.display='none'">
             </button>

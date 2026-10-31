@@ -692,6 +692,8 @@
         @media (max-width: 900px) {
             .side-deco { display: none; }
         }
+        @media (max-width: 600px) {
+            .hud-top { flex-direction: column; gap: 6px; }
             .player-status { width: 100%; }
             .bars-container { width: 100%; }
             #time-top { font-size: 16px; padding: 3px 10px; top: 6px; }
@@ -699,6 +701,15 @@
             .wanted-board { max-width: 94vw !important; }
             .upgrade-card { font-size: 12px; }
             #weapons-hud { bottom: 8px; gap: 4px; }
+        }
+        @media (max-height: 820px) {
+            .title-container { margin-bottom: 4px; }
+            .op-tagline { margin-bottom: 8px !important; font-size: 14px !important; }
+            #char-select { gap: 16px; margin: 6px 0 8px; }
+            .char-card { width: min(150px, 26vw); }
+            #map-select { margin: 4px 0 6px; gap: 8px; }
+            #curse-select { margin: 2px 0 6px; gap: 6px; }
+            .side-deco { display: none; }
         }
     </style>
 </head>

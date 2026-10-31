@@ -39,6 +39,7 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - **Alabasta** (jugable): jefe Crocodile (14000 PV). Mapa nuevo y colisiones `ALABASTA_POLY` sacadas de la línea verde de referencia. Falta el sprite de Crocodile, que ahora usa el de Krieg.
 - **Skypiea** (bloqueado): jefe Enel (18000 PV). Faltan las imágenes nuevas del mapa, ajustar las colisiones y el sprite de Enel.
 - Se desbloquean en `mapLocked()` (`js/core.js`). Las colisiones están en `WALK_POLYS` (`js/maps.js`). El origen vertical de cada imagen está en `MAP_ORIGIN_Y` (`js/render.js`). La cámara no deja ver nada fuera de la imagen.
+- Obstáculos: `MAP_OBSTACLES` (`js/maps.js`) son cápsulas (rejas, barandillas, farolas, palmeras, bancos...) detectadas sobre cada imagen. Bloquean al jugador y a los enemigos normales; los jefes y minijefes las atraviesan. Punto de restauración previo a obstáculos: commit `7fe313e`.
 
 ## Progreso permanente
 Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, 12 logros y 15 evoluciones de armas. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).

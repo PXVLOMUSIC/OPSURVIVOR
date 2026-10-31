@@ -108,10 +108,10 @@ function walkPoly() {
 // Pushes a point inward until it lands inside the arena (enemy/boss spawns)
 function clampToArena(x, y) {
   const poly = walkPoly();
-  if (pointInPoly(x, y, poly)) return [x, y];
+  if (pointInPoly(x, y, poly)) return pushOutOfObstacles(x, y, 12);
   let px = x, py = y;
   for (let i = 0; i < 24 && !pointInPoly(px, py, poly); i++) { px *= 0.9; py *= 0.9; }
-  return [px, py];
+  return pushOutOfObstacles(px, py, 12);
 }
 function pointInPoly(x, y, poly) {
     let inside = false;
@@ -122,6 +122,76 @@ function pointInPoly(x, y, poly) {
         if (intersect) inside = !inside;
     }
     return inside;
+}
+
+// === Obstáculos dentro de la zona caminable (rejas, barandillas, farolas, macetas...) ===
+// Cápsulas: segmento a-b con radio r, en coordenadas de mundo. Bloquean al jugador y a los enemigos normales.
+// Detectados sobre la imagen de cada mapa; para volver al estado anterior basta con vaciar la lista.
+const MAP_OBSTACLES = {
+  baratie: [
+    { ax: -708, ay: -190, bx: -368, by: -360, r: 32 }, // barandilla sup diag
+    { ax: 708, ay: -190, bx: 368, by: -360, r: 32 }, // barandilla sup diag (der)
+    { ax: -368, ay: -364, bx: -98, by: -364, r: 26 }, // barandilla sup
+    { ax: 368, ay: -364, bx: 98, by: -364, r: 26 }, // barandilla sup (der)
+    { ax: -768, ay: 36, bx: -468, by: 276, r: 36 }, // barandilla inf diag
+    { ax: 768, ay: 36, bx: 468, by: 276, r: 36 }, // barandilla inf diag (der)
+    { ax: -476, ay: 270, bx: -112, by: 270, r: 32 }, // barandilla inf
+    { ax: 476, ay: 270, bx: 112, by: 270, r: 32 }, // barandilla inf (der)
+    { ax: -902, ay: -316, bx: -902, by: -296, r: 22 }, // muñeco
+    { ax: 902, ay: -316, bx: 902, by: -296, r: 22 }, // muñeco (der)
+    { ax: -758, ay: -386, bx: -758, by: -380, r: 24 }, // espadas
+    { ax: -672, ay: 420, bx: -512, by: 420, r: 24 }, // armero
+    { ax: 1048, ay: 150, bx: 1048, by: 156, r: 24 }, // barril
+    { ax: 742, ay: 336, bx: 842, by: 336, r: 26 }, // cajon
+    { ax: 948, ay: 252, bx: 948, by: 256, r: 24 }, // armero
+  ],
+  alabasta: [
+    { ax: -718, ay: -206, bx: -384, by: -388, r: 32 }, // reja sup
+    { ax: 718, ay: -206, bx: 384, by: -388, r: 32 }, // reja sup (der)
+    { ax: -764, ay: 0, bx: -468, by: 232, r: 36 }, // reja inf diag
+    { ax: 764, ay: 0, bx: 468, by: 232, r: 36 }, // reja inf diag (der)
+    { ax: -476, ay: 238, bx: -112, by: 238, r: 32 }, // reja inf
+    { ax: 476, ay: 238, bx: 112, by: 238, r: 32 }, // reja inf (der)
+    { ax: -1080, ay: -188, bx: -1080, by: -152, r: 18 }, // farola
+    { ax: 1080, ay: -188, bx: 1080, by: -152, r: 18 }, // farola (der)
+    { ax: -1134, ay: 64, bx: -1134, by: 84, r: 44 }, // palmera
+    { ax: 1134, ay: 64, bx: 1134, by: 84, r: 44 }, // palmera (der)
+    { ax: -1042, ay: 24, bx: -1012, by: 148, r: 38 }, // banco inf
+    { ax: 1042, ay: 24, bx: 1012, by: 148, r: 38 }, // banco inf (der)
+  ],
+  skypiea: []
+};
+function mapObstacles() { return MAP_OBSTACLES[selectedMap] || []; }
+// Distancia al cuadrado de (x,y) al segmento del obstáculo, y punto más cercano
+function _obsClosest(o, x, y) {
+  const dx = o.bx - o.ax, dy = o.by - o.ay, l2 = dx * dx + dy * dy;
+  let t = l2 ? ((x - o.ax) * dx + (y - o.ay) * dy) / l2 : 0;
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  return [o.ax + dx * t, o.ay + dy * t];
+}
+function hitsObstacle(x, y, rad = 0) {
+  const obs = mapObstacles();
+  for (let i = 0; i < obs.length; i++) {
+    const o = obs[i], [cx, cy] = _obsClosest(o, x, y), rr = o.r + rad;
+    if ((x - cx) * (x - cx) + (y - cy) * (y - cy) < rr * rr) return true;
+  }
+  return false;
+}
+// Empuja un círculo fuera de los obstáculos (desliza a lo largo de ellos). Devuelve [x, y].
+function pushOutOfObstacles(x, y, rad = 0) {
+  const obs = mapObstacles();
+  for (let i = 0; i < obs.length; i++) {
+    const o = obs[i], [cx, cy] = _obsClosest(o, x, y), rr = o.r + rad;
+    const ex = x - cx, ey = y - cy, d2 = ex * ex + ey * ey;
+    if (d2 < rr * rr) {
+      const d = Math.sqrt(d2) || 0.0001;
+      x = cx + (ex / d) * rr; y = cy + (ey / d) * rr;
+    }
+  }
+  return [x, y];
+}
+function isWalkable(x, y, rad = 0) {
+  return pointInPoly(x, y, walkPoly()) && !hitsObstacle(x, y, rad);
 }
 
 // Glows pre-renderizados (rendimiento: shadowBlur por objeto es costoso)

@@ -113,8 +113,12 @@ function update(dt) {
         const newX = player.x + stepX;
         const newY = player.y + stepY;
         const poly = walkPoly();
+        const oldX = player.x, oldY = player.y;
         if (pointInPoly(newX, player.y, poly)) player.x = newX;
         if (pointInPoly(player.x, newY, poly)) player.y = newY;
+        // Obstáculos del mapa: desliza alrededor; si el empuje saca del mapa, no se mueve
+        const [ox, oy] = pushOutOfObstacles(player.x, player.y, 10);
+        if (pointInPoly(ox, oy, poly)) { player.x = ox; player.y = oy; } else { player.x = oldX; player.y = oldY; }
         if (moveX !== 0) player.facing = moveX > 0 ? 1 : -1;
         player.isMoving = true;
     } else {
@@ -133,6 +137,7 @@ function update(dt) {
     if (player.animTimer > 0.1) { player.animIndex = (player.animIndex + 1) % animLen; player.animTimer = 0; }
     if (player.animState === 'idle') player.animIndex = 0;
 
+    const hasObstacles = mapObstacles().length > 0;
     rebuildEnemyGrid();
     handleAttacks(dt);
     handleSpawning(dt);
@@ -156,6 +161,8 @@ function update(dt) {
         if (edist > 0) {
             e.x += (edx / edist) * e.speed * dt;
             e.y += (edy / edist) * e.speed * dt;
+            // Los enemigos normales rodean rejas y barandillas; jefes y minijefes las atraviesan
+            if (hasObstacles && !e.isBoss && !e.isMiniboss) [e.x, e.y] = pushOutOfObstacles(e.x, e.y, 10);
         }
         if (e.isBoss && edist < 40) e.attackTimer = 0.4;
         if (e.attackTimer > 0) { e.attackTimer -= dt; e.animState = 'attack'; }
@@ -380,6 +387,8 @@ function update(dt) {
     for (let i = drops.length - 1; i >= 0; i--) {
         const d = drops[i];
         // move inaccessible drops toward walkable area
+        if (hasObstacles && d.type !== 'chest' && hitsObstacle(d.x, d.y, 6)) [d.x, d.y] = pushOutOfObstacles(d.x, d.y, 6);
+        if (d.type === 'chest' && hasObstacles && hitsObstacle(d.x, d.y, 14)) [d.x, d.y] = pushOutOfObstacles(d.x, d.y, 14);
         if (!pointInPoly(d.x, d.y, walkPoly())) {
             const ang = Math.atan2(0 - d.y, 0 - d.x);
             d.x += Math.cos(ang) * 60 * dt;
@@ -741,7 +750,7 @@ function handleAttacks(dt) {
                 for (let s = STEPS; s >= 1; s--) {
                     const nx = px0 + Math.cos(ang) * dashLen * (s / STEPS);
                     const ny = py0 + Math.sin(ang) * dashLen * (s / STEPS);
-                    if (pointInPoly(nx, ny, poly)) { fx = nx; fy = ny; break; }
+                    if (pointInPoly(nx, ny, poly) && !hitsObstacle(nx, ny, 10)) { fx = nx; fy = ny; break; }
                 }
                 player.x = fx; player.y = fy;
                 // VFX: estelas del sprite a lo largo del tajo (Oni Giri)

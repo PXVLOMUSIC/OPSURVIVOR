@@ -574,22 +574,26 @@
         .char-locked-overlay {
             position: absolute; inset: 0; z-index: 3;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.45);
+            overflow: hidden;
             pointer-events: none;
         }
         .char-locked-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140%;
+            transform: translate(-50%, -50%) rotate(-35deg);
             background: linear-gradient(135deg, #f43f5e, #be123c);
             color: #fff;
             font-family: 'Bangers', sans-serif;
-            font-size: 13px;
-            letter-spacing: 1.5px;
-            padding: 5px 14px;
-            border: 2px solid #fff;
-            border-radius: 4px;
+            font-size: 15px;
+            letter-spacing: 2px;
+            padding: 6px 0;
+            border-top: 2px solid #fff;
+            border-bottom: 2px solid #fff;
             box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            transform: rotate(-18deg);
             text-shadow: 0 1px 2px #000;
-            white-space: normal;
+            white-space: nowrap;
             text-align: center;
             line-height: 1.1;
         }
@@ -1230,7 +1234,7 @@ function refreshCharCards() {
         if (!unlocked && !overlay) {
             overlay = document.createElement('div');
             overlay.className = 'char-locked-overlay';
-            overlay.innerHTML = '<span class="char-locked-banner">BLOQUEADO<br><span style="font-size:9px; letter-spacing:1px;">TIENDA ฿1000</span></span>';
+            overlay.innerHTML = '<span class="char-locked-banner">BLOQUEADO — TIENDA ฿1000</span>';
             b.appendChild(overlay);
         } else if (unlocked && overlay) {
             overlay.remove();

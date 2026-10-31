@@ -27,6 +27,7 @@ const SPRITE_PATHS = {
     baratieMap: 'assets/maps/baratie.png',
     alabastaMap: 'assets/maps/alabasta.png',
     skypieaMap: 'assets/maps/skypiea.png',
+    thrillerbarkMap: 'assets/maps/thrillerbark.png',
     saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
     saber_poundho: 'assets/extracted/objetos_gba/sprite_025.png',
     bomb: 'assets/extracted/objetos_gba/sprite_034.png',
@@ -54,6 +55,7 @@ const ENEMY_ANIMS = {
     boss_krieg: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
     boss_crocodile: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
     boss_enel: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
+    boss_moria: { folder: 'moria', idle: [0,1,2,3], attack: [4,5,6,7] },
     kuma: { folder: 'kuma', idle: [0,1,2,3], attack: [4,5,6,7] },
     moria: { folder: 'moria', idle: [0,1,2,3], attack: [4,5,6,7] },
     tararan: { folder: 'tararan', idle: [0,1,2,3], attack: [4,5,6,7] },
@@ -140,23 +142,76 @@ const ICONS = {
 // Inyecta iconos SVG en los placeholders estáticos del DOM
 document.querySelectorAll('[data-ico]').forEach(el => { el.innerHTML = ICONS[el.getAttribute('data-ico')] || ''; });
 const ELITE_INFO = {
-    elite_marine:  { name: { baratie: 'Sargento de la Marina', alabasta: 'Agente Millions (Baroque Works)', skypiea: 'Guardia Divina' } },
-    elite_shooter: { name: { baratie: 'Fusilero de Élite', alabasta: 'Billions Armado', skypiea: 'Guardia Divina de Élite' } },
-    elite_kuma:    { name: { baratie: 'PX-0 Bartholomew Kuma', alabasta: 'Mr. 4 y Lassoo', skypiea: 'Coloso de Nube' } },
-    morgan:        { name: { baratie: 'Capitán Morgan, el Pez-Hacha', alabasta: 'Capitana Tashigi (G-5)', skypiea: 'Comandante Celestial' } },
-    elite_tararan: { name: { baratie: 'Tararan, la Araña Bestia', alabasta: 'Bananawani', skypiea: 'Bestia de la Montaña del Trueno' } },
-    elite_inupen:  { name: { baratie: 'Inuppen, Sargento Zombi', alabasta: 'Inuppen Zombie', skypiea: 'Inuppen Zombie' } },
-    elite_kumashi: { name: { baratie: 'Kumashi, Guardián Zombi', alabasta: 'Guardián de Alabasta', skypiea: 'Sacerdote Gedatsu' } },
-    elite_hogback: { name: { baratie: 'Dr. Hogback', alabasta: 'Mr. 3 Galdino', skypiea: 'Sacerdote Satori' } },
-    elite_cindry:  { name: { baratie: 'Cindry, la Sirvienta Zombi', alabasta: 'Miss Wednesday (Vivi)', skypiea: 'Dama de la Nube' } },
-    elite_pellona: { name: { baratie: 'Perona la Fantasma', alabasta: 'Miss Doublefinger (Zala)', skypiea: 'Sacerdotisa Aisa' } },
-    elite_ryuma:   { name: { baratie: 'Ryuma del Norte', alabasta: 'Mr. 1 — Daz Bones', skypiea: 'Wyper, Guerrero Shandia' } },
-    elite_absalom: { name: { baratie: 'Absalom, el Hombre-Mutante', alabasta: 'Capitán Billions', skypiea: 'Sacerdote Shura' } }
+    elite_marine:  { name: { baratie: 'Sargento de la Marina', alabasta: 'Agente Millions (Baroque Works)', skypiea: 'Guardia Divina', thrillerbark: 'Marine Zombi' } },
+    elite_shooter: { name: { baratie: 'Fusilero de Élite', alabasta: 'Billions Armado', skypiea: 'Guardia Divina de Élite', thrillerbark: 'Fusilero Zombi' } },
+    elite_kuma:    { name: { baratie: 'PX-0 Bartholomew Kuma', alabasta: 'Mr. 4 y Lassoo', skypiea: 'Coloso de Nube', thrillerbark: 'Pacifista' } },
+    morgan:        { name: { baratie: 'Capitán Morgan, el Pez-Hacha', alabasta: 'Capitana Tashigi (G-5)', skypiea: 'Comandante Celestial', thrillerbark: 'Capitán Morgan' } },
+    elite_tararan: { name: { baratie: 'Tararan, la Araña Bestia', alabasta: 'Bananawani', skypiea: 'Bestia de la Montaña del Trueno', thrillerbark: 'Tararan, la Araña Bestia' } },
+    elite_inupen:  { name: { baratie: 'Inuppen, Sargento Zombi', alabasta: 'Inuppen Zombie', skypiea: 'Inuppen Zombie', thrillerbark: 'Inuppen, Sargento Zombi' } },
+    elite_kumashi: { name: { baratie: 'Kumashi, Guardián Zombi', alabasta: 'Guardián de Alabasta', skypiea: 'Sacerdote Gedatsu', thrillerbark: 'Kumashi, Guardián Zombi' } },
+    elite_hogback: { name: { baratie: 'Dr. Hogback', alabasta: 'Mr. 3 Galdino', skypiea: 'Sacerdote Satori', thrillerbark: 'Dr. Hogback' } },
+    elite_cindry:  { name: { baratie: 'Cindry, la Sirvienta Zombi', alabasta: 'Miss Wednesday (Vivi)', skypiea: 'Dama de la Nube', thrillerbark: 'Cindry, la Sirvienta Zombi' } },
+    elite_pellona: { name: { baratie: 'Perona la Fantasma', alabasta: 'Miss Doublefinger (Zala)', skypiea: 'Sacerdotisa Aisa', thrillerbark: 'Perona la Fantasma' } },
+    elite_ryuma:   { name: { baratie: 'Ryuma del Norte', alabasta: 'Mr. 1 — Daz Bones', skypiea: 'Wyper, Guerrero Shandia', thrillerbark: 'Ryuma del Norte' } },
+    elite_absalom: { name: { baratie: 'Absalom, el Hombre-Mutante', alabasta: 'Capitán Billions', skypiea: 'Sacerdote Shura', thrillerbark: 'Absalom, el Hombre-Mutante' } }
 };
-const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai' };
-const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno' };
+const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina' };
+const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 9000, boss_crocodile: 14000, boss_enel: 18000 };
+const BOSS_HP = { boss_krieg: 9000, boss_crocodile: 14000, boss_enel: 18000, boss_moria: 16000 };
+
+// === Enemigos por mapa (contexto de cada arco) ===
+// Estadísticas base de cada tipo: [vida, velocidad, daño]. La vida se multiplica por hpScale.
+const ENEMY_STATS = {
+    grunt: [32, 78, 16], shooter: [48, 62, 22], pacifista: [300, 46, 40], kuma: [150, 50, 28], moria: [200, 40, 30],
+    tararan: [80, 55, 20], hogback: [90, 50, 24], cindry: [120, 48, 22], pellona: [110, 54, 24], ryuma: [130, 48, 26],
+    inupen: [70, 60, 18], kumashi: [100, 52, 20], absalom: [120, 45, 24]
+};
+// pool: se recorre en orden; el primero con min <= minuto y azar < p gana. Si ninguno, sale 'base'.
+// minibosses: aparecen una vez por partida en su minuto. boss: jefe final del minuto 8.
+// events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
+// Baratie, Alabasta y Skypiea usan marines como relleno hasta tener sprites de su arco
+// (piratas de Krieg, Baroque Works, ejército de Enel).
+const MAP_ENEMIES = {
+    baratie: {
+        base: 'grunt',
+        pool: [ { type: 'pacifista', min: 3, p: 0.15 }, { type: 'shooter', min: 1, p: 0.45 } ],
+        minibosses: [ { type: 'morgan', min: 3, hp: 600, speed: 42, damage: 28 } ],
+        boss: 'boss_krieg',
+        events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EMBOSCADA PIRATA!', chargeText: '¡CARGA DE LA ARMADA!' }
+    },
+    alabasta: {
+        base: 'grunt',
+        pool: [ { type: 'pacifista', min: 2, p: 0.18 }, { type: 'shooter', min: 1, p: 0.55 } ],
+        minibosses: [ { type: 'pacifista', min: 4, hp: 700, speed: 44, damage: 32 } ],
+        boss: 'boss_crocodile',
+        events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA ARMADA!' }
+    },
+    skypiea: {
+        base: 'grunt',
+        pool: [ { type: 'pacifista', min: 3, p: 0.15 }, { type: 'shooter', min: 1, p: 0.55 } ],
+        minibosses: [ { type: 'pacifista', min: 4, hp: 750, speed: 44, damage: 32 } ],
+        boss: 'boss_enel',
+        events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EL EJÉRCITO DIVINO ATACA!', chargeText: '¡CARGA DESDE LAS NUBES!' }
+    },
+    thrillerbark: {
+        base: 'inupen',
+        pool: [
+            { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
+            { type: 'cindry', min: 4, p: 0.30 }, { type: 'hogback', min: 3, p: 0.40 }, { type: 'kumashi', min: 2, p: 0.55 },
+            { type: 'tararan', min: 1, p: 0.75 }
+        ],
+        minibosses: [ { type: 'absalom', min: 4, hp: 650, speed: 45, damage: 30 }, { type: 'kuma', min: 6, hp: 800, speed: 45, damage: 35 } ],
+        boss: 'boss_moria',
+        events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
+    }
+};
+function mapEnemies() { return MAP_ENEMIES[selectedMap] || MAP_ENEMIES.baratie; }
+function makeEnemy(type, x, y, hpScale, extra) {
+    const st = ENEMY_STATS[type] || ENEMY_STATS.grunt;
+    const speed = type === 'grunt' ? st[1] + Math.random() * 22 : st[1];
+    return Object.assign({ x, y, type, hp: st[0] * hpScale, maxHp: st[0] * hpScale, speed, damage: st[2], animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite: false, damageTaken: 1 }, extra || {});
+}
 function enemyPath(folder, idx) {
     return 'assets/extracted/' + folder + '/sprite_' + String(idx).padStart(3,'0') + '.png';
 }
@@ -187,14 +242,13 @@ function selectMap(id) {
     if (mapLocked(id)) { playSound('muted'); return; }
     playSound('ui');
     selectedMap = id;
-    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea' };
+    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }
 // VS: las etapas se desbloquean por logros — aquí, venciendo al boss del mapa anterior
 function mapLocked(id) {
-    // Skypiea en desarrollo (PRÓXIMAMENTE) — mapa en revision.
-    if (id === 'skypiea') return true;
+    // Todos los mapas abiertos. Para bloquear uno en desarrollo: return id === '<mapa>';
     return false;
 }
 // === CLIMA PELIGROSO (rango de Maldición 0-4, estilo VS) ===

@@ -1,6 +1,6 @@
 // --- RENDER ENGINE (Sea of Stars Aesthetic Pipeline) ---
 // Píxel vertical de la imagen de cada mapa que cae en y=0 del mundo (x=0 es el centro de la imagen)
-const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 478 };
+const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446 };
 function cameraCenter() {
     const img = IMG[selectedMap + 'Map'];
     if (!assetsLoaded || !img || !img.complete || !img.width) return [player.x, player.y];
@@ -25,49 +25,16 @@ function render() {
     const camY = VIEW_H / 2 - camCY + shakeY;
     ctx.translate(camX, camY);
 
-    // Map Background
-    if (selectedMap === 'baratie' && assetsLoaded && IMG.baratieMap && IMG.baratieMap.complete) {
-        const imgW = IMG.baratieMap.width * MAP_SCALE;
-        const imgH = IMG.baratieMap.height * MAP_SCALE;
-        const offX = -IMG.baratieMap.width * MAP_SCALE / 2;
-        const offY = -MAP_ORIGIN_Y.baratie * MAP_SCALE;
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(IMG.baratieMap, offX, offY, imgW, imgH);
+    // Map Background: imagen del mapa centrada en x, con su origen vertical en MAP_ORIGIN_Y
+    const mapImg = IMG[selectedMap + 'Map'];
+    if (assetsLoaded && mapImg && mapImg.complete && mapImg.width) {
+        // Mapas pixelados (estilo GBA): se escalan sin suavizado para que el pixel se vea nítido como en los sprites
         ctx.imageSmoothingEnabled = false;
-    } else if (selectedMap === 'alabasta') {
-        // Fondo real del usuario (palacio desierto): mismo tratamiento que Baratie.
-        // El desierto de la imagen es el "mar" de Baratie (no caminable).
-        if (assetsLoaded && IMG.alabastaMap && IMG.alabastaMap.complete) {
-            const imgW = IMG.alabastaMap.width * MAP_SCALE;
-            const imgH = IMG.alabastaMap.height * MAP_SCALE;
-            const offX = -IMG.alabastaMap.width * MAP_SCALE / 2;
-            const offY = -MAP_ORIGIN_Y.alabasta * MAP_SCALE; // mismo origen que ALABASTA_POLY
-            ctx.imageSmoothingEnabled = true;
-            ctx.drawImage(IMG.alabastaMap, offX, offY, imgW, imgH);
-            ctx.imageSmoothingEnabled = false;
-        } else if (bgAlabasta) {
-            ctx.drawImage(bgAlabasta, MAP_BOUNDS.minX - 400, MAP_BOUNDS.minY - 400);
-        } else {
-            ctx.fillStyle = '#d4a373'; ctx.fillRect(MAP_BOUNDS.minX - 400, MAP_BOUNDS.minY - 400, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 800, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 800);
-        }
-    } else if (selectedMap === 'skypiea') {
-        // Fondo real del usuario (ciudad de nubes): mismo tratamiento que Baratie.
-        if (assetsLoaded && IMG.skypieaMap && IMG.skypieaMap.complete) {
-            const imgW = IMG.skypieaMap.width * MAP_SCALE;
-            const imgH = IMG.skypieaMap.height * MAP_SCALE;
-            const offX = -IMG.skypieaMap.width * MAP_SCALE / 2;
-            const offY = -MAP_ORIGIN_Y.skypiea * MAP_SCALE;
-            ctx.imageSmoothingEnabled = true;
-            ctx.drawImage(IMG.skypieaMap, offX, offY, imgW, imgH);
-            ctx.imageSmoothingEnabled = false;
-        } else if (bgSkypiea) {
-            ctx.drawImage(bgSkypiea, MAP_BOUNDS.minX - 400, MAP_BOUNDS.minY - 400);
-        } else {
-            ctx.fillStyle = '#87ceeb'; ctx.fillRect(MAP_BOUNDS.minX - 400, MAP_BOUNDS.minY - 400, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 800, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 800);
-        }
+        ctx.drawImage(mapImg, -mapImg.width * MAP_SCALE / 2, -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, mapImg.width * MAP_SCALE, mapImg.height * MAP_SCALE);
     } else {
-        ctx.fillStyle = '#0284c7';
-        ctx.fillRect(MAP_BOUNDS.minX - 400, MAP_BOUNDS.minY - 400, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 800, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 800);
+        const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47' };
+        ctx.fillStyle = fallback[selectedMap] || '#0284c7';
+        ctx.fillRect(MAP_BOUNDS.minX - 1200, MAP_BOUNDS.minY - 1200, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 2400, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 2400);
     }
 
     // Drops (VS: los cofres son modelos en el suelo; el resto con glow)

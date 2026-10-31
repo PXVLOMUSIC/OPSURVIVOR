@@ -436,11 +436,15 @@ const BESTIARY_INFO = {
     absalom: 'Absalom — el invisible',
     boss_krieg: 'Don Krieg — la flota pirata',
     boss_crocodile: 'Sir Crocodile — la arena del desierto',
-    boss_enel: 'Enel — el dios del trueno'
+    boss_enel: 'Enel — el dios del trueno',
+    krieg_pirate: 'Pirata de Krieg — espada', krieg_gunner: 'Pirata de Krieg — pistola', krieg_bomber: 'Pirata de Krieg — bombas',
+    pearl: 'Pearl — el muro de hierro', gin: 'Gin — el demonio de Krieg',
+    dugong: 'Dugongo kung-fu del desierto', mr2: 'Mr. 2 Bon Clay — okama kenpo', mr1: 'Mr. 1 Daz Bones — cuerpo de acero',
+    shandia: 'Guerrero shandia', shandia_gunner: 'Bazuquero shandia', wiper: 'Wiper — el guerrero de Shandora', ohm: 'Ohm — el sacerdote del infierno'
 };
 function bestiaryName(type) {
     if (BESTIARY_INFO[type]) return BESTIARY_INFO[type];
-    if (ELITE_INFO[type] && ELITE_INFO[type].name) return (ELITE_INFO[type].name[selectedMap] || ELITE_INFO[type].name.baratie);
+    if (ELITE_INFO[type] && ELITE_INFO[type].name) return eliteName(type);
     return type;
 }
 // miniaturas del bestiario a partir de los sprites idle ya cargados (cache dataURL)

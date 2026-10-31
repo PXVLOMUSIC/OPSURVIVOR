@@ -183,7 +183,7 @@ function update(dt) {
             updateUI();
         }
 
-        if (e.type === 'shooter') {
+        if (ENEMY_RANGED.has(e.type)) {
             e.shootTimer = (e.shootTimer || 0) + dt;
             if (e.shootTimer >= BALANCE.shooterCd && edist < 340) {
                 e.shootTimer = 0;
@@ -996,12 +996,18 @@ function handleSpawning(dt) {
         } else if (type === 'ryuma' && Math.random() < 0.5) {
             // Ryuma: samurái legendario, élite la mitad de las veces
             type = 'elite_ryuma'; isElite = true;
+        } else if (ELITE_INFO[type] && ELITE_INFO[type].always) {
+            // oficiales con nombre (Baroque Works, sacerdotes de Enel): siempre élite
+            isElite = true;
+        } else if (FODDER_ELITE[type] && Math.random() < FODDER_ELITE[type][0]) {
+            const fe = FODDER_ELITE[type];
+            eliteMult = fe[1]; eliteDmgMult = fe[2]; eliteSpdMult = fe[3]; isElite = true;
         }
         if (isElite) { hp *= eliteMult; damage *= eliteDmgMult; speed *= eliteSpdMult; }
         // VS: eliminado el fallback 10% de élite genérico — demasiados cofres
         // VS: la Maldición también acelera a los enemigos
         speed *= 1 + (player.curse - 1) / 2;
-        const eName = !isElite ? null : (ELITE_INFO[type] ? ELITE_INFO[type].name[selectedMap] : null);
+        const eName = !isElite ? null : eliteName(type);
         enemies.push({ x: ex, y: ey, type, hp, maxHp: hp, speed, damage, animIndex: 0, animTimer: 0, animState: 'idle', attackTimer: 0, isElite, damageTaken: type === 'elite_marine' ? 0.5 : 1, name: eName });
         // Minijefes del mapa (una vez por partida)
         if (!window.minibossesSpawned) window.minibossesSpawned = {};
@@ -1103,7 +1109,7 @@ function killEnemy(e) {
         window.runStats.killsByType[e.type] = (window.runStats.killsByType[e.type] || 0) + 1;
         if (e.isElite) window.runStats.elites++;
     }
-    if (e.isElite && (e.type === 'elite_shooter' || e.type === 'elite_tararan' || e.type === 'elite_kuma') && !e._exploded) {
+    if (e.isElite && (e.type === 'elite_shooter' || e.type === 'elite_tararan' || e.type === 'elite_kuma' || e.type === 'krieg_bomber') && !e._exploded) {
         e._exploded = true;
         // explosion
         forEnemiesNear(e.x, e.y, 80, function (en) {
@@ -1118,7 +1124,7 @@ function killEnemy(e) {
     if (player.vampirism > 0 && Math.random() < player.vampirism) {
         player.hp = Math.min(player.maxHp, player.hp + 2);
     }
-    const xpVal = e.isBoss ? 60 : (e.isMiniboss ? 20 : (e.isElite ? 8 : (e.type === 'pacifista' ? 6 : 2)));
+    const xpVal = e.isBoss ? 60 : (e.isMiniboss ? 20 : (e.isElite ? 8 : ((e.type === 'pacifista' || e.type === 'krieg_bomber') ? 6 : 2)));
     drops.push({ x: e.x, y: e.y, type: 'xp', value: xpVal });
     if (e.isElite || e.isMiniboss || e.isBoss) {
         // VS: bronce (élites, no evoluciona, NO siempre cae) / plata (minibosses) / oro (boss) — queda en el suelo hasta pisarlo

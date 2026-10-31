@@ -53,8 +53,29 @@ const ENEMY_ANIMS = {
     morgan: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29] },
     elite_kuma: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29] },
     boss_krieg: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
-    boss_crocodile: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
-    boss_enel: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
+    boss_crocodile: { folder: 'crocodile', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10, 11], faces: 1 },
+    boss_enel: { folder: 'enel', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
+    krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: -1 },
+    krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
+    krieg_bomber: { folder: 'krieg_bomber', idle: [0, 1, 2, 3, 4], attack: [5, 6], faces: -1 },
+    pearl: { folder: 'pearl', idle: [0, 1], attack: [2, 3] },
+    gin: { folder: 'gin', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7] },
+    dugong: { folder: 'dugong', idle: [0, 1, 2], attack: [3] },
+    mr5: { folder: 'mr5', idle: [0, 1, 2, 3], attack: [4, 5] },
+    miss_valentine: { folder: 'miss_valentine', idle: [0, 1, 2, 3], attack: [4, 5, 6] },
+    mr4: { folder: 'mr4', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9] },
+    miss_merry: { folder: 'miss_merry', idle: [0, 1, 2, 3], attack: [4, 5, 6] },
+    miss_doublefinger: { folder: 'miss_doublefinger', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7] },
+    mr1: { folder: 'mr1', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
+    mr2: { folder: 'mr2', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
+    shandia: { folder: 'shandia', idle: [0, 1, 2], attack: [3, 4], faces: -1 },
+    shandia_gunner: { folder: 'shandia_gunner', idle: [0, 1, 2], attack: [3] },
+    satori: { folder: 'satori', idle: [0, 1], attack: [2] },
+    shura: { folder: 'shura', idle: [0, 1, 2, 3], attack: [4] },
+    gedatsu: { folder: 'gedatsu', idle: [0, 1], attack: [2, 3], faces: 1 },
+    ohm: { folder: 'ohm', idle: [0, 1], attack: [2, 3] },
+    wiper: { folder: 'wiper', idle: [0, 1, 2, 3], attack: [4] },
     boss_moria: { folder: 'moria', idle: [0,1,2,3], attack: [4,5,6,7] },
     kuma: { folder: 'kuma', idle: [0,1,2,3], attack: [4,5,6,7] },
     moria: { folder: 'moria', idle: [0,1,2,3], attack: [4,5,6,7] },
@@ -153,9 +174,26 @@ const ELITE_INFO = {
     elite_cindry:  { name: { baratie: 'Cindry, la Sirvienta Zombi', alabasta: 'Miss Wednesday (Vivi)', skypiea: 'Dama de la Nube', thrillerbark: 'Cindry, la Sirvienta Zombi' } },
     elite_pellona: { name: { baratie: 'Perona la Fantasma', alabasta: 'Miss Doublefinger (Zala)', skypiea: 'Sacerdotisa Aisa', thrillerbark: 'Perona la Fantasma' } },
     elite_ryuma:   { name: { baratie: 'Ryuma del Norte', alabasta: 'Mr. 1 — Daz Bones', skypiea: 'Wyper, Guerrero Shandia', thrillerbark: 'Ryuma del Norte' } },
-    elite_absalom: { name: { baratie: 'Absalom, el Hombre-Mutante', alabasta: 'Capitán Billions', skypiea: 'Sacerdote Shura', thrillerbark: 'Absalom, el Hombre-Mutante' } }
+    elite_absalom: { name: { baratie: 'Absalom, el Hombre-Mutante', alabasta: 'Capitán Billions', skypiea: 'Sacerdote Shura', thrillerbark: 'Absalom, el Hombre-Mutante' } },
+    // élites de relleno (raras) y oficiales con nombre (always: siempre salen como élite)
+    krieg_pirate:   { name: { all: 'Pirata Veterano de Krieg' } },
+    krieg_gunner:   { name: { all: 'Tirador Veterano de Krieg' } },
+    krieg_bomber:   { name: { all: 'Bombardero de Krieg' } },
+    dugong:         { name: { all: 'Maestro Dugongo Kung-fu' } },
+    shandia:        { name: { all: 'Guerrero Shandia Veterano' } },
+    shandia_gunner: { name: { all: 'Bazuquero Shandia' } },
+    mr5:            { always: true, name: { all: 'Mr. 5 — Bomu Bomu' } },
+    miss_valentine: { always: true, name: { all: 'Miss Valentine — Kilo Kilo' } },
+    mr4:            { always: true, name: { all: 'Mr. 4 y Lassoo' } },
+    miss_merry:     { always: true, name: { all: 'Miss Merry Christmas — Mogu Mogu' } },
+    miss_doublefinger: { always: true, name: { all: 'Miss Doublefinger — Toge Toge' } },
+    satori:         { always: true, name: { all: 'Satori, Sacerdote del Bosque' } },
+    shura:          { always: true, name: { all: 'Shura, Sacerdote del Cielo' } },
+    gedatsu:        { always: true, name: { all: 'Gedatsu, Sacerdote del Pantano' } }
 };
-const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina' };
+function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[selectedMap] || i.name.all || i.name.baratie) : null; }
+const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
+    pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno' };
 const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai' };
 // VS: la vida del boss escala por etapa/mapa
 const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000 };
@@ -178,37 +216,56 @@ function enemyHpScale() { return Math.pow(BALANCE.hpGrowth, gameTime / 60) * pla
 const ENEMY_STATS = {
     grunt: [32, 78, 16], shooter: [48, 62, 22], pacifista: [300, 46, 40], kuma: [150, 50, 28], moria: [200, 40, 30],
     tararan: [80, 66, 20], hogback: [90, 50, 24], cindry: [120, 48, 22], pellona: [110, 54, 24], ryuma: [130, 48, 26],
-    inupen: [40, 74, 14], kumashi: [100, 60, 20], absalom: [120, 45, 24]
+    inupen: [40, 74, 14], kumashi: [100, 60, 20], absalom: [120, 45, 24],
+    // Mismos papeles que los marines de relleno para no mover el balance medido:
+    // raso = grunt, tirador = shooter, bruto = pacifista. Los oficiales con nombre van siempre como élite.
+    krieg_pirate: [32, 78, 16], krieg_gunner: [48, 62, 22], krieg_bomber: [300, 46, 40],
+    dugong: [32, 82, 16], mr5: [110, 52, 24], miss_valentine: [90, 60, 20], mr4: [160, 42, 28], miss_merry: [100, 66, 20], miss_doublefinger: [120, 54, 26],
+    shandia: [32, 78, 16], shandia_gunner: [48, 62, 22], satori: [130, 48, 24], shura: [120, 58, 26], gedatsu: [140, 46, 28]
+};
+// Tiradores: disparan balas (ver BALANCE.shooterCd / bulletDmg)
+const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner']);
+// Élite ocasional de los tipos de relleno: [probabilidad, x vida, x daño, x velocidad]
+const FODDER_ELITE = {
+    krieg_pirate: [0.008, 9, 2, 0.8], krieg_gunner: [0.008, 9, 2, 1.2], krieg_bomber: [0.01, 6, 2, 0.9],
+    dugong: [0.008, 9, 2, 0.8], shandia: [0.008, 9, 2, 0.8], shandia_gunner: [0.008, 9, 2, 1.2]
 };
 // pool: se recorre en orden; el primero con min <= minuto y azar < p gana. Si ninguno, sale 'base'.
 // minibosses: aparecen una vez por partida en su minuto. boss: jefe final del minuto 8.
 // events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
-// Baratie, Alabasta y Skypiea usan marines como relleno hasta tener sprites de su arco
-// (piratas de Krieg, Baroque Works, ejército de Enel).
 const MAP_ENEMIES = {
     baratie: {
         hpMult: 0.9, // dificultad del mapa (vida enemiga)
-        base: 'grunt',
-        pool: [ { type: 'pacifista', min: 3, p: 0.12 }, { type: 'shooter', min: 1, p: 0.25 } ],
-        minibosses: [ { type: 'morgan', min: 3, hp: 600, speed: 42, damage: 28 } ],
+        // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
+        base: 'krieg_pirate',
+        pool: [ { type: 'krieg_bomber', min: 3, p: 0.12 }, { type: 'krieg_gunner', min: 1, p: 0.25 } ],
+        minibosses: [ { type: 'pearl', min: 3, hp: 600, speed: 40, damage: 28 }, { type: 'gin', min: 6, hp: 800, speed: 52, damage: 32 } ],
         boss: 'boss_krieg',
-        events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EMBOSCADA PIRATA!', chargeText: '¡CARGA DE LA ARMADA!' }
+        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_pirate', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
     },
     alabasta: {
         hpMult: 1.0, // dificultad del mapa (vida enemiga)
-        base: 'grunt',
-        pool: [ { type: 'pacifista', min: 2, p: 0.14 }, { type: 'shooter', min: 1, p: 0.30 } ],
-        minibosses: [ { type: 'pacifista', min: 4, hp: 700, speed: 44, damage: 32 } ],
+        // Dugongos kung-fu del desierto, fusileros de la Marina de Smoker y los agentes de Baroque Works
+        base: 'dugong',
+        pool: [
+            { type: 'miss_doublefinger', min: 5, p: 0.03 }, { type: 'mr4', min: 4, p: 0.06 }, { type: 'miss_merry', min: 4, p: 0.09 },
+            { type: 'miss_valentine', min: 2, p: 0.12 }, { type: 'mr5', min: 2, p: 0.15 }, { type: 'shooter', min: 1, p: 0.38 }
+        ],
+        minibosses: [ { type: 'mr2', min: 3, hp: 700, speed: 50, damage: 30 }, { type: 'mr1', min: 5, hp: 850, speed: 46, damage: 34 } ],
         boss: 'boss_crocodile',
-        events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA ARMADA!' }
+        events: { ring: 'dugong', charge: 'shooter', runners: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
     },
     skypiea: {
         hpMult: 1.0, // dificultad del mapa (vida enemiga)
-        base: 'grunt',
-        pool: [ { type: 'pacifista', min: 3, p: 0.12 }, { type: 'shooter', min: 1, p: 0.30 } ],
-        minibosses: [ { type: 'pacifista', min: 4, hp: 750, speed: 44, damage: 32 } ],
+        // Guerreros shandia y los sacerdotes de Enel; Wiper y Ohm como minijefes
+        base: 'shandia',
+        pool: [
+            { type: 'gedatsu', min: 4, p: 0.04 }, { type: 'shura', min: 3, p: 0.08 }, { type: 'satori', min: 2, p: 0.12 },
+            { type: 'shandia_gunner', min: 1, p: 0.38 }
+        ],
+        minibosses: [ { type: 'wiper', min: 3, hp: 750, speed: 50, damage: 30 }, { type: 'ohm', min: 5, hp: 900, speed: 44, damage: 34 } ],
         boss: 'boss_enel',
-        events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EL EJÉRCITO DIVINO ATACA!', chargeText: '¡CARGA DESDE LAS NUBES!' }
+        events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'shandia', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
         hpMult: 1.15, // dificultad del mapa (vida enemiga)

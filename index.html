@@ -3139,8 +3139,9 @@ function update(dt) {
                     }
                 });
             } else if (d.type === 'bell') {
-                // Campana de Skypiea (VS Orologion): congela a todos los enemigos 10s
-                window.freezeTimer = 10;
+                // Campana de Skypiea (VS Orologion): congela a todos los enemigos
+                window.freezeTimer = 6;
+                window.spawnBanner = { text: '¡CAMPANA DE SKYPIEA! Enemigos congelados 6s', life: 2.2, color: '#67e8f9' };
                 cameraShake = 1;
                 playSound('reward');
             } else if (d.type === 'vacuum') {
@@ -4943,6 +4944,13 @@ function render() {
             ctx.fillStyle = '#020617'; ctx.fillRect(-barW/2, -28, barW, 5);
             ctx.fillStyle = e.isBoss ? '#facc15' : (e.isElite ? '#fbbf24' : '#f43f5e');
             ctx.fillRect(-barW/2, -28, (e.hp / e.maxHp) * barW, 5);
+        }
+        // Indicador visual de congelado (Campana de Skypiea)
+        if (window.freezeTimer > 0) {
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = 'rgba(103, 232, 249, 0.5)';
+            ctx.beginPath(); ctx.arc(0, 0, (e.isBoss || e.isMiniboss) ? 26 : 18, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1;
         }
         // Etiqueta de lore (élites con nombre, Shichibukai y bosses)
         if (e.name || e.isBoss || e.isMiniboss) {

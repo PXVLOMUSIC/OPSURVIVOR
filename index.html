@@ -2155,7 +2155,7 @@ function renderShop() {
     container.innerHTML = '';
     document.getElementById('shop-beli').innerText = fmtBeli(meta.beli);    META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
-        const cost = Math.round(u.cost * Math.pow(1.35, lvl));
+        const cost = Math.round(u.cost * Math.pow(1.25, lvl));
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.innerHTML = `

@@ -2808,7 +2808,7 @@ function update(dt) {
             player.hitTimer = 0.12;
             // VS: destello rojo + sacudida MUY breve (pulso con cooldown, no constante)
             if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
-            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.4); player._hurtShakeCd = 0.35; }
+            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.8); player._hurtShakeCd = 0.35; }
             if (!player._dmgSoundCd || player._dmgSoundCd <= 0) { playSound('hurt'); player._dmgSoundCd = 0.25; }
             if (player.hp <= 0) { triggerGameOver(); return; }
             updateUI();
@@ -2832,7 +2832,7 @@ function update(dt) {
             const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion);
             player.hp -= b.damage * dmgMult; player.hitTimer = 0.12; playSound('hurt'); updateUI();
             if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
-            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.4); player._hurtShakeCd = 0.35; }
+            if (!player._hurtShakeCd || player._hurtShakeCd <= 0) { cameraShake = Math.max(cameraShake, 1.8); player._hurtShakeCd = 0.35; }
             enemyBullets.splice(i, 1);
             if (player.hp <= 0) { triggerGameOver(); return; }
             continue;
@@ -5049,7 +5049,7 @@ function render() {
     let vignetteAlpha = 0;
     if (player._hurtFlash > 0) {
         const fa = Math.max(0, Math.min(1, player._hurtFlash / 0.35));
-        vignetteAlpha += 0.45 * fa * flashMult;
+        vignetteAlpha += 0.6 * fa * flashMult;
     }
     if (hpPctNow > 0 && hpPctNow <= 0.3) {
         // latido suave ~1Hz entre alpha 0.09 y 0.15

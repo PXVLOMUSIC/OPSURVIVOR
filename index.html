@@ -4140,8 +4140,12 @@ function showUpgradeScreen(count, isChest) {
         let desc = up.desc;
         // Destello de color por personaje para armas especiales (rojo Luffy, verde Zoro, amarillo Sanji);
         // las armas/pasivas compartidas (chars === 'all') no llevan destello.
+        // Las armas EVOLUCIONADAS llevan un destello multicolor "legendario".
         let titleStyle = '';
-        if (up.type === 'weapon' && Array.isArray(up.chars) && up.chars.length === 1) {
+        const sk = skills[up.id];
+        if (up.type === 'weapon' && sk && sk.evolved) {
+            titleStyle = 'text-shadow: 0 0 6px #ff4d4d, 0 0 12px #ffaa00, 0 0 18px #4dff4d, 0 0 24px #4d9fff, 0 0 30px #d94dff; color: #fff7d6;';
+        } else if (up.type === 'weapon' && Array.isArray(up.chars) && up.chars.length === 1) {
             const col = up.chars[0] === 'luffy' ? '#ef4444' : (up.chars[0] === 'zoro' ? '#22c55e' : (up.chars[0] === 'sanji' ? '#facc15' : ''));
             if (col) titleStyle = 'text-shadow: 0 0 8px ' + col + ', 0 0 14px ' + col + '; color: ' + col + ';';
         }

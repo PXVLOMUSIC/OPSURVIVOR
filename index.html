@@ -1326,10 +1326,14 @@ function updateMusic() {
         battleMusic.pause();
         // toggle del menu: silencia solo la musica del menu (la batalla sigue su slider)
         if (windowOpts && windowOpts.menuMusicMuted) { menuMusic.pause(); return; }
+        // autoplay con sonido esta bloqueado por el navegador hasta el primer gesto:
+        // arrancamos silenciado y activamos el sonido en el primer click.
+        menuMusic.muted = !window._audioUnlocked;
         menuMusic.volume = vol;
         menuMusic.play().catch(() => {});
     } else if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'GAMEOVER' || gameState === 'VICTORY') {
         menuMusic.pause();
+        battleMusic.muted = false;
         battleMusic.volume = vol;
         battleMusic.play().catch(() => {});
     } else {
@@ -5206,6 +5210,7 @@ document.addEventListener('click', function (e) {
         window._audioUnlocked = true;
         if (!audioCtx) initAudio();
         try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+        try { menuMusic.muted = false; } catch (e) {}
         try { updateMusic(); } catch (err) {}
     }
 }, true);

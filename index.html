@@ -510,56 +510,47 @@
         /* --- Cartas WANTED de personajes (pantalla de selección) --- */
         #char-select { align-items: stretch; }
         .char-card {
-            width: min(170px, 32vw);
-            min-height: 0;
-            padding: 0;
-            border: 3px solid #8b5e3c;
-            border-radius: 6px;
+            font-family: 'Bangers', sans-serif;
+            width: min(190px, 36vw);
+            min-height: 240px;
+            padding: 10px 8px 8px;
+            border-radius: 4px;
             cursor: pointer;
             position: relative;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: #1a0f06;
-            box-shadow: 0 8px 22px rgba(0,0,0,0.7);
+            justify-content: flex-start;
+            gap: 6px;
+            background: linear-gradient(160deg, #f6e2b8 0%, #ecd5a2 55%, #d6b273 100%);
+            border: 7px solid transparent;
+            border-image: repeating-linear-gradient(92deg, #6b4423 0 10px, #7c5531 10px 15px, #4f2e18 15px 26px) 7;
+            box-shadow: 0 10px 26px rgba(0,0,0,0.7), inset 0 0 24px rgba(110,70,25,0.18);
             transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
-            filter: brightness(0.95);
+            filter: brightness(0.92) saturate(0.85);
         }
         .char-card img {
-            width: 100%;
-            height: auto;
-            display: block;
+            width: 64px;
+            height: 64px;
+            image-rendering: pixelated;
+            object-fit: contain;
         }
-        .wanted-header {
-            font-family: 'Bangers', sans-serif;
-            font-size: 28px;
+        .char-name {
+            font-size: 24px;
+            color: #241508;
             letter-spacing: 4px;
-            color: #1a0f06;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-            line-height: 1;
-            margin: 0;
         }
-        .wanted-sub {
-            font-family: 'Bangers', sans-serif;
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: #3d2314;
-            margin: 0 0 4px 0;
+        .char-role {
+            font-size: 13px;
+            color: #6b4423;
+            letter-spacing: 1px;
+            line-height: 1.3;
         }
-        .char-card .char-name {
-            font-family: 'Bangers', sans-serif;
-            font-size: 22px;
-            letter-spacing: 3px;
-            color: #1a0f06;
-            margin: 2px 0;
-        }
-        .char-card .char-bounty {
+        .char-bounty {
             font-family: 'Bangers', sans-serif;
             font-size: 14px;
             letter-spacing: 1px;
             color: #7a1f1f;
-            margin-top: 2px;
         }
         .char-card:hover { transform: translateY(-4px) scale(1.03); filter: brightness(1.05) saturate(1); }
         .char-card.selected {
@@ -827,14 +818,23 @@
             Recoge Berries, forja tu build y derrota al boss del mapa.
         </p>
         <div id="char-select" style="display: flex; gap: 32px; margin: 12px 0 16px; flex-wrap: wrap; justify-content: center; align-items: stretch;">
-            <button class="char-card" data-char="zoro" onclick="selectCharacter('zoro')">
-                <img src="assets/wanted/zoro.png" alt="Zoro" onerror="this.style.display='none'">
-            </button>
             <button class="char-card" data-char="luffy" onclick="selectCharacter('luffy')">
-                <img src="assets/wanted/luffy.png" alt="Luffy" onerror="this.style.display='none'">
+                <img src="assets/sprites/ui/sprite_000.png" alt="Luffy" onerror="this.style.display='none'">
+                <span class="char-name">LUFFY</span>
+                <span class="char-role">Gomu Gomu • Estiramiento<br>Pistol / Gatling / Muchi / Ono</span>
+                <span class="char-bounty">฿ 3,000,000,000</span>
+            </button>
+            <button class="char-card" data-char="zoro" onclick="selectCharacter('zoro')">
+                <img src="assets/sprites/ui/sprite_004.png" alt="Zoro" onerror="this.style.display='none'">
+                <span class="char-name">ZORO</span>
+                <span class="char-role">Santoryu • Espadachín<br>Tatsumaki / Pound Ho / Oni Giri</span>
+                <span class="char-bounty">฿ 1,111,000,000</span>
             </button>
             <button class="char-card" data-char="sanji" onclick="selectCharacter('sanji')">
-                <img src="assets/wanted/sanji.png" alt="Sanji" onerror="this.style.display='none'">
+                <img src="assets/sprites/ui/sprite_005.png" alt="Sanji" onerror="this.style.display='none'">
+                <span class="char-name">SANJI</span>
+                <span class="char-role">Diable Jambe • Pieles<br>Concassé / Party Table / Joue Shot</span>
+                <span class="char-bounty">฿ 1,032,000,000</span>
             </button>
         </div>
         <div id="char-selected" style="color:#dcc596; font-size:14px; margin-bottom:10px; letter-spacing:1px;">Personaje: Luffy</div>

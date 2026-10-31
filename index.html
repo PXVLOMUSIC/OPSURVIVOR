@@ -510,9 +510,9 @@
         /* --- Cartas WANTED de personajes (pantalla de selección) --- */
         #char-select { align-items: stretch; }
                 .char-card {
-            width: min(170px, 32vw);
+            width: min(160px, 30vw);
             min-height: 0;
-            padding: 0;
+            padding: 4px;
             border: 3px solid #8b5e3c;
             border-radius: 6px;
             cursor: pointer;
@@ -531,6 +531,7 @@
             height: auto;
             display: block;
             max-width: 100%;
+            object-fit: contain;
         }
 .char-card:hover { transform: translateY(-4px) scale(1.03); filter: brightness(1.05) saturate(1); }
         .char-card.selected {

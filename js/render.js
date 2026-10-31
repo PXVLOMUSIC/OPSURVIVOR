@@ -147,186 +147,8 @@ function render() {
         ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2); ctx.fill();
     }
 
-    // Active Player Attacks
-    for (let atk of activeAttacks) {
-        if (atk.type === 'pistol') {
-            const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
-            const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-            const isRedHawk = skills.pistol.evolved;
-            ctx.strokeStyle = isRedHawk ? '#f43f5e' : '#ffdbac';
-            ctx.lineWidth = isRedHawk ? 16 : 12;
-            ctx.shadowColor = isRedHawk ? '#f43f5e' : '#f59e0b';
-            ctx.shadowBlur = isRedHawk ? 16 : 10;
-            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
-            if (isRedHawk) {
-                ctx.fillStyle = 'rgba(244,63,94,0.3)';
-                ctx.beginPath(); ctx.arc(endX, endY, 12, 0, Math.PI*2); ctx.fill();
-            }
-        } else if (atk.type === 'gatling') {
-            ctx.fillStyle = 'rgba(255, 219, 172, 0.4)';
-            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
-        } else if (atk.type === 'muchi') {
-            // latigazo: media luna dorada en la dirección del golpe
-            const a = Math.max(0, atk.life / atk.maxLife);
-            ctx.strokeStyle = `rgba(255, 214, 120, ${0.9 * a})`;
-            ctx.lineWidth = 9;
-            ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12;
-            ctx.beginPath();
-            ctx.arc(atk.x, atk.y, atk.radius * 0.75, atk.angle - 1.05, atk.angle + 1.05);
-            ctx.stroke();
-            ctx.strokeStyle = `rgba(255,255,255,${0.7 * a})`;
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(atk.x, atk.y, atk.radius * 0.55, atk.angle - 0.9, atk.angle + 0.9);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        } else if (atk.type === 'ono' || atk.type === 'concasse') {
-            // patada aérea: chorro de caída + onda de impacto
-            const a = Math.max(0, atk.life / atk.maxLife);
-            const col = atk.type === 'ono' ? '255,219,172' : '251,146,60';
-            ctx.fillStyle = `rgba(${col}, ${0.55 * a})`;
-            ctx.beginPath(); ctx.ellipse(atk.x, atk.y, atk.radius, atk.radius * 0.62, 0, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = `rgba(${col}, ${0.85 * a})`;
-            ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.ellipse(atk.x, atk.y, atk.radius * (1 - 0.5 * a), atk.radius * 0.62 * (1 - 0.5 * a), 0, 0, Math.PI * 2); ctx.stroke();
-            // estela de caída (VS: telegrafo el impacto)
-            ctx.fillStyle = `rgba(${col}, ${0.8 * a})`;
-            ctx.beginPath(); ctx.ellipse(atk.x, atk.y - 70 * a, 10, 34, 0, 0, Math.PI * 2); ctx.fill();
-        } else if (atk.type === 'tatsumaki') {
-            // tornado: espirales giratorios
-            atk.x = player.x; atk.y = player.y;
-            const a = Math.max(0, atk.life / atk.maxLife);
-            ctx.save();
-            ctx.translate(atk.x, atk.y);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${0.75 * a})`;
-            ctx.lineWidth = 5;
-            ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 10;
-            for (let k = 0; k < 3; k++) {
-                const off = atk.spin + k * Math.PI * 2 / 3;
-                ctx.beginPath();
-                ctx.arc(0, 0, atk.radius * (0.35 + 0.3 * k), off, off + 2.2);
-                ctx.stroke();
-            }
-            ctx.restore();
-            ctx.shadowBlur = 0;
-        } else if (atk.type === 'poundho') {
-            // cañón de viento: haz ancho perforante
-            const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
-            const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-            ctx.strokeStyle = 'rgba(156, 195, 232, 0.85)';
-            ctx.lineWidth = 20;
-            ctx.shadowColor = '#9cc3e8'; ctx.shadowBlur = 14;
-            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
-            ctx.strokeStyle = skills.poundho.evolved ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)';
-            ctx.lineWidth = 6;
-            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
-            // VFX: sable de Ryuma al frente del cañón de viento
-            const sab = IMG.saber_poundho;
-            if (sab && sab.complete) {
-                ctx.save();
-                ctx.translate(endX + Math.cos(atk.angle) * 10, endY + Math.sin(atk.angle) * 10);
-                ctx.rotate(atk.angle + Math.PI * 0.7);
-                const s = 30, iw = s * (sab.width / sab.height);
-                ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(sab, -iw / 2, -s / 2, iw, s);
-                ctx.imageSmoothingEnabled = true;
-                ctx.restore();
-            }
-            ctx.shadowBlur = 0;
-        } else if (atk.type === 'partycourse') {
-            // tanda de patadas 360: aro rotatorio doble
-            atk.x = player.x; atk.y = player.y;
-            const a = Math.max(0, atk.life / atk.maxLife);
-            ctx.save();
-            ctx.translate(atk.x, atk.y);
-            ctx.rotate(atk.spin);
-            ctx.strokeStyle = `rgba(251, 146, 60, ${0.85 * a})`;
-            ctx.lineWidth = 6;
-            ctx.shadowColor = '#f97316'; ctx.shadowBlur = 10;
-            for (let k = 0; k < 3; k++) {
-                const off = k * Math.PI * 2 / 3;
-                ctx.beginPath(); ctx.arc(0, 0, atk.radius * 0.55, off, off + 0.9); ctx.stroke();
-            }
-            ctx.strokeStyle = `rgba(255, 235, 200, ${0.6 * a})`;
-            ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.arc(0, 0, atk.radius * 0.8, 0, Math.PI * 2); ctx.stroke();
-            ctx.restore();
-            ctx.shadowBlur = 0;
-        } else if (atk.type === 'bazooka') {
-            ctx.fillStyle = skills.bazooka.evolved ? 'rgba(244, 63, 94, 0.7)' : 'rgba(244, 63, 94, 0.5)';
-            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
-            if (skills.bazooka.evolved) {
-                ctx.strokeStyle = 'rgba(255, 165, 0, 0.6)';
-                ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius * 0.7, 0, Math.PI * 2); ctx.stroke();
-            }
-        } else if (atk.type === 'santoryu') {
-            const slashes = skills.santoryu.evolved ? 9 : 3;
-            ctx.strokeStyle = skills.santoryu.evolved ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.8)';
-            ctx.lineWidth = skills.santoryu.evolved ? 8 : 6;
-            ctx.shadowColor = '#fff'; ctx.shadowBlur = skills.santoryu.evolved ? 12 : 0;
-            for (let k = 0; k < slashes; k++) {
-                const ang = (atk.angle || 0) + (k - (slashes-1)/2) * 0.15;
-                const ox = Math.cos(ang) * 8;
-                const oy = Math.sin(ang) * 8;
-                ctx.beginPath(); ctx.moveTo(atk.x + ox, atk.y + oy); ctx.lineTo(atk.x + ox + Math.cos(ang)*atk.radius, atk.y + oy + Math.sin(ang)*atk.radius); ctx.stroke();
-            }
-            ctx.shadowBlur = 0;
-        } else if (atk.type === 'diablejambe') {
-            ctx.fillStyle = skills.diablejambe.evolved ? 'rgba(244, 63, 94, 0.6)' : 'rgba(244, 63, 94, 0.5)';
-            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = skills.diablejambe.evolved ? 'rgba(255, 165, 0, 0.6)' : 'rgba(255, 165, 0, 0.4)';
-            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius * 0.7, 0, Math.PI * 2); ctx.fill();
-            if (skills.diablejambe.evolved) {
-                ctx.fillStyle = 'rgba(255, 255, 0, 0.4)';
-                ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius * 0.4, 0, Math.PI * 2); ctx.fill();
-            }
-        } else if (atk.type === 'onigiri') {
-            ctx.fillStyle = 'rgba(255,255,255,0.6)';
-            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.moveTo(atk.x - atk.radius, atk.y); ctx.lineTo(atk.x + atk.radius, atk.y); ctx.stroke();
-        } else if (atk.type === 'flyingslash') {
-            const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
-            const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-            // estela translúcida detrás del sable volador
-            ctx.strokeStyle = 'rgba(56, 189, 235, 0.3)'; ctx.lineWidth = 8; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
-            ctx.lineCap = 'butt';
-            // VFX: sable GBA girando en la punta del corte
-            const saber = IMG.saber_flyingslash;
-            ctx.save();
-            ctx.translate(endX, endY);
-            ctx.rotate(atk.angle + Math.PI * 0.7 + gameTime * 14);
-            ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 12;
-            if (saber && saber.complete) {
-                const s = 28, iw = s * (saber.width / saber.height);
-                ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(saber, -iw / 2, -s / 2, iw, s);
-                ctx.imageSmoothingEnabled = true;
-            } else {
-                ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 10;
-                ctx.beginPath(); ctx.moveTo(-24, 0); ctx.lineTo(24, 0); ctx.stroke();
-            }
-            ctx.restore();
-            ctx.shadowBlur = 0;
-        } else if (atk.type === 'collier') {
-            const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
-            const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-            ctx.strokeStyle = '#ffdbac'; ctx.lineWidth = 6;
-            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
-        } else if (atk.type === 'joueshot') {
-            const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
-            const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-            ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 8;
-            ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 8;
-            ctx.beginPath(); ctx.moveTo(atk.startX, atk.startY); ctx.lineTo(endX, endY); ctx.stroke();
-            ctx.shadowBlur = 0;
-        } else if (atk.type === 'bazooka') {
-            ctx.fillStyle = 'rgba(244, 63, 94, 0.5)';
-            ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
-        }
-    }
+    // Marcas en el suelo (js/vfx.js)
+    drawGroundDecals();
 
     // Enemies with Soft Floor Shadows
     for (let e of enemies) {
@@ -361,6 +183,7 @@ function render() {
             const r = eImg ? Math.max(eImg.width, eImg.height)/2 + 4 : 20;
             ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
         }
+        if (e._flashUntil && gameTime < e._flashUntil) ctx.filter = 'brightness(2.4) saturate(0.4)';
         if (eImg && eImg.complete) {
             if (e.isElite) {
                 const s = 1.3;
@@ -373,6 +196,7 @@ function render() {
         else if (e.type === 'pacifista') ctx.drawImage(Sprites.pacifista, -24, -24);
         else if (e.type === 'boss_krieg') ctx.drawImage(Sprites.krieg, -32, -32);
         else { ctx.fillStyle = '#999'; ctx.fillRect(-16, -16, 32, 32); }
+        ctx.filter = 'none';
 
         if (e.hp < e.maxHp) {
             const barW = (e.isBoss || e.isMiniboss) ? 56 : 26;
@@ -404,6 +228,9 @@ function render() {
         }
         ctx.restore();
     }
+
+    // Ataques del jugador por encima de los enemigos (js/vfx.js)
+    for (let atk of activeAttacks) drawAttackFX(atk);
 
     // Boss Bar Header if Active (VS: barra superior con nombre del boss real, para todos los mapas)
     const boss = enemies.find(e => e.isBoss && e.hp > 0);
@@ -447,19 +274,9 @@ function render() {
     }
 
     // Player with Dynamic Shadow
+    drawPlayerAuraBack();
     ctx.save();
     ctx.translate(player.x, player.y);
-    if (skills.gear2 && skills.gear2.active) {
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
-        ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.fill();
-    }
-    if (skills.diablejambe && skills.diablejambe.level > 0) {
-        ctx.fillStyle = 'rgba(244, 63, 94, 0.3)';
-        ctx.beginPath(); ctx.arc(0, 14, 12, 0, Math.PI * 2); ctx.fill();
-    }
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill();
 
@@ -473,7 +290,9 @@ function render() {
     if (img && img.complete) {
         const ph = 48;
         const pw = ph * (img.width / img.height);
+        ctx.filter = playerSpriteFilter();
         ctx.drawImage(img, -pw/2, -ph/2, pw, ph);
+        ctx.filter = 'none';
     } else if (assetsLoaded && IMG.player && IMG.player.complete) {
         const ph = 48;
         const pw = ph * (IMG.player.width / IMG.player.height);
@@ -483,47 +302,8 @@ function render() {
     }
     ctx.restore();
 
-    // Particles (formas: spark / orb / ring / star / ghost)
-    for (let p of particles) {
-        const a = Math.max(0, p.life / (p.maxLife || 0.4));
-        if (p.shape === 'ring') {
-            ctx.globalAlpha = a * 0.85;
-            ctx.strokeStyle = p.color;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.5, p.size), 0, Math.PI * 2); ctx.stroke();
-        } else if (p.shape === 'orb') {
-            ctx.globalAlpha = a * 0.9;
-            ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color; ctx.shadowBlur = 12;
-            ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.8, p.size * a), 0, Math.PI * 2); ctx.fill();
-            ctx.shadowBlur = 0;
-        } else if (p.shape === 'star') {
-            ctx.globalAlpha = a;
-            ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color; ctx.shadowBlur = 8;
-            const s = Math.max(0.6, p.size * a);
-            // destello de 4 puntas con parpadeo
-            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.life * 6);
-            ctx.fillRect(-s, -s * 0.22, s * 2, s * 0.44);
-            ctx.fillRect(-s * 0.22, -s, s * 0.44, s * 2);
-            ctx.restore();
-            ctx.shadowBlur = 0;
-        } else if (p.shape === 'ghost' && p.img && p.img.complete) {
-            ctx.globalAlpha = a * 0.45;
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            if (p.facing === 1) ctx.scale(-1, 1);
-            const ph = p.size || 48;
-            const pw = ph * (p.img.width / p.img.height);
-            ctx.drawImage(p.img, -pw/2, -ph/2, pw, ph);
-            ctx.restore();
-        } else {
-            ctx.globalAlpha = a;
-            ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.7, (p.size || 2) * a), 0, Math.PI * 2); ctx.fill();
-        }
-    }
-    ctx.globalAlpha = 1;
+    // Partículas (js/vfx.js)
+    drawParticles();
 
     // Damage Numbers (Overcrit / Crit formatting)
     for (let dtObj of damageTexts) {

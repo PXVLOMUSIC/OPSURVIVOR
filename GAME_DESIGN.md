@@ -13,12 +13,22 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 | `js/systems.js` | Rejilla espacial, controles, Voluntades de D (arcanas), logros y bestiario |
 | `js/ui.js` | Opciones, pausa y menús |
 | `js/game.js` | Bucle principal, update, armas, aparición de enemigos, XP y evoluciones |
+| `js/vfx.js` | Efectos de habilidades: dibujo de cada ataque, impactos, partículas temáticas y polvo según el mapa |
 | `js/render.js` | Dibujado |
 | `js/main.js` | Arranque, que se ejecuta cuando todo lo demás ya está cargado |
 
 **Regla:** una función solo se puede llamar al cargar un archivo si está definida en ese archivo o en uno anterior. Las llamadas de inicialización que usen funciones de varios archivos van en `js/main.js`.
 
 `source-art/` guarda el material original: hojas de sprites, frames limpios, retratos y el script `process_animations.py`. El juego no lo carga.
+
+## Efectos de habilidades (`js/vfx.js`)
+- Cada ataque se dibuja con la forma de su hitbox: proyectil, cono, área en el objetivo o aura alrededor del jugador.
+- Luffy: extremidades de goma que se estiran y vuelven (Pistol, Gatling, Bazooka, Muchi, Ono). Gear 2 tiñe la piel de rosa y suelta vapor. Red Hawk lleva el antebrazo con Haki y el puño en llamas.
+- Zoro: tajos y medias lunas de aire (Santoryu, 36/108 Pound Ho). Oni Giri deja el corte cruzado después del dash. Tatsumaki es un tornado con el polvo del mapa.
+- Sanji: pierna negra que no se estira, ondas de patada y fuego (Diable Jambe, Collier, Concassé, Party Table).
+- Los golpes "en el objetivo" (Bazooka, Ono, Concassé, granada, hacha) avisan con una sombra y hacen daño al caer (`hitDelay`).
+- Polvo y restos según el mapa (`VFX_MAP`): astillas en Baratie, arena en Alabasta, nubes en Skypiea.
+- Las armas compartidas reutilizan la lógica de otro tipo y se distinguen con `vis` (knife, rifle, bolt, spear, axe, grenade, shuriken, haki).
 
 ## Partida
 - Dura 8 minutos. Al minuto 8 aparece el jefe del mapa, y la victoria llega al derrotarlo.

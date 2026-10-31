@@ -205,12 +205,20 @@ function update(dt) {
         if (b.life <= 0) enemyBullets.splice(i, 1);
     }
 
+    vfxUpdate(dt);
     for (let i = activeAttacks.length - 1; i >= 0; i--) {
         const atk = activeAttacks[i];
         atk.life -= dt;
 
         if (atk.type === 'pistol') {
-            atk.currentRange += atk.speed * dt;
+            // El brazo de goma sale del hombro de Luffy: sigue al jugador y, al llegar al máximo, vuelve
+            if (atk.attached) { atk.startX = player.x; atk.startY = player.y; }
+            if (atk.retracting) {
+                atk.currentRange -= atk.speed * 1.5 * dt;
+                if (atk.currentRange <= 0) activeAttacks.splice(i, 1);
+                continue;
+            }
+            atk.currentRange = Math.min(atk.maxRange, atk.currentRange + atk.speed * dt);
             const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
             const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
 
@@ -221,17 +229,13 @@ function update(dt) {
                     atk.hitEnemies.add(e);
                     spawnDamageText(endX, endY, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
-                    // VFX: impacto de puño de goma — destello + chispas de goma
-                    fxOrb(endX, endY, '#ffffff', 7, 0.18);
-                    fxSpark(endX, endY, skills.pistol.evolved ? '#f43f5e' : '#ffdbac', 2, 90, 0.25, 2, 80);
+                    vfxOnHit(atk, e, endX, endY);
                     if (e.hp <= 0) killEnemy(e);
                 }
             }
-            if (atk.currentRange >= atk.maxRange) activeAttacks.splice(i, 1);
-            if (Math.random() < 0.4) {
-                const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
-                const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-                particles.push({ x: endX, y: endY, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15, life: 0.15, color: skills.pistol.evolved ? '#f43f5e' : '#ffdbac' });
+            if (atk.currentRange >= atk.maxRange) {
+                if (atk.attached) atk.retracting = true;
+                else activeAttacks.splice(i, 1);
             }
         } else if (atk.type === 'gatling') {
             atk.x = player.x; atk.y = player.y;
@@ -239,17 +243,12 @@ function update(dt) {
                 const dmgInfo = calculateDamage(atk.baseDamage);
                 e.hp -= dmgInfo.amount * dt * 3.0 * e.damageTaken;
                 if (Math.random() < 0.12) spawnDamageText(e.x, e.y, dmgInfo);
+                if (Math.random() < 0.06) vfxOnHit(atk, e);
                 if (e.hp <= 0) killEnemy(e);
             });
-            // VFX: puños de goma disparados en ráfaga al derredor
-            if (Math.random() < dt * 30) {
-                const ang = Math.random() * Math.PI * 2;
-                const rr = atk.radius * (0.4 + Math.random() * 0.6);
-                particles.push({ x: player.x + Math.cos(ang) * rr, y: player.y + Math.sin(ang) * rr, vx: Math.cos(ang) * 70, vy: Math.sin(ang) * 70, life: 0.22, maxLife: 0.22, color: '#ffdbac', shape: 'spark', size: 2, grav: 0 });
-            }
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'bazooka') {
-            atk.life -= dt;
+            if (atk.hitDelay && atk.maxLife - atk.life < atk.hitDelay) continue; // el golpe aún no ha llegado
             // VS: la explosion es un golpe UNICO por enemigo (bug de frames corregido)
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
                 if (!atk.hitEnemies.has(e)) {
@@ -258,12 +257,12 @@ function update(dt) {
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    vfxOnHit(atk, e);
                     if (e.hp <= 0) killEnemy(e);
                 }
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'santoryu') {
-            atk.life -= dt;
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
                 if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
@@ -271,12 +270,12 @@ function update(dt) {
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    vfxOnHit(atk, e);
                     if (e.hp <= 0) killEnemy(e);
                 }
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'onigiri') {
-            atk.life -= dt;
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
                 if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
@@ -284,6 +283,7 @@ function update(dt) {
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    vfxOnHit(atk, e);
                     if (e.hp <= 0) killEnemy(e);
                 }
             });
@@ -292,14 +292,14 @@ function update(dt) {
             atk.life -= dt;
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
                 const dmgInfo = calculateDamage(atk.baseDamage);
-                e.hp -= dmgInfo.amount * dt * 4;
+                e.hp -= dmgInfo.amount * dt * 4 * e.damageTaken;
                 if (Math.random() < 0.1) spawnDamageText(e.x, e.y, dmgInfo);
+                if (Math.random() < 0.06) vfxOnHit(atk, e);
                 if (e.hp <= 0) killEnemy(e);
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'muchi') {
             // Muchi: abanico frontal, un solo golpe por enemigo
-            atk.life -= dt;
             forEnemiesNear(player.x, player.y, atk.radius, function (e) {
                 if (atk.hitEnemies.has(e)) return;
                 const dAng = Math.atan2(e.y - player.y, e.x - player.x);
@@ -311,12 +311,13 @@ function update(dt) {
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    vfxOnHit(atk, e);
                     if (e.hp <= 0) killEnemy(e);
                 }
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'ono' || atk.type === 'concasse') {
-            atk.life -= dt;
+            if (atk.hitDelay && atk.maxLife - atk.life < atk.hitDelay) continue; // la pierna aún no ha llegado al suelo
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
                 if (!atk.hitEnemies.has(e)) {
                     atk.hitEnemies.add(e);
@@ -324,6 +325,7 @@ function update(dt) {
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(e.x, e.y, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    vfxOnHit(atk, e);
                     if (e.hp <= 0) killEnemy(e);
                 }
             });
@@ -336,6 +338,7 @@ function update(dt) {
                 const dmgInfo = calculateDamage(atk.baseDamage);
                 e.hp -= dmgInfo.amount * dt * 4 * e.damageTaken;
                 if (Math.random() < 0.08) spawnDamageText(e.x, e.y, dmgInfo);
+                if (Math.random() < 0.06) vfxOnHit(atk, e);
                 if (e.hp <= 0) killEnemy(e);
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
@@ -347,6 +350,7 @@ function update(dt) {
                 const dmgInfo = calculateDamage(atk.baseDamage);
                 e.hp -= dmgInfo.amount * dt * 3.5 * e.damageTaken;
                 if (Math.random() < 0.1) spawnDamageText(e.x, e.y, dmgInfo);
+                if (Math.random() < 0.06) vfxOnHit(atk, e);
                 if (e.hp <= 0) killEnemy(e);
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
@@ -362,16 +366,11 @@ function update(dt) {
                     e.hp -= dmgInfo.amount * e.damageTaken;
                     spawnDamageText(endX, endY, dmgInfo);
                     playSound(dmgInfo.isCrit ? 'crit' : 'hit');
+                    vfxOnHit(atk, e, e.x, e.y);
                     if (e.hp <= 0) killEnemy(e);
                 }
             });
             if (atk.currentRange >= atk.maxRange) activeAttacks.splice(i, 1);
-            if (Math.random() < 0.4) {
-                const endX = atk.startX + Math.cos(atk.angle) * atk.currentRange;
-                const endY = atk.startY + Math.sin(atk.angle) * atk.currentRange;
-                const col = atk.type === 'flyingslash' ? '#38bdf8' : (atk.type === 'joueshot' ? '#f59e0b' : (atk.type === 'poundho' ? '#9cc3e8' : '#ffdbac'));
-                particles.push({ x: endX, y: endY, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15, life: 0.15, color: col });
-            }
         }
     }
 
@@ -487,7 +486,7 @@ function handleAttacks(dt) {
 
         playSound('pistol');
         activeAttacks.push({
-            type: 'pistol', startX: player.x, startY: player.y,
+            type: 'pistol', startX: player.x, startY: player.y, attached: true,
             angle: angle, speed: 780, currentRange: 0,
             maxRange: skills.pistol.range * player.areaBonus,
             baseDamage: skills.pistol.baseDamage,
@@ -505,7 +504,7 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('pistol');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'knife',
                 type: 'pistol', startX: player.x, startY: player.y,
                 angle: angle, speed: 820, currentRange: 0,
                 maxRange: skills.cuchillo.range * player.areaBonus,
@@ -540,15 +539,10 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'bazooka', x: bx, y: by,
                 radius: skills.bazooka.radius * player.areaBonus,
-                life: 0.4, maxLife: 0.4,
+                life: 0.5, maxLife: 0.5, hitDelay: 0.15,
                 baseDamage: skills.bazooka.baseDamage,
                 hitEnemies: new Set()
             });
-            // VFX: detonación — doble onda + metralla cálida
-            fxRing(bx, by, '#f43f5e', 26, 0.45);
-            fxRing(bx, by, '#fb923c', 14, 0.35);
-            fxSpark(bx, by, '#fb923c', 10, 140, 0.4, 2.5, 90);
-            fxOrb(bx, by, '#fff1c0', 16, 0.3);
             player.attackTimer = 0.2;
         }
     }
@@ -562,15 +556,13 @@ function handleAttacks(dt) {
             let bx = target ? target.x : player.x;
             let by = target ? target.y : player.y;
             playSound('boom');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'grenade',
                 type: 'bazooka', x: bx, y: by,
                 radius: skills.granada.radius * player.areaBonus,
-                life: 0.4, maxLife: 0.4,
+                life: 0.55, maxLife: 0.55, hitDelay: 0.19,
                 baseDamage: skills.granada.baseDamage,
                 hitEnemies: new Set()
             });
-            fxRing(bx, by, '#f43f5e', 22, 0.4);
-            fxSpark(bx, by, '#fb923c', 8, 120, 0.35, 2, 70);
             player.attackTimer = 0.2;
         }
     }
@@ -585,7 +577,7 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('pistol');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'rifle',
                 type: 'pistol', startX: player.x, startY: player.y,
                 angle: angle, speed: 900, currentRange: 0,
                 maxRange: skills.rifle.range * player.areaBonus,
@@ -605,7 +597,7 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('slash');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'bolt',
                 type: 'poundho', startX: player.x, startY: player.y,
                 angle: angle, speed: skills.ballesta.speed, currentRange: 0,
                 maxRange: skills.ballesta.range * player.areaBonus,
@@ -625,7 +617,7 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('slash');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'spear',
                 type: 'collier', startX: player.x, startY: player.y,
                 angle: angle, speed: 700, currentRange: 0,
                 maxRange: skills.lanza.range * player.areaBonus,
@@ -644,14 +636,13 @@ function handleAttacks(dt) {
             let bx = target ? target.x : player.x;
             let by = target ? target.y : player.y;
             playSound('boom');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'axe',
                 type: 'bazooka', x: bx, y: by,
                 radius: skills.hacha.radius * player.areaBonus,
-                life: 0.35, maxLife: 0.35,
+                life: 0.5, maxLife: 0.5, hitDelay: 0.22,
                 baseDamage: skills.hacha.baseDamage,
                 hitEnemies: new Set()
             });
-            fxRing(bx, by, '#f43f5e', 20, 0.4);
             player.attackTimer = 0.2;
         }
     }
@@ -666,7 +657,7 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('slash');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'shuriken',
                 type: 'flyingslash', startX: player.x, startY: player.y,
                 angle: angle, speed: skills.shuriken.speed, currentRange: 0,
                 maxRange: skills.shuriken.range * player.areaBonus,
@@ -682,14 +673,13 @@ function handleAttacks(dt) {
         if (skills.hakiPulse.timer >= skills.hakiPulse.cooldown * cdMult) {
             skills.hakiPulse.timer = 0;
             playSound('haoshoku');
-            activeAttacks.push({
+            activeAttacks.push({ vis: 'haki',
                 type: 'tatsumaki', x: player.x, y: player.y,
                 radius: skills.hakiPulse.radius * player.areaBonus,
                 duration: skills.hakiPulse.duration, life: skills.hakiPulse.duration,
                 baseDamage: skills.hakiPulse.baseDamage,
                 hitEnemies: new Set()
             });
-            fxRing(player.x, player.y, '#a78bfa', 22, 0.5);
             player.attackTimer = 0.2;
         }
     }
@@ -713,13 +703,10 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'santoryu', x: player.x, y: player.y,
                 radius: skills.santoryu.radius * player.areaBonus,
-                life: 0.3, maxLife: 0.3,
+                life: 0.4, maxLife: 0.4,
                 baseDamage: skills.santoryu.baseDamage,
                 hitEnemies: new Set()
             });
-            // VFX: triple tajo — destello blanco cruzado
-            fxRing(player.x, player.y, '#ffffff', 20, 0.28);
-            fxSpark(player.x, player.y, '#ffe9e0', 9, 130, 0.3, 2, 30);
             player.attackTimer = 0.2;
         }
     }
@@ -746,10 +733,9 @@ function handleAttacks(dt) {
                 player.x = fx; player.y = fy;
                 // VFX: estelas del sprite a lo largo del tajo (Oni Giri)
                 for (let g = 1; g <= 3; g++) fxGhost(px0 + (player.x - px0) * (g / 4), py0 + (player.y - py0) * (g / 4), player.facing);
-                fxRing(player.x, player.y, '#e2e8f0', 16, 0.3);
                 playSound('slash');
                 activeAttacks.push({
-                    type: 'onigiri', x: player.x, y: player.y,
+                    type: 'onigiri', x: player.x, y: player.y, sx: px0, sy: py0, angle: ang,
                     radius: 40 * player.areaBonus,
                     life: 0.2, maxLife: 0.2,
                     baseDamage: skills.onigiri.baseDamage,
@@ -775,8 +761,6 @@ function handleAttacks(dt) {
                 baseDamage: skills.flyingslash.baseDamage,
                 hitEnemies: new Set()
             });
-            // VFX: chispazo celeste al desenvainar
-            fxOrb(player.x + Math.cos(angle) * 18, player.y + Math.sin(angle) * 18, '#7dd3fc', 6, 0.2);
             player.attackTimer = 0.2;
         }
     }
@@ -792,11 +776,6 @@ function handleAttacks(dt) {
                 life: 0.3, maxLife: 0.3,
                 baseDamage: skills.diablejambe.baseDamage
             });
-            // VFX: pie en llamas + brasas ascendentes
-            fxOrb(player.x, player.y + 12, '#fb923c', 9, 0.3);
-            for (let k = 0; k < 6; k++) {
-                particles.push({ x: player.x + (Math.random() * 20 - 10), y: player.y + 10, vx: (Math.random() - 0.5) * 24, vy: -60 - Math.random() * 50, life: 0.5, maxLife: 0.5, color: Math.random() < 0.5 ? '#f43f5e' : '#fb923c', shape: 'orb', size: 4, grav: 0 });
-            }
             player.attackTimer = 0.2;
         }
     }
@@ -851,13 +830,10 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'muchi', x: player.x, y: player.y,
                 angle: angle, radius: skills.muchi.radius * player.areaBonus,
-                life: 0.25, maxLife: 0.25,
+                life: 0.32, maxLife: 0.32,
                 baseDamage: skills.muchi.baseDamage,
                 hitEnemies: new Set()
             });
-            // VFX: chispazo dorado en la punta del látigo
-            fxStars(player.x + Math.cos(angle) * skills.muchi.radius * player.areaBonus * 0.75,
-                    player.y + Math.sin(angle) * skills.muchi.radius * player.areaBonus * 0.75, 5);
             player.attackTimer = 0.25;
         }
     }
@@ -874,13 +850,10 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'ono', x: ox, y: oy,
                 radius: skills.ono.radius * player.areaBonus,
-                life: 0.35, maxLife: 0.35,
+                life: 0.55, maxLife: 0.55, hitDelay: 0.22,
                 baseDamage: skills.ono.baseDamage,
                 hitEnemies: new Set()
             });
-            // VFX: hacha de goma cae a plomo — onda de impacto
-            fxRing(ox, oy, '#ffe4c4', 20, 0.35);
-            fxSpark(ox, oy, '#ffe4c4', 7, 110, 0.35, 2, 100);
             player.attackTimer = 0.2;
         }
     }
@@ -918,9 +891,6 @@ function handleAttacks(dt) {
                 baseDamage: skills.poundho.baseDamage,
                 hitEnemies: new Set()
             });
-            // VFX: retroceso del cañón de viento — anillo de aire comprimido
-            fxRing(player.x, player.y, '#9cc3e8', 18, 0.3);
-            fxSpark(player.x + Math.cos(angle) * 10, player.y + Math.sin(angle) * 10, '#dbeafe', 6, 80, 0.3, 2, 0);
             player.attackTimer = 0.2;
         }
     }
@@ -937,13 +907,10 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'concasse', x: cx, y: cy,
                 radius: skills.concasse.radius * player.areaBonus,
-                life: 0.45, maxLife: 0.45,
+                life: 0.55, maxLife: 0.55, hitDelay: 0.22,
                 baseDamage: skills.concasse.baseDamage,
                 hitEnemies: new Set()
             });
-            // VFX: talonazo demoledor — onda naranja + destellos
-            fxRing(cx, cy, '#f97316', 22, 0.4);
-            fxStars(cx, cy, 6);
             player.attackTimer = 0.25;
         }
     }
@@ -961,8 +928,6 @@ function handleAttacks(dt) {
                 baseDamage: skills.partycourse.baseDamage,
                 spin: 0
             });
-            // VFX: chispazo naranja giratorio
-            fxSpark(player.x, player.y, '#f97316', 8, 120, 0.35, 2, 20);
             player.attackTimer = 0.2;
         }
     }
@@ -1277,6 +1242,8 @@ function updateParticles(dt) {
             p.vx *= 0.92;
             p.vy *= 0.92;
             if (p.grav) p.vy += p.grav * dt;
+            if (p.grow) p.size += p.grow * dt;
+            if (p.vr) p.rot += p.vr * dt;
         }
         if (p.life <= 0) particles.splice(i, 1);
     }
@@ -1363,18 +1330,18 @@ function levelUp() {
 const EVOLUTIONS = {
     pistol:      { passive: 'power',  name: 'Red Hawk (Gomu Gomu no Pistol)' },
     gatling:     { passive: 'cd',     name: 'Jet Gatling' },
-    bazooka:     { passive: 'area',   name: 'Gorilla Bazooka' },
-    gear2:       { passive: 'speed',  name: 'Gear 2: Boundman' },
-    muchi:       { passive: 'speed',  name: 'Black Whip' },
+    bazooka:     { passive: 'area',   name: 'Jet Bazooka' },
+    gear2:       { passive: 'speed',  name: 'Gear 2: Jet' },
+    muchi:       { passive: 'speed',  name: 'Jet Whip' },
     ono:         { passive: 'power',  name: 'Gomu Gomu no Gigant Ono' },
     santoryu:    { passive: 'crit',   name: 'Asura (Santoryu Ogi)' },
-    onigiri:     { passive: 'power',  name: 'Oni Giri: Inferno' },
+    onigiri:     { passive: 'power',  name: 'Rengoku Oni Giri' },
     flyingslash: { passive: 'cd',     name: 'Shishi Sonson' },
-    tatsumaki:   { passive: 'cd',     name: 'Kokutei Roseo Metele' },
+    tatsumaki:   { passive: 'cd',     name: 'Kokujo: O Tatsumaki' },
     poundho:     { passive: 'crit',   name: 'Sanzen Daisen Sekai' },
     diablejambe: { passive: 'speed',  name: 'Hell Memories' },
     collier:     { passive: 'area',   name: 'Collier Shoot: Grilled' },
-    joueshot:    { passive: 'crit',   name: 'Concassé Shot' },
+    joueshot:    { passive: 'crit',   name: 'Mouton Shot' },
     concasse:    { passive: 'speed',  name: 'Ifrit Jambe' },
     partycourse: { passive: 'crit',   name: 'Anti-Manner Kick Course' }
 };

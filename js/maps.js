@@ -442,7 +442,7 @@ const skills = {
     bazooka: { level: 0, baseDamage: 45, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
     gear2: { level: 0, cooldown: 12.0, timer: 0, duration: 6.0, speedBonus: 0.3, active: false, remain: 0, evolved: false },
     // Luffy: latigazo frontal (abanico) y patada hacha alla gear 3
-    muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Black Whip' },
+    muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Jet Whip' },
     ono: { level: 0, baseDamage: 70, cooldown: 5.0, timer: 0, radius: 65, evolved: false },
     santoryu: { level: 1, baseDamage: 34, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
     onigiri: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, dash: 160, evolved: false },

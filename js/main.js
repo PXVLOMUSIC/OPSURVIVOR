@@ -20,12 +20,44 @@ document.addEventListener('click', function (e) {
     if (hit) {
         try { if (!audioCtx) initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); playSound('ui'); } catch (err) {}
     }
-    // Arranca la música en el primer gesto del usuario (política de autoplay del navegador)
-    if (!window._audioUnlocked) {
-        window._audioUnlocked = true;
-        if (!audioCtx) initAudio();
-        try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
-        try { menuMusic.muted = false; } catch (e) {}
-        try { updateMusic(); } catch (err) {}
-    }
+    unlockAudio();
 }, true);
+
+// --- Desbloqueo de audio ---
+// Los navegadores solo dejan sonar audio tras un gesto (tecla, toque o clic).
+// Se escucha cualquiera de ellos, no solo el clic, y la pantalla de titulo
+// "Pulsa cualquier tecla" garantiza ese gesto antes del menu.
+function unlockAudio() {
+    if (!audioCtx) initAudio();
+    try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+    if (window._audioUnlocked) return;
+    window._audioUnlocked = true;
+    try { menuMusic.muted = false; } catch (e) {}
+    try { updateMusic(); } catch (err) {}
+}
+['keydown', 'pointerdown', 'touchend'].forEach(ev =>
+    window.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
+
+(function setupPressStart() {
+    const ps = document.getElementById('press-start');
+    if (!ps) return;
+    const touch = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+    const txt = document.getElementById('press-start-txt');
+    if (touch && txt) txt.innerText = 'TOCA LA PANTALLA';
+    let done = false;
+    function dismiss(e) {
+        if (done) return;
+        if (e && e.type === 'keydown' && ['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
+        done = true;
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        unlockAudio();
+        try { playSound('ui'); } catch (err) {}
+        ps.classList.add('ps-out');
+        window.removeEventListener('keydown', dismiss, true);
+        setTimeout(() => ps.remove(), 500);
+    }
+    // el clic (no pointerdown) evita que el mismo gesto pulse un boton del menu de debajo
+    ps.addEventListener('click', dismiss);
+    window.addEventListener('keydown', dismiss, true);
+    ps.focus();
+})();

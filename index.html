@@ -1597,14 +1597,14 @@ const WALK_POLY = [
 // === Polygons per island ===
 // Alabasta / Skypiea: closed battle arena (only inside the wall, following the reference image)
 const ARENA_POLY = [
-  [1130, 0],
-  [799, -293],
-  [0, -414],
-  [-799, -293],
-  [-1130, 0],
-  [-799, 293],
-  [0, 414],
-  [799, 293],
+  [960, 0],
+  [679, -283],
+  [0, -400],
+  [-679, -283],
+  [-960, 0],
+  [-679, 283],
+  [0, 400],
+  [679, 283],
 ];
 const WALK_POLYS = {
   baratie: WALK_POLY,
@@ -4613,7 +4613,7 @@ function render() {
             const imgW = IMG.alabastaMap.width * MAP_SCALE;
             const imgH = IMG.alabastaMap.height * MAP_SCALE;
             const offX = -IMG.alabastaMap.width * MAP_SCALE / 2;
-            const offY = -430 * MAP_SCALE;
+            const offY = -494 * MAP_SCALE;
             ctx.imageSmoothingEnabled = true;
             ctx.drawImage(IMG.alabastaMap, offX, offY, imgW, imgH);
             ctx.imageSmoothingEnabled = false;
@@ -4628,7 +4628,7 @@ function render() {
             const imgW = IMG.skypieaMap.width * MAP_SCALE;
             const imgH = IMG.skypieaMap.height * MAP_SCALE;
             const offX = -IMG.skypieaMap.width * MAP_SCALE / 2;
-            const offY = -430 * MAP_SCALE;
+            const offY = -478 * MAP_SCALE;
             ctx.imageSmoothingEnabled = true;
             ctx.drawImage(IMG.skypieaMap, offX, offY, imgW, imgH);
             ctx.imageSmoothingEnabled = false;

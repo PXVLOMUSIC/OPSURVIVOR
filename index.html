@@ -721,8 +721,22 @@
                 <div class="upgrade-card">
                     <div class="upgrade-icon" data-ico="gauge"></div>
                     <div class="upgrade-info">
-                        <h4>Volumen</h4>
-                        <input type="range" min="0" max="100" value="80" id="volume-slider" oninput="setVolume(this.value)" style="width:100%;">
+                        <h4>Volumen maestro</h4>
+                        <input type="range" min="0" max="100" value="80" id="vol-master" oninput="setVolMaster(this.value)" style="width:100%;">
+                    </div>
+                </div>
+                <div class="upgrade-card">
+                    <div class="upgrade-icon" data-ico="gauge"></div>
+                    <div class="upgrade-info">
+                        <h4>Música</h4>
+                        <input type="range" min="0" max="100" value="80" id="vol-music" oninput="setVolMusic(this.value)" style="width:100%;">
+                    </div>
+                </div>
+                <div class="upgrade-card">
+                    <div class="upgrade-icon" data-ico="gauge"></div>
+                    <div class="upgrade-info">
+                        <h4>Efectos (SFX)</h4>
+                        <input type="range" min="0" max="100" value="80" id="vol-sfx" oninput="setVolSfx(this.value)" style="width:100%;">
                     </div>
                 </div>
                 <div class="upgrade-card" onclick="toggleFullscreen()">
@@ -1240,7 +1254,7 @@ const battleMusic = new Audio('assets/music/battle.mp3');
 menuMusic.loop = true; battleMusic.loop = true;
 function updateMusic() {
     if (!soundEnabled) { menuMusic.pause(); battleMusic.pause(); return; }
-    const vol = masterVolume * (windowOpts ? windowOpts.music : 1) * 0.6;
+    const vol = masterVolume * (windowOpts ? windowOpts.music : 1) * 0.75;
     if (gameState === 'START' || gameState === 'SHOP') {
         battleMusic.pause();
         // toggle del menu: silencia solo la musica del menu (la batalla sigue su slider)
@@ -1312,7 +1326,7 @@ function playSound(type) {
             }
             const src = audioCtx.createBufferSource();
             const gain = audioCtx.createGain();
-            gain.gain.value = (SFX_VOL[type] || 0.75) * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.85;
+            gain.gain.value = (SFX_VOL[type] || 0.75) * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.7;
             src.buffer = sfxBuffers[type];
             src.connect(gain);
             gain.connect(audioCtx.destination);
@@ -1330,21 +1344,21 @@ function playSound(type) {
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(180, now);
             osc.frequency.exponentialRampType ? osc.frequency.exponentialRampToValueAtTime(30, now + 0.1) : osc.frequency.linearRampToValueAtTime(30, now + 0.1);
-            gain.gain.setValueAtTime(0.2 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.85, now);
+            gain.gain.setValueAtTime(0.2 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.7, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
             osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'crit') {
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(500, now);
             osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
-            gain.gain.setValueAtTime(0.25 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.85, now);
+            gain.gain.setValueAtTime(0.25 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.7, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
             osc.start(now); osc.stop(now + 0.15);
         } else if (type === 'coin') {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(987, now);
             osc.frequency.setValueAtTime(1318, now + 0.08);
-            gain.gain.setValueAtTime(0.15 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.85, now);
+            gain.gain.setValueAtTime(0.15 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.7, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
             osc.start(now); osc.stop(now + 0.2);
         } else if (type === 'levelup') {
@@ -1352,7 +1366,7 @@ function playSound(type) {
             osc.frequency.setValueAtTime(523, now);
             osc.frequency.setValueAtTime(659, now + 0.08);
             osc.frequency.setValueAtTime(783, now + 0.15);
-            gain.gain.setValueAtTime(0.2 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.85, now);
+            gain.gain.setValueAtTime(0.2 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.7, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
             osc.start(now); osc.stop(now + 0.3);
         } else if (type === 'boss') {
@@ -1361,7 +1375,7 @@ function playSound(type) {
             osc.frequency.setValueAtTime(110, now);
             osc.frequency.setValueAtTime(880, now + 0.15);
             osc.frequency.setValueAtTime(110, now + 0.45);
-            gain.gain.setValueAtTime(0.25 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.85, now);
+            gain.gain.setValueAtTime(0.25 * masterVolume * (windowOpts ? windowOpts.sfx : 1) * 0.7, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.7);
             osc.start(now); osc.stop(now + 0.7);
         }
@@ -2400,7 +2414,7 @@ function renderBestiary() {
     document.getElementById('bestiary-subtitle').innerText = 'AVISTADOS: ' + found + '/' + types.length + ' — GRAND LINE';
 }
 // === OPCIONES (persistente, VS-style sliders) ===
-let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, fewerFlashes: false, showDamageNumbers: true, autoPause: true, menuMusicMuted: false };
+let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, fewerFlashes: false, showDamageNumbers: true, autoPause: true, menuMusicMuted: false, master: 0.8 };
 function loadOpts() {
     try {
         const raw = JSON.parse(localStorage.getItem('op_survivor_opts'));
@@ -2422,6 +2436,8 @@ function applyOpts() {
     if (checkF) checkF.checked = windowOpts.fewerFlashes;
     if (checkD) checkD.checked = windowOpts.showDamageNumbers;
     if (checkA) checkA.checked = windowOpts.autoPause;
+    masterVolume = (typeof windowOpts.master === 'number') ? windowOpts.master : 0.8;
+    if (typeof windowOpts.master !== 'number') windowOpts.master = masterVolume;
 }
 function showOptions() { document.getElementById('start-screen').style.display = 'none'; document.getElementById('options-screen').style.display = 'flex'; }
 function closeOptions() {
@@ -2480,11 +2496,19 @@ var soundEnabled = true;
 // sliders de opciones independiente: masterVolume es el volumen global heredado
 var masterVolume = 0.8;
 function setVolume(v) { masterVolume = Math.max(0, Math.min(1, v / 100)); updateMusic(); }
+function setVolMaster(v) { windowOpts.master = Math.max(0, Math.min(1, v / 100)); masterVolume = windowOpts.master; saveOpts(); }
+function setVolMusic(v) { windowOpts.music = Math.max(0, Math.min(1, v / 100)); saveOpts(); updateMusic(); }
+function setVolSfx(v) { windowOpts.sfx = Math.max(0, Math.min(1, v / 100)); saveOpts(); }
 function togglePause() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSED';
     document.getElementById('pause-screen').style.display = 'flex';
     renderPauseWeapons();
+    // sync volume sliders
+    const vm = document.getElementById('vol-master'), vmu = document.getElementById('vol-music'), vs = document.getElementById('vol-sfx');
+    if (vm) vm.value = Math.round((windowOpts.master || 0.8) * 100);
+    if (vmu) vmu.value = Math.round((windowOpts.music || 0.8) * 100);
+    if (vs) vs.value = Math.round((windowOpts.sfx || 0.8) * 100);
 }
 // VS: auto-pausa al cambiar de pestaña/minimizar — nadie muere por cambiar de ventana
 document.addEventListener('visibilitychange', () => {

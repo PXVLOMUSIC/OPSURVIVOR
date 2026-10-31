@@ -672,6 +672,43 @@
         }
         #weapons-hud > div { backdrop-filter: blur(2px); }
         #volume-slider { accent-color: #b45309; }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: #1a0f06;
+            border-radius: 4px;
+            outline: none;
+            border: 1px solid #5c3a21;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #facc15, #b45309);
+            border: 2px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #facc15, #b45309);
+            border: 2px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #1a0f06;
+            border-radius: 4px;
+        }
+        input[type="range"]::-moz-range-track {
+            background: #1a0f06;
+            border-radius: 4px;
+        }
         #joystick-knob { background: rgba(250, 204, 21, 0.9); border: 2px solid #4f2e18; }
         @keyframes pulseGlow {
             0%, 100% { box-shadow: 0 0 14px rgba(250,204,21,0.55), 0 4px 0 #0c1a26; }
@@ -2589,9 +2626,9 @@ var soundEnabled = true;
 // sliders de opciones independiente: masterVolume es el volumen global heredado
 var masterVolume = 0.8;
 function setVolume(v) { masterVolume = Math.max(0, Math.min(1, v / 100)); updateMusic(); }
-function setVolMaster(v) { windowOpts.master = Math.max(0, Math.min(1, v / 100)); masterVolume = windowOpts.master; saveOpts(); updateMusic(); }
-function setVolMusic(v) { windowOpts.music = Math.max(0, Math.min(1, v / 100)); saveOpts(); updateMusic(); }
-function setVolSfx(v) { windowOpts.sfx = Math.max(0, Math.min(1, v / 100)); saveOpts(); }
+function setVolMaster(v) { windowOpts.master = Math.max(0, Math.min(1, v / 100)); masterVolume = windowOpts.master; saveOpts(); updateMusic(); const a=document.getElementById('opt-master'), b=document.getElementById('vol-master'); if(a) a.value=v; if(b) b.value=v; const va=document.getElementById('opt-master-val'); if(va) va.innerText=Math.round(windowOpts.master*100); }
+function setVolMusic(v) { windowOpts.music = Math.max(0, Math.min(1, v / 100)); saveOpts(); updateMusic(); const a=document.getElementById('opt-music'), b=document.getElementById('vol-music'); if(a) a.value=v; if(b) b.value=v; const va=document.getElementById('opt-music-val'); if(va) va.innerText=Math.round(windowOpts.music*100); }
+function setVolSfx(v) { windowOpts.sfx = Math.max(0, Math.min(1, v / 100)); saveOpts(); const a=document.getElementById('opt-sfx'), b=document.getElementById('vol-sfx'); if(a) a.value=v; if(b) b.value=v; const va=document.getElementById('opt-sfx-val'); if(va) va.innerText=Math.round(windowOpts.sfx*100); }
 function togglePause() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSED';

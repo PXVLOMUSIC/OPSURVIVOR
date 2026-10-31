@@ -651,6 +651,16 @@
         #weapons-hud > div { backdrop-filter: blur(2px); }
         #volume-slider { accent-color: #b45309; }
         #joystick-knob { background: rgba(250, 204, 21, 0.9); border: 2px solid #4f2e18; }
+        @media (max-width: 600px) {
+            .hud-top { flex-direction: column; gap: 6px; }
+            .player-status { width: 100%; }
+            .bars-container { width: 100%; }
+            #time-top { font-size: 16px; padding: 3px 10px; top: 6px; }
+            #pause-info-panel { max-width: 92vw; top: 8px; left: 8px; padding: 8px 10px; }
+            .wanted-board { max-width: 94vw !important; }
+            .upgrade-card { font-size: 12px; }
+            #weapons-hud { bottom: 8px; gap: 4px; }
+        }
     </style>
 </head>
 <body>
@@ -697,8 +707,8 @@
 
     <!-- Pause Screen -->
     <div id="pause-screen" class="overlay-screen" style="display: none;">
-        <div id="pause-info-panel" style="position:absolute; top:16px; left:16px; max-width: 340px; max-height: 90vh; overflow-y: auto; background: rgba(28,17,7,0.95); border: 2px solid #b45309; border-radius: 12px; padding: 12px 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.75); z-index: 2;">
-            <div style="max-height: 160px; overflow-y: auto; margin-bottom: 10px;">
+        <div id="pause-info-panel" style="position:absolute; top:16px; left:16px; max-width: 340px; max-height: none; overflow: visible; background: rgba(28,17,7,0.95); border: 2px solid #b45309; border-radius: 12px; padding: 12px 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.75); z-index: 2;">
+            <div style="max-height: none; overflow: visible; margin-bottom: 10px;">
                 <h3 style="color:#f6e2b8; font-size:13px; margin-bottom:6px; letter-spacing:1px;">ARMAS</h3>
                 <div id="pause-weapons" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-start;"></div>
                 <h3 style="color:#f6e2b8; font-size:13px; margin:10px 0 6px; letter-spacing:1px;">PASIVAS</h3>
@@ -2538,8 +2548,8 @@ function renderPauseWeapons() {
         if (!sk || sk.level <= 0) return;
         const ev = sk.evolved ? ' (EVO)' : (sk.level >= 5 ? ' (EVO posible)' : '');
         const div = document.createElement('div');
-        div.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:6px 8px;font-size:12px;font-family:Segoe UI,Verdana,sans-serif;font-weight:700;color:#3d2314;min-width:70px;text-align:center;';
-        div.innerHTML = `<div style="font-size:20px;">${icons[id]||'?'}</div><div>${id} Lv${sk.level}${ev}</div>`;
+        div.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:4px 6px;font-size:11px;font-family:Segoe UI,Verdana,sans-serif;font-weight:700;color:#3d2314;min-width:56px;text-align:center;';
+        div.innerHTML = `<div style="font-size:16px;">${icons[id]||'?'}</div><div>${id} Lv${sk.level}${ev}</div>`;
         wEl.appendChild(div);
     });
     // passives from player stats (show counts)
@@ -2553,8 +2563,8 @@ function renderPauseWeapons() {
     pEl.innerHTML = '';
     passives.forEach(p => {
         const div = document.createElement('div');
-        div.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:6px 8px;font-size:12px;font-family:Segoe UI,Verdana,sans-serif;font-weight:700;color:#3d2314;min-width:70px;text-align:center;';
-        div.innerHTML = `<div style="font-size:16px;">${ICONS.up}</div><div>${p.name}</div><div>${p.val}</div>`;
+        div.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:4px 6px;font-size:11px;font-family:Segoe UI,Verdana,sans-serif;font-weight:700;color:#3d2314;min-width:56px;text-align:center;';
+        div.innerHTML = `<div style="font-size:14px;">${ICONS.up}</div><div>${p.name}</div><div>${p.val}</div>`;
         pEl.appendChild(div);
     });
     if (wEl.children.length === 0) wEl.innerHTML = '<p style="color:#6c584c;font-size:12px;">Sin armas</p>';

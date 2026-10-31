@@ -806,7 +806,16 @@
                         <input type="range" min="0" max="100" value="80" id="vol-sfx" oninput="setVolSfx(this.value)" onchange="playSound('ui')" style="width:100%;">
                     </div>
                 </div>
-                <div class="upgrade-card" onclick="toggleFullscreen()">
+                <div class="upgrade-card" style="flex-direction:column; align-items:flex-start; gap:6px;">
+                    <div class="upgrade-info" style="width:100%;">
+                        <h4>Opciones</h4>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="pause-opt-shake"> Sacudida de cámara</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="pause-opt-particles"> Partículas reducidas</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="pause-opt-flashes"> Menos destellos</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="pause-opt-dmgnums" checked> Números de daño</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="pause-opt-autopause" checked> Auto-pausa</label>
+                    </div>
+                </div>
                     <div class="upgrade-icon" data-ico="full"></div>
                     <div class="upgrade-info"><h4>Pantalla completa</h4><p>Activar/desactivar</p></div>
                 </div>
@@ -965,6 +974,8 @@
             <div class="wanted-title">OPCIONES</div>
             <div class="wanted-subtitle">AJUSTES DE NAVEGACIÓN</div>
             <div style="display:flex; flex-direction:column; gap:14px; margin:14px 6px; font-family:'Segoe UI',sans-serif; color:#3d2314; font-size:14px; text-align:left;">
+                <label>Música maestra: <span id="opt-master-val">80</span>%</label>
+                <input type="range" id="opt-master" min="0" max="100" value="80" style="width:100%;" oninput="setVolMaster(this.value)">
                 <label>Música: <span id="opt-music-val">80</span>%</label>
                 <input type="range" id="opt-music" min="0" max="100" value="80" style="width:100%;" oninput="setVolMusic(this.value)">
                 <label>EFECTOS (SFX): <span id="opt-sfx-val">80</span>%</label>
@@ -2522,6 +2533,8 @@ function applyOpts() {
     const sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
     const checkSh = document.getElementById('opt-shake'), checkP = document.getElementById('opt-particles');
     const checkF = document.getElementById('opt-flashes'), checkD = document.getElementById('opt-dmgnums'), checkA = document.getElementById('opt-autopause');
+    const sliderMa = document.getElementById('opt-master');
+    if (sliderMa) { sliderMa.value = Math.round((windowOpts.master || 0.8) * 100); const v = document.getElementById('opt-master-val'); if (v) v.innerText = Math.round((windowOpts.master || 0.8) * 100); }
     if (sliderM) { sliderM.value = Math.round(windowOpts.music * 100); document.getElementById('opt-music-val').innerText = Math.round(windowOpts.music * 100); }
     if (sliderS) { sliderS.value = Math.round(windowOpts.sfx * 100); document.getElementById('opt-sfx-val').innerText = Math.round(windowOpts.sfx * 100); }
     if (checkSh) checkSh.checked = windowOpts.shake;
@@ -2529,8 +2542,10 @@ function applyOpts() {
     if (checkF) checkF.checked = windowOpts.fewerFlashes;
     if (checkD) checkD.checked = windowOpts.showDamageNumbers;
     if (checkA) checkA.checked = windowOpts.autoPause;
-    masterVolume = (typeof windowOpts.master === 'number') ? windowOpts.master : 0.8;
-    if (typeof windowOpts.master !== 'number') windowOpts.master = masterVolume;
+    const vm = document.getElementById('vol-master'), vmu = document.getElementById('vol-music'), vs = document.getElementById('vol-sfx');
+    if (vm) vm.value = Math.round((windowOpts.master || 0.8) * 100);
+    if (vmu) vmu.value = Math.round(windowOpts.music * 100);
+    if (vs) vs.value = Math.round(windowOpts.sfx * 100);
 }
 function showOptions() { document.getElementById('start-screen').style.display = 'none'; document.getElementById('options-screen').style.display = 'flex'; }
 function closeOptions() {
@@ -2602,6 +2617,20 @@ function togglePause() {
     if (vm) vm.value = Math.round((windowOpts.master || 0.8) * 100);
     if (vmu) vmu.value = Math.round((windowOpts.music || 0.8) * 100);
     if (vs) vs.value = Math.round((windowOpts.sfx || 0.8) * 100);
+    // sync option checkboxes in pause
+    const pSh = document.getElementById('pause-opt-shake'), pP = document.getElementById('pause-opt-particles');
+    const pF = document.getElementById('pause-opt-flashes'), pD = document.getElementById('pause-opt-dmgnums'), pA = document.getElementById('pause-opt-autopause');
+    if (pSh) pSh.checked = windowOpts.shake;
+    if (pP) pP.checked = windowOpts.fewerParticles;
+    if (pF) pF.checked = windowOpts.fewerFlashes;
+    if (pD) pD.checked = windowOpts.showDamageNumbers;
+    if (pA) pA.checked = windowOpts.autoPause;
+    // wire change handlers
+    if (pSh) pSh.onchange = () => { windowOpts.shake = pSh.checked; saveOpts(); };
+    if (pP) pP.onchange = () => { windowOpts.fewerParticles = pP.checked; saveOpts(); };
+    if (pF) pF.onchange = () => { windowOpts.fewerFlashes = pF.checked; document.body.classList.toggle('opt-calm', !!windowOpts.fewerFlashes); saveOpts(); };
+    if (pD) pD.onchange = () => { windowOpts.showDamageNumbers = pD.checked; saveOpts(); };
+    if (pA) pA.onchange = () => { windowOpts.autoPause = pA.checked; saveOpts(); };
 }
 // VS: auto-pausa al cambiar de pestaña/minimizar — nadie muere por cambiar de ventana
 document.addEventListener('visibilitychange', () => {

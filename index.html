@@ -1002,6 +1002,8 @@
             <div class="wanted-title">OPCIONES</div>
             <div class="wanted-subtitle">AJUSTES DE NAVEGACIÓN</div>
             <div style="display:flex; flex-direction:column; gap:14px; margin:14px 6px; font-family:'Segoe UI',sans-serif; color:#3d2314; font-size:14px; text-align:left;">
+                <label>Volumen maestro: <span id="opt-master-val">80</span>%</label>
+                <input type="range" id="opt-master" min="0" max="100" value="80" style="width:100%;" oninput="setVolMaster(this.value)">
                 <label>Música: <span id="opt-music-val">80</span>%</label>
                 <input type="range" id="opt-music" min="0" max="100" value="80" style="width:100%;" oninput="setVolMusic(this.value)">
                 <label>EFECTOS (SFX): <span id="opt-sfx-val">80</span>%</label>
@@ -2556,9 +2558,10 @@ function saveOpts() {
     applyOpts();
 }
 function applyOpts() {
-    const sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
+    const sliderMa = document.getElementById('opt-master'), sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
     const checkSh = document.getElementById('opt-shake'), checkP = document.getElementById('opt-particles');
     const checkF = document.getElementById('opt-flashes'), checkD = document.getElementById('opt-dmgnums'), checkA = document.getElementById('opt-autopause');
+    if (sliderMa) { sliderMa.value = Math.round((windowOpts.master || 0.8) * 100); const v = document.getElementById('opt-master-val'); if (v) v.innerText = Math.round((windowOpts.master || 0.8) * 100); }
     if (sliderM) { sliderM.value = Math.round(windowOpts.music * 100); document.getElementById('opt-music-val').innerText = Math.round(windowOpts.music * 100); }
     if (sliderS) { sliderS.value = Math.round(windowOpts.sfx * 100); document.getElementById('opt-sfx-val').innerText = Math.round(windowOpts.sfx * 100); }
     if (checkSh) checkSh.checked = windowOpts.shake;
@@ -2571,8 +2574,9 @@ function applyOpts() {
 }
 function showOptions() { document.getElementById('start-screen').style.display = 'none'; document.getElementById('options-screen').style.display = 'flex'; }
 function closeOptions() {
-    const sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
+    const sliderMa = document.getElementById('opt-master'), sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
     const checkSh = document.getElementById('opt-shake'), checkP = document.getElementById('opt-particles');
+    if (sliderMa) windowOpts.master = sliderMa.value / 100;
     if (sliderM) windowOpts.music = sliderM.value / 100;
     if (sliderS) windowOpts.sfx = sliderS.value / 100;
     if (checkSh) windowOpts.shake = checkSh.checked;

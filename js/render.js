@@ -28,9 +28,9 @@ function render() {
     // Map Background: imagen del mapa centrada en x, con su origen vertical en MAP_ORIGIN_Y
     const mapImg = IMG[selectedMap + 'Map'];
     if (assetsLoaded && mapImg && mapImg.complete && mapImg.width) {
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(mapImg, -mapImg.width * MAP_SCALE / 2, -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, mapImg.width * MAP_SCALE, mapImg.height * MAP_SCALE);
+        // Mapas pixelados (estilo GBA): se escalan sin suavizado para que el pixel se vea nítido como en los sprites
         ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(mapImg, -mapImg.width * MAP_SCALE / 2, -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, mapImg.width * MAP_SCALE, mapImg.height * MAP_SCALE);
     } else {
         const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47' };
         ctx.fillStyle = fallback[selectedMap] || '#0284c7';

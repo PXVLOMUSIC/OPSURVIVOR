@@ -34,7 +34,8 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - Las habilidades tienen que ser fieles al manga y al anime.
 
 ## Mapas
-- Tienen que ser lugares reconocibles de One Piece. Todas las imágenes miden 1408x768 y se dibujan con `MAP_SCALE` 2.
+- Tienen que ser lugares reconocibles de One Piece. Todas las imágenes miden 1408x768 y se dibujan con `MAP_SCALE` 2, sin suavizado.
+- Estilo GBA: los mapas de `assets/maps/` se generan desde los originales HD (`source-art/maps/hd/`) con `source-art/pixelar_mapas.py` (mitad de resolución, color de 15 bits). Si cambias un mapa, guarda el HD ahí y vuelve a pasar el script.
 - Solo hay colisiones en el borde de la arena, sin obstáculos en el interior (decisión de Pablo del 31-10-2026). Las cápsulas de obstáculos detectadas están en el commit `a863eaa`, y `MAP_OBSTACLES` sigue disponible pero vacío.
 - **Baratie**: borde detectado por color (madera frente a agua). Jefe Don Krieg (9000 PV) y minijefe el Capitán Morgan (min 3).
 - **Alabasta**, **Skypiea** y **Thriller Bark** comparten el trazado de plaza de palacio (`PALACE_ARENA_POLY`, sacado de la línea verde de Alabasta).

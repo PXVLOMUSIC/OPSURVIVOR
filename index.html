@@ -1063,6 +1063,14 @@ const ICONS = {
     pickup:      SVG(`<g ${S}><path d="M6.5 4v6a5.5 5.5 0 0 0 11 0V4"/><path d="M6.5 4v3M4 4h5M13 4h5M17.5 4v3"/></g>`),
     growth:      SVG(`<g ${S}><path d="M4 21V14M9.5 21V10M15 21V7M20.5 21V4"/></g><path ${F} d="M13 2.5h7v7l-2.5-2.6-2 2-2-2z"/>`),
     luck:        SVG(`<g ${F}><circle cx="7" cy="8.5" r="3"/><circle cx="13.5" cy="7.5" r="3"/><circle cx="10" cy="13" r="3"/><path d="M11 16c-1 2.5-1 4 .5 6l2-1.2c-1.2-1.5-1.2-2.7-.6-4.4z"/></g><g ${S}><path d="M9.5 13.6C12 11 15 9.5 19 9" opacity=".0"/></g>`),
+    // meta-tienda
+    heart:       SVG(`<g ${F}><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></g>`),
+    coin:        SVG(`<g ${S}><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M9.5 9.5h5M9.5 14.5h5" stroke-width="1.6"/></g>`),
+    skull:       SVG(`<g ${S}><path d="M12 3a7 7 0 0 0-7 7c0 2.6 1.4 4.4 3.2 5.4V18h7.6v-2.6C17.6 14.4 19 12.6 19 10a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="9.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="14.5" cy="9.5" r="1.3" fill="currentColor" stroke="none"/><path d="M10 13.5h4" opacity=".6"/></g>`),
+    dice:        SVG(`<g ${S}><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.6" fill="currentColor" stroke="none"/></g>`),
+    fastforward: SVG(`<g ${F}><path d="M5 5v14l7-7zM12 5v14l7-7z"/></g>`),
+    trash:       SVG(`<g ${S}><path d="M5 7h14M9 7V4.5h6V7M7 7l1 12h8l1-12"/><path d="M10 10.5v6M14 10.5v6" opacity=".6"/></g>`),
+    revive:      SVG(`<g ${S}><path d="M12 3 14.4 8 20 8.8 15.8 13 17 19 12 16 7 19 8.2 13 4 8.8 9.6 8z"/></g>`),
     // interfaz
     play:    SVG(`<path ${F} d="M8 5.2v13.6L19 12z"/>`),
     sound:   SVG(`<g ${F}><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M15 8.6a4.6 4.6 0 0 1 0 6.8M17.6 6.2a8 8 0 0 1 0 11.6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></g>`),
@@ -1501,21 +1509,21 @@ let gameState = 'START';
 
 // --- META PROGRESSION (Vampire Survivors style) ---
 const META_UPGRADES = [
-    { id: 'damage', name: 'Poder', desc: '+5% daño por nivel', cost: 500, max: 10, apply: (p, lvl) => { p.powerPct += lvl * 5; } },
-    { id: 'hp', name: 'Salud', desc: '+10 HP max por nivel', cost: 400, max: 10, apply: (p, lvl) => { p.maxHp += lvl * 10; p.hp = p.maxHp; } },
-    { id: 'speed', name: 'Velocidad', desc: '+5% velocidad por nivel', cost: 450, max: 10, apply: (p, lvl) => { p.speed *= (1 + lvl * 0.05); } },
-    { id: 'area', name: 'Área', desc: '+5% área por nivel', cost: 450, max: 10, apply: (p, lvl) => { p.areaBonus *= (1 + lvl * 0.05); } },
-    { id: 'cooldown', name: 'Cooldown', desc: '-3% cooldown por nivel', cost: 500, max: 10, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 3); } },
-    { id: 'armor', name: 'Armadura', desc: '+5% armadura por nivel', cost: 600, max: 10, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 5); } },
-    { id: 'luck', name: 'Crítico', desc: '+5% prob. crítica por nivel', cost: 750, max: 10, apply: (p, lvl) => { p.critChance += lvl * 0.05; } },
-    { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 400, max: 10, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
-    { id: 'growth', name: 'Crecimiento', desc: '+5% XP por nivel', cost: 500, max: 10, apply: (p, lvl) => { p.growthBonus += lvl * 0.05; } },
-    { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 50% HP', cost: 2000, max: 1, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
-    { id: 'greed', name: 'Avaricia', desc: '+20% Berries por nivel', cost: 300, max: 10, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
-    { id: 'curse', name: 'Maldición', desc: '+10% enemigos/HP/vel (riesgo/recompensa)', cost: 1000, max: 5, apply: (p, lvl) => { p.curse += lvl * 0.10; } },
-    { id: 'reroll', name: 'Rerolls', desc: '+3 rerolls de opciones por partida', cost: 500, max: 10, apply: (p, lvl) => { p.rerollUses += lvl * 3; } },
-    { id: 'skip', name: 'Saltos', desc: '+3 saltos de subida de nivel por partida', cost: 100, max: 10, apply: (p, lvl) => { p.skipUses += lvl * 3; } },
-    { id: 'banish', name: 'Destierros', desc: '+3 destierros de opción por partida', cost: 100, max: 10, apply: (p, lvl) => { p.banishUses += lvl * 3; } }
+    { id: 'damage', name: 'Poder', desc: '+5% daño por nivel', cost: 2000, max: 10, icon: ICONS.power, apply: (p, lvl) => { p.powerPct += lvl * 5; } },
+    { id: 'hp', name: 'Salud', desc: '+10 HP max por nivel', cost: 1500, max: 10, icon: ICONS.heart, apply: (p, lvl) => { p.maxHp += lvl * 10; p.hp = p.maxHp; } },
+    { id: 'speed', name: 'Velocidad', desc: '+5% velocidad por nivel', cost: 1800, max: 10, icon: ICONS.speed, apply: (p, lvl) => { p.speed *= (1 + lvl * 0.05); } },
+    { id: 'area', name: 'Área', desc: '+5% área por nivel', cost: 1800, max: 10, icon: ICONS.area, apply: (p, lvl) => { p.areaBonus *= (1 + lvl * 0.05); } },
+    { id: 'cooldown', name: 'Cooldown', desc: '-3% cooldown por nivel', cost: 2000, max: 10, icon: ICONS.cd, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 3); } },
+    { id: 'armor', name: 'Armadura', desc: '+5% armadura por nivel', cost: 2500, max: 10, icon: ICONS.armor, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 5); } },
+    { id: 'luck', name: 'Crítico', desc: '+5% prob. crítica por nivel', cost: 3000, max: 10, icon: ICONS.crit, apply: (p, lvl) => { p.critChance += lvl * 0.05; } },
+    { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 1500, max: 10, icon: ICONS.pickup, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
+    { id: 'growth', name: 'Crecimiento', desc: '+5% XP por nivel', cost: 2000, max: 10, icon: ICONS.growth, apply: (p, lvl) => { p.growthBonus += lvl * 0.05; } },
+    { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 50% HP', cost: 15000, max: 1, icon: ICONS.revive, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
+    { id: 'greed', name: 'Avaricia', desc: '+20% Berries por nivel', cost: 1200, max: 10, icon: ICONS.coin, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
+    { id: 'curse', name: 'Maldición', desc: '+10% enemigos/HP/vel (riesgo/recompensa)', cost: 4000, max: 5, icon: ICONS.skull, apply: (p, lvl) => { p.curse += lvl * 0.10; } },
+    { id: 'reroll', name: 'Rerolls', desc: '+3 rerolls de opciones por partida', cost: 2000, max: 10, icon: ICONS.dice, apply: (p, lvl) => { p.rerollUses += lvl * 3; } },
+    { id: 'skip', name: 'Saltos', desc: '+3 saltos de subida de nivel por partida', cost: 500, max: 10, icon: ICONS.fastforward, apply: (p, lvl) => { p.skipUses += lvl * 3; } },
+    { id: 'banish', name: 'Destierros', desc: '+3 destierros de opción por partida', cost: 500, max: 10, icon: ICONS.trash, apply: (p, lvl) => { p.banishUses += lvl * 3; } }
 ];
 let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji: false }, wins: { baratie: 0, alabasta: 0, skypiea: 0 }, curseUnlocked: 0,
     achievements: {},
@@ -2147,14 +2155,14 @@ function renderShop() {
     container.innerHTML = '';
     document.getElementById('shop-beli').innerText = fmtBeli(meta.beli);    META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
-        const cost = u.cost * (lvl + 1);
+        const cost = Math.round(u.cost * Math.pow(1.6, lvl));
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.innerHTML = `
-            <div class="upgrade-icon">${ICONS.up}</div>
+            <div class="upgrade-icon">${u.icon || ICONS.up}</div>
             <div class="upgrade-info">
                 <h4>${u.name} (Nv ${lvl}/${u.max})</h4>
-                <p>${u.desc} — Coste: ${cost} Berries</p>
+                <p>${u.desc} — Coste: ${cost.toLocaleString('en-US')} Berries</p>
             </div>
         `;
         if (lvl < u.max && meta.beli >= cost) {
@@ -2168,14 +2176,14 @@ function renderShop() {
     // character unlocks
     ['zoro','sanji'].forEach(ch => {
         if (meta.unlocked[ch]) return;
-        const cost = 1000;
+        const cost = ch === 'zoro' ? 10000 : 15000;
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.innerHTML = `
             <div class="upgrade-icon">${ICONS.unlock}</div>
             <div class="upgrade-info">
                 <h4>Desbloquear ${ch === 'zoro' ? 'Zoro' : 'Sanji'}</h4>
-                <p>Coste: ${cost} Berries</p>
+                <p>Coste: ${cost.toLocaleString('en-US')} Berries</p>
             </div>
         `;
         if (meta.beli >= cost) {
@@ -3877,7 +3885,7 @@ function killEnemy(e) {
         if (dropChest) drops.push({ x: e.x, y: e.y, type: 'chest', tier: chestTier,
             canEvolve: chestTier >= 1, ground: true, opened: false, openTimer: 0, value: 1 });
     }
-    if (Math.random() < 0.35) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(12 * player.greedBonus * (player.runBeliMult || 1)) });
+    if (Math.random() < 0.20) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(8 * player.greedBonus * (player.runBeliMult || 1)) });
     // Pickups estilo VS con lore One Piece (drop raro escalado por Suerte):
     // Den Den Mushi dorado (Rosary) / Campana de Skypiea (Orologion) / Iman Magico (Vacuum)
     const pk = Math.random();
@@ -3919,7 +3927,7 @@ function killEnemy(e) {
         if (window.endlessMode) {
             window.endlessBossKills++;
             window.nextBossAt = gameTime + 300;
-            scoreBeli += Math.round(3000 * (player.runBeliMult || 1));
+            scoreBeli += Math.round(1500 * (player.runBeliMult || 1));
             window.spawnBanner = { text: '¡BRIGADA CAÍDA — EL MAR ENVÍA OTRA MÁS FUERTE!', life: 2.0, color: '#f87171' };
             playSound('boss');
         } else {

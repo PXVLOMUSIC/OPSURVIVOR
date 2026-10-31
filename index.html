@@ -5032,7 +5032,12 @@ function render() {
     for (let dtObj of damageTexts) {
         ctx.font = dtObj.isOvercrit ? '900 17px Bangers, Arial, sans-serif' : (dtObj.isCrit ? 'bold 15px Bangers, Arial, sans-serif' : '12px sans-serif');
         ctx.fillStyle = dtObj.isOvercrit ? '#c084fc' : (dtObj.isCrit ? '#facc15' : '#ffffff');
-        ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.95)';
+        ctx.lineWidth = dtObj.isOvercrit ? 4 : (dtObj.isCrit ? 3.5 : 3);
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+        ctx.strokeText(dtObj.text, dtObj.x, dtObj.y);
         ctx.fillText(dtObj.text, dtObj.x, dtObj.y);
     }
 

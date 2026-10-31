@@ -158,14 +158,27 @@ const ELITE_INFO = {
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina' };
 const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 9000, boss_crocodile: 14000, boss_enel: 18000, boss_moria: 16000 };
+const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000 };
 
+// === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
+// Cambia aquí la dificultad sin tocar la lógica.
+const BALANCE = {
+    contactMult: 0.8,     // daño por contacto = daño del enemigo x esto (por segundo)
+    hpGrowth: 1.22,       // multiplicador de vida enemiga por minuto (continuo)
+    minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
+    firstEventAt: 120,    // primer evento de oleada (s); antes 70
+    maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
+    shooterCd: 3.0,       // segundos entre disparos de cada fusilero (antes 2.3)
+    bulletDmg: 9,         // daño por bala (antes 14)
+    minSpawnDist: 300     // los spawns recolocados dentro de arenas cerradas nunca caen encima del jugador
+};
+function enemyHpScale() { return Math.pow(BALANCE.hpGrowth, gameTime / 60) * player.curse * (mapEnemies().hpMult || 1); }
 // === Enemigos por mapa (contexto de cada arco) ===
 // Estadísticas base de cada tipo: [vida, velocidad, daño]. La vida se multiplica por hpScale.
 const ENEMY_STATS = {
     grunt: [32, 78, 16], shooter: [48, 62, 22], pacifista: [300, 46, 40], kuma: [150, 50, 28], moria: [200, 40, 30],
-    tararan: [80, 55, 20], hogback: [90, 50, 24], cindry: [120, 48, 22], pellona: [110, 54, 24], ryuma: [130, 48, 26],
-    inupen: [70, 60, 18], kumashi: [100, 52, 20], absalom: [120, 45, 24]
+    tararan: [80, 66, 20], hogback: [90, 50, 24], cindry: [120, 48, 22], pellona: [110, 54, 24], ryuma: [130, 48, 26],
+    inupen: [40, 74, 14], kumashi: [100, 60, 20], absalom: [120, 45, 24]
 };
 // pool: se recorre en orden; el primero con min <= minuto y azar < p gana. Si ninguno, sale 'base'.
 // minibosses: aparecen una vez por partida en su minuto. boss: jefe final del minuto 8.
@@ -174,38 +187,45 @@ const ENEMY_STATS = {
 // (piratas de Krieg, Baroque Works, ejército de Enel).
 const MAP_ENEMIES = {
     baratie: {
+        hpMult: 0.9, // dificultad del mapa (vida enemiga)
         base: 'grunt',
-        pool: [ { type: 'pacifista', min: 3, p: 0.15 }, { type: 'shooter', min: 1, p: 0.45 } ],
+        pool: [ { type: 'pacifista', min: 3, p: 0.12 }, { type: 'shooter', min: 1, p: 0.25 } ],
         minibosses: [ { type: 'morgan', min: 3, hp: 600, speed: 42, damage: 28 } ],
         boss: 'boss_krieg',
         events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EMBOSCADA PIRATA!', chargeText: '¡CARGA DE LA ARMADA!' }
     },
     alabasta: {
+        hpMult: 1.0, // dificultad del mapa (vida enemiga)
         base: 'grunt',
-        pool: [ { type: 'pacifista', min: 2, p: 0.18 }, { type: 'shooter', min: 1, p: 0.55 } ],
+        pool: [ { type: 'pacifista', min: 2, p: 0.14 }, { type: 'shooter', min: 1, p: 0.30 } ],
         minibosses: [ { type: 'pacifista', min: 4, hp: 700, speed: 44, damage: 32 } ],
         boss: 'boss_crocodile',
         events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA ARMADA!' }
     },
     skypiea: {
+        hpMult: 1.0, // dificultad del mapa (vida enemiga)
         base: 'grunt',
-        pool: [ { type: 'pacifista', min: 3, p: 0.15 }, { type: 'shooter', min: 1, p: 0.55 } ],
+        pool: [ { type: 'pacifista', min: 3, p: 0.12 }, { type: 'shooter', min: 1, p: 0.30 } ],
         minibosses: [ { type: 'pacifista', min: 4, hp: 750, speed: 44, damage: 32 } ],
         boss: 'boss_enel',
         events: { ring: 'grunt', charge: 'shooter', runners: 'grunt', ringText: '¡EL EJÉRCITO DIVINO ATACA!', chargeText: '¡CARGA DESDE LAS NUBES!' }
     },
     thrillerbark: {
+        hpMult: 1.15, // dificultad del mapa (vida enemiga)
         base: 'inupen',
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
-            { type: 'cindry', min: 4, p: 0.30 }, { type: 'hogback', min: 3, p: 0.40 }, { type: 'kumashi', min: 2, p: 0.55 },
-            { type: 'tararan', min: 1, p: 0.75 }
+            { type: 'cindry', min: 4, p: 0.30 }, { type: 'hogback', min: 3, p: 0.40 }, { type: 'kumashi', min: 3, p: 0.50 },
+            { type: 'tararan', min: 2, p: 0.65 }
         ],
         minibosses: [ { type: 'absalom', min: 4, hp: 650, speed: 45, damage: 30 }, { type: 'kuma', min: 6, hp: 800, speed: 45, damage: 35 } ],
         boss: 'boss_moria',
         events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
     }
 };
+// Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
+// Tararan (207x158 px) se reduce a ~75x57 para quedar a la altura de Hogback/Kumashi (~55-80 px).
+const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36 };
 function mapEnemies() { return MAP_ENEMIES[selectedMap] || MAP_ENEMIES.baratie; }
 function makeEnemy(type, x, y, hpScale, extra) {
     const st = ENEMY_STATS[type] || ENEMY_STATS.grunt;

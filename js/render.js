@@ -147,17 +147,13 @@ function render() {
             ctx.lineWidth = 3;
             const glowImg = getGlow(glow, 24);
             ctx.drawImage(glowImg, -24, -24);
-            const r = eImg ? Math.max(eImg.width, eImg.height)/2 + 4 : 20;
+            const r = eImg ? Math.max(eImg.width, eImg.height) * (ENEMY_DRAW_SCALE[e.type] || 1) * 0.65 + 4 : 20;
             ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
         }
         if (e._flashUntil && gameTime < e._flashUntil) ctx.filter = 'brightness(2.4) saturate(0.4)';
         if (eImg && eImg.complete) {
-            if (e.isElite) {
-                const s = 1.3;
-                ctx.drawImage(eImg, -eImg.width*s/2, -eImg.height*s/2, eImg.width*s, eImg.height*s);
-            } else {
-                ctx.drawImage(eImg, -eImg.width/2, -eImg.height/2);
-            }
+            const s = (ENEMY_DRAW_SCALE[e.type] || 1) * (e.isElite ? 1.3 : 1);
+            ctx.drawImage(eImg, -eImg.width*s/2, -eImg.height*s/2, eImg.width*s, eImg.height*s);
         } else if (e.type === 'grunt') ctx.drawImage(Sprites.marine, -16, -16);
         else if (e.type === 'shooter') ctx.drawImage(Sprites.shooter, -16, -16);
         else if (e.type === 'pacifista') ctx.drawImage(Sprites.pacifista, -24, -24);

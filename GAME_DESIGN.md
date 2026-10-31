@@ -66,3 +66,8 @@ Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, 12 logros y 15 evol
 
 ## Sprites
 Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frames de cada acción se eligen en `CHAR_ANIMS` y `ENEMY_ANIMS` (`js/core.js`). Las fuentes están en `SPRITES_SOURCES.md`.
+
+## Balance (2026-10-31)
+- Los valores globales viven en `BALANCE` (js/core.js): daño por contacto, crecimiento de vida enemiga, tope de 300 enemigos, intervalo mínimo de spawn, primer evento, fusileros y distancia mínima de spawn. Cada mapa tiene `hpMult` en `MAP_ENEMIES`.
+- `ENEMY_DRAW_SCALE` (js/core.js) ajusta el tamaño de dibujo de sprites desproporcionados (Tararan a 0.36).
+- Medir el balance: `tools/balance-sim.js` (bot en Chromium headless) y `tools/balance-report.py`. Referencia tras el ajuste: ~65% de victorias sin mejoras permanentes, ~100% con la mitad o todas.

@@ -176,6 +176,9 @@ function backToMenu() {
     updateMusic();
 }
 
+// Copia de los valores iniciales de cada habilidad: las mejoras y evoluciones cambian
+// rango, radio y cooldown, y antes esos cambios se arrastraban a la siguiente partida.
+const SKILL_DEFAULTS = JSON.parse(JSON.stringify(skills));
 function resetGame() {
     player.x = 0; player.y = 0;
     player.hp = 100; player.maxHp = 100;
@@ -190,7 +193,7 @@ function resetGame() {
     // VS: estado window que nunca debia sobrevivir a una partida
     window._evolveCut = null;
     window._pendingLevelUps = 0;
-    window.nextEventAt = 70;
+    window.nextEventAt = BALANCE.firstEventAt;
     window.spawnTimer = 0;
     player._arcanaPending = 0;
     player._pendingUpgrade = 0;
@@ -203,7 +206,8 @@ function resetGame() {
         if (lvl > 0) u.apply(player, lvl);
     });
 
-    skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 20; skills.pistol.evolved = false;
+    for (const k in SKILL_DEFAULTS) Object.assign(skills[k], JSON.parse(JSON.stringify(SKILL_DEFAULTS[k])));
+    skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 25; skills.pistol.evolved = false;
     skills.gatling.level = 0; skills.gatling.baseDamage = 10; skills.gatling.evolved = false;
     skills.bazooka.level = 0; skills.bazooka.baseDamage = 45; skills.bazooka.evolved = false;
     skills.gear2.level = 0; skills.gear2.active = false; skills.gear2.remain = 0; skills.gear2.evolved = false;

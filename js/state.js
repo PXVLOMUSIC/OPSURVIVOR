@@ -92,7 +92,7 @@ const META_UPGRADES = [
     { id: 'speed', name: 'Velocidad', desc: '+5% velocidad por nivel', cost: 1800, max: 10, icon: ICONS.speed, apply: (p, lvl) => { p.speed *= (1 + lvl * 0.05); } },
     { id: 'area', name: 'Área', desc: '+5% área por nivel', cost: 1800, max: 10, icon: ICONS.area, apply: (p, lvl) => { p.areaBonus *= (1 + lvl * 0.05); } },
     { id: 'cooldown', name: 'Cooldown', desc: '-3% cooldown por nivel', cost: 2000, max: 10, icon: ICONS.cd, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 3); } },
-    { id: 'armor', name: 'Armadura', desc: '+5% armadura por nivel', cost: 2500, max: 10, icon: ICONS.armor, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 5); } },
+    { id: 'armor', name: 'Armadura', desc: '+3% armadura por nivel', cost: 2500, max: 10, icon: ICONS.armor, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 3); } },
     { id: 'luck', name: 'Crítico', desc: '+5% prob. crítica por nivel', cost: 3000, max: 10, icon: ICONS.crit, apply: (p, lvl) => { p.critChance += lvl * 0.05; } },
     { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 1500, max: 10, icon: ICONS.pickup, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
     { id: 'growth', name: 'Crecimiento', desc: '+5% XP por nivel', cost: 2000, max: 10, icon: ICONS.growth, apply: (p, lvl) => { p.growthBonus += lvl * 0.05; } },

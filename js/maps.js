@@ -194,7 +194,7 @@ const player = {
 };
 
 const skills = {
-    pistol: { level: 1, baseDamage: 20, cooldown: 1.2, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
+    pistol: { level: 1, baseDamage: 25, cooldown: 1.1, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
     gatling: { level: 0, baseDamage: 10, cooldown: 3.8, timer: 0, radius: 85, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
     bazooka: { level: 0, baseDamage: 45, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
     gear2: { level: 0, cooldown: 12.0, timer: 0, duration: 6.0, speedBonus: 0.3, active: false, remain: 0, evolved: false },

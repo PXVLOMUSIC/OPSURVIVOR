@@ -176,7 +176,7 @@ function update(dt) {
 
         if (edist < 22) {
             const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion);
-            player.hp -= e.damage * dt * dmgMult;
+            player.hp -= e.damage * BALANCE.contactMult * dt * dmgMult;
             player.hitTimer = 0.12;
             // VS: destello rojo + sacudida MUY breve (pulso con cooldown, no constante)
             if (player._hurtFlash <= 0.05) player._hurtFlash = 0.35;
@@ -188,11 +188,11 @@ function update(dt) {
 
         if (e.type === 'shooter') {
             e.shootTimer = (e.shootTimer || 0) + dt;
-            if (e.shootTimer >= 2.3 && edist < 340) {
+            if (e.shootTimer >= BALANCE.shooterCd && edist < 340) {
                 e.shootTimer = 0;
                 e.attackTimer = 0.3;
                 const bAngle = Math.atan2(edy, edx);
-                enemyBullets.push({ x: e.x, y: e.y, vx: Math.cos(bAngle) * 240, vy: Math.sin(bAngle) * 240, life: 2.2, damage: 14 });
+                enemyBullets.push({ x: e.x, y: e.y, vx: Math.cos(bAngle) * 240, vy: Math.sin(bAngle) * 240, life: 2.2, damage: BALANCE.bulletDmg });
             }
         }
     }
@@ -296,7 +296,6 @@ function update(dt) {
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'diablejambe') {
-            atk.life -= dt;
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
                 const dmgInfo = calculateDamage(atk.baseDamage);
                 e.hp -= dmgInfo.amount * dt * 4 * e.damageTaken;
@@ -338,7 +337,6 @@ function update(dt) {
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'tatsumaki') {
-            atk.life -= dt;
             atk.spin += dt * 9;
             atk.x = player.x; atk.y = player.y;
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
@@ -350,7 +348,6 @@ function update(dt) {
             });
             if (atk.life <= 0) activeAttacks.splice(i, 1);
         } else if (atk.type === 'partycourse') {
-            atk.life -= dt;
             atk.spin += dt * 11;
             atk.x = player.x; atk.y = player.y;
             forEnemiesNear(atk.x, atk.y, atk.radius, function (e) {
@@ -946,10 +943,10 @@ function handleSpawning(dt) {
     const minutes = Math.floor(gameTime / 60);
     // VS: la Maldición divide el intervalo de spawn (intervalo / maldicción total)
     // Intervalo continuo: 1.0s -> 0.4s lineal hasta el min 4, despues curva geometrica
-    // hasta ~0.05s en el min 8 (antes saltaba de 0.25s a 0.04s entre los min 5 y 7).
+    // hasta el minimo BALANCE.minSpawnInterval (~0.07s) hacia el min 8.
     const tMin = gameTime / 60;
-    const baseInterval = tMin < 4 ? 1.0 - tMin * 0.15 : 0.4 * Math.pow(0.595, tMin - 4);
-    const spawnRate = Math.max(0.04, baseInterval / player.curse);
+    const baseInterval = tMin < 4 ? 1.0 - tMin * 0.15 : 0.4 * Math.pow(0.65, tMin - 4);
+    const spawnRate = Math.max(BALANCE.minSpawnInterval, baseInterval / player.curse);
     if (!window.spawnTimer) window.spawnTimer = 0;
     window.spawnTimer += dt;
 
@@ -958,14 +955,21 @@ function handleSpawning(dt) {
     while (window.spawnTimer >= spawnRate && spawnedThisFrame < 4) {
         window.spawnTimer -= spawnRate;
         spawnedThisFrame++;
-        const angle = Math.random() * Math.PI * 2;
+        // Tope de enemigos vivos (VS ~300): el spawn normal espera; minijefes y eventos no se bloquean
+        if (enemies.length >= BALANCE.maxEnemies) continue;
         const spawnDist = Math.hypot(VIEW_W, VIEW_H) / 2 + 80;
-        let ex = player.x + Math.cos(angle) * spawnDist;
-        let ey = player.y + Math.sin(angle) * spawnDist;
-        // En arenas cerradas (Alabasta/Skypiea) los enemigos nacen DENTRO del muro
-        if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
+        let ex = 0, ey = 0;
+        // En arenas cerradas los enemigos nacen DENTRO del muro; se reintenta otro ángulo
+        // si al recolocarlo quedaría pegado al jugador (antes podían aparecer encima)
+        for (let tries = 0; tries < 8; tries++) {
+            const angle = Math.random() * Math.PI * 2;
+            ex = player.x + Math.cos(angle) * spawnDist;
+            ey = player.y + Math.sin(angle) * spawnDist;
+            if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
+            if (Math.hypot(ex - player.x, ey - player.y) >= BALANCE.minSpawnDist) break;
+        }
 
-        const hpScale = Math.pow(1.28, minutes) * player.curse;
+        const hpScale = enemyHpScale();
         // ===== Pools por mapa (MAP_ENEMIES en core.js) =====
         const cfg = mapEnemies();
         const rand = Math.random();
@@ -1057,11 +1061,11 @@ function spawnBoss() {
 
 // === VS: eventos periodicos de oleada (cada ~90s sorpresa) ===
 function updateEvents(dt) {
-    if (!window.nextEventAt) window.nextEventAt = 70;
+    if (!window.nextEventAt) window.nextEventAt = BALANCE.firstEventAt;
     if (gameTime < window.nextEventAt) return;
     window.nextEventAt = gameTime + (runCurseRank >= 2 ? 60 + Math.random() * 18 : 85 + Math.random() * 25);
     const minutes = Math.floor(gameTime / 60);
-    const hpScale = Math.pow(1.28, minutes) * player.curse;
+    const hpScale = enemyHpScale();
     const kind = Math.random() < 0.5 ? 'ring' : 'charge';
     if (kind === 'ring') {
         // Emboscada: anillo de piratas cierra TODO el contorno hacia el jugador
@@ -1069,8 +1073,12 @@ function updateEvents(dt) {
         window.spawnBanner = { text: ev.ringText, life: 2.0, color: '#ef4444' };
         playSound('levelup');
         const n = 24 + minutes * 2;
+        // VS: el cerco deja un hueco (1/5 del anillo) para que se pueda escapar sin tanquear
+        const gapAt = Math.random() * Math.PI * 2;
         for (let k = 0; k < n; k++) {
             const ang = (Math.PI * 2 * k) / n;
+            const off = Math.abs(((ang - gapAt + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+            if (off < Math.PI / 5) continue;
             let ex = player.x + Math.cos(ang) * 560, ey = player.y + Math.sin(ang) * 560;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
             enemies.push(makeEnemy(ev.ring, ex, ey, hpScale, { speed: 110 + minutes * 10, isEvent: true, name: 'X' }));

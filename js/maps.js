@@ -143,12 +143,65 @@ const ENIES_LOBBY_POLY = [
   [-429.7,-327.5],
   [-418.7,-349.5]
 ];
+// Marineford: elipse ajustada a la cara superior de la plataforma central (sin el canto de piedra).
+// Imagen: centro (705, 456), semiejes 472 x 198 px.
+const MARINEFORD_POLY = [
+  [946.0,20.0],
+  [937.9,71.7],
+  [913.8,122.5],
+  [874.1,171.5],
+  [819.5,218.0],
+  [750.9,261.1],
+  [669.5,300.0],
+  [576.7,334.2],
+  [474.0,362.9],
+  [363.3,385.9],
+  [246.3,402.5],
+  [125.2,412.6],
+  [2.0,416.0],
+  [-121.2,412.6],
+  [-242.3,402.5],
+  [-359.3,385.9],
+  [-470.0,362.9],
+  [-572.7,334.2],
+  [-665.5,300.0],
+  [-746.9,261.1],
+  [-815.5,218.0],
+  [-870.1,171.5],
+  [-909.8,122.5],
+  [-933.9,71.7],
+  [-942.0,20.0],
+  [-933.9,-31.7],
+  [-909.8,-82.5],
+  [-870.1,-131.5],
+  [-815.5,-178.0],
+  [-746.9,-221.1],
+  [-665.5,-260.0],
+  [-572.7,-294.2],
+  [-470.0,-322.9],
+  [-359.3,-345.9],
+  [-242.3,-362.5],
+  [-121.2,-372.6],
+  [2.0,-376.0],
+  [125.2,-372.6],
+  [246.3,-362.5],
+  [363.3,-345.9],
+  [474.0,-322.9],
+  [576.7,-294.2],
+  [669.5,-260.0],
+  [750.9,-221.1],
+  [819.5,-178.0],
+  [874.1,-131.5],
+  [913.8,-82.5],
+  [937.9,-31.7]
+];
 const WALK_POLYS = {
   baratie: WALK_POLY,
   alabasta: PALACE_ARENA_POLY,
   skypiea: PALACE_ARENA_POLY,
   thrillerbark: PALACE_ARENA_POLY,
-  enieslobby: ENIES_LOBBY_POLY
+  enieslobby: ENIES_LOBBY_POLY,
+  marineford: MARINEFORD_POLY
 };
 function walkPoly() {
   return WALK_POLYS[selectedMap] || WALK_POLY;
@@ -181,7 +234,8 @@ const MAP_OBSTACLES = {
   alabasta: [],
   skypiea: [],
   thrillerbark: [],
-  enieslobby: []
+  enieslobby: [],
+  marineford: []
 };
 function mapObstacles() { return MAP_OBSTACLES[selectedMap] || []; }
 // Distancia al cuadrado de (x,y) al segmento del obstáculo, y punto más cercano
@@ -252,7 +306,7 @@ const player = {
 };
 
 const skills = {
-    pistol: { level: 1, baseDamage: 25, cooldown: 1.1, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
+    pistol: { level: 1, baseDamage: 28, cooldown: 1.1, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
     gatling: { level: 0, baseDamage: 10, cooldown: 3.8, timer: 0, radius: 85, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
     bazooka: { level: 0, baseDamage: 45, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
     gear2: { level: 0, cooldown: 12.0, timer: 0, duration: 6.0, speedBonus: 0.3, active: false, remain: 0, evolved: false },
@@ -262,13 +316,13 @@ const skills = {
     // Luffy: latigazo frontal (abanico) y patada hacha alla gear 3
     muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Jet Whip' },
     ono: { level: 0, baseDamage: 70, cooldown: 5.0, timer: 0, radius: 65, evolved: false },
-    santoryu: { level: 1, baseDamage: 34, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
+    santoryu: { level: 1, baseDamage: 31, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
     onigiri: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, dash: 160, evolved: false },
     flyingslash: { level: 0, baseDamage: 20, cooldown: 2.2, timer: 0, range: 300, speed: 600, evolved: false },
     // Zoro: tornado orbitante y cañón de viento perforante
     tatsumaki: { level: 0, baseDamage: 10, cooldown: 3.6, timer: 0, radius: 95, duration: 1.0, evolved: false },
     poundho: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, range: 420, speed: 700, evolved: false },
-    diablejambe: { level: 1, baseDamage: 18, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
+    diablejambe: { level: 1, baseDamage: 21, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
     collier: { level: 0, baseDamage: 10, cooldown: 0.6, timer: 0, range: 70, evolved: false },
     joueshot: { level: 0, baseDamage: 26, cooldown: 2.8, timer: 0, range: 240, speed: 560, evolved: false },
     // Sanji: patada aérea demoledora y tanda giratoria 360

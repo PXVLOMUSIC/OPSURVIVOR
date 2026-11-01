@@ -73,7 +73,7 @@ const CREW_START = {
 const CREW_SIGNATURE = {
     nami:    { dmg: 1.9, cd: 0.75, extra: sk => { sk.strikes += 2; sk.nearFirst = true; } },
     usopp:   { dmg: 2.6, cd: 0.65 },
-    chopper: { dmg: 0.65, cd: 1.1 },
+    chopper: { dmg: 0.5, cd: 1.1 },
     robin:   { dmg: 2.1, cd: 0.8 }
 };
 function applyCrewStart() {

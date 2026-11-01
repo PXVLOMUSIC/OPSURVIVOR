@@ -15,7 +15,7 @@ function itemLocked(id) {
 
 // --- Objetos del suelo (los braseros de VS): barriles y faroles que se rompen a golpes ---
 const PROP_TYPES = ['barrel', 'jar', 'lantern'];
-const PROP_BY_MAP = { baratie: 'barrel', alabasta: 'jar', skypiea: 'barrel', thrillerbark: 'lantern', enieslobby: 'barrel' };
+const PROP_BY_MAP = { baratie: 'barrel', alabasta: 'jar', skypiea: 'barrel', thrillerbark: 'lantern', enieslobby: 'barrel', marineford: 'barrel' };
 const PROP_MAX = 4, PROP_EVERY = 6;
 (function buildProps() {
     const barrel = (g) => {

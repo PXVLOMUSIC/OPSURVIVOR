@@ -1568,10 +1568,14 @@ function showUpgradeScreen(count, isChest) {
         card.dataset.char = cardChar;
         card.dataset.kind = up.type;
         card.dataset.id = up.id;
+        // Nivel actual → siguiente (armas hasta Nv 5; las pasivas cuentan sus mejoras)
+        const curLv = up.type === 'weapon' ? ((sk && sk.level) || 0) : ((player.passives && player.passives[up.id]) || 0);
+        const lvTag = curLv <= 0 ? `<span class="lvl-tag new">NUEVO</span>`
+            : `<span class="lvl-tag">Nv ${curLv} → ${curLv + 1}${up.type === 'weapon' ? '<small>/5</small>' : ''}</span>`;
         card.innerHTML = `
             <div class="upgrade-icon">${up.icon}</div>
             <div class="upgrade-info">
-                <h4>${up.title}</h4>
+                <h4>${up.title} ${lvTag}</h4>
                 <p>${desc}</p>
             </div>
         `;

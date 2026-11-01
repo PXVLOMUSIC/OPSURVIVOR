@@ -195,13 +195,59 @@ const MARINEFORD_POLY = [
   [913.8,-82.5],
   [937.9,-31.7]
 ];
+// Water 7: contorno de la línea roja que dibujó Pablo sobre la plaza del muelle.
+const WATER7_POLY = [
+  [726.0,-180.3],
+  [739.8,-180.3],
+  [778.2,-147.4],
+  [935.0,20.3],
+  [1023.0,99.9],
+  [1067.0,130.2],
+  [1122.0,201.6],
+  [1168.8,242.8],
+  [1188.0,273.1],
+  [1309.0,399.4],
+  [1309.0,418.7],
+  [1331.0,432.4],
+  [1122.0,432.4],
+  [1116.5,437.9],
+  [1003.8,446.2],
+  [734.2,446.2],
+  [651.8,432.4],
+  [352.0,432.4],
+  [346.5,437.9],
+  [231.0,437.9],
+  [220.0,443.4],
+  [-33.0,440.7],
+  [-74.2,432.4],
+  [-715.0,440.7],
+  [-1309.0,440.7],
+  [-1322.8,421.4],
+  [-1317.2,399.4],
+  [-1259.5,352.7],
+  [-1053.2,143.9],
+  [-1009.2,83.5],
+  [-918.5,-7.2],
+  [-838.8,-103.4],
+  [-808.5,-133.6],
+  [-764.5,-163.8],
+  [-497.8,-144.6],
+  [-247.5,-144.6],
+  [-118.2,-158.3],
+  [272.2,-152.9],
+  [280.5,-158.3],
+  [409.8,-158.3],
+  [519.8,-169.3],
+  [693.0,-169.3]
+];
 const WALK_POLYS = {
   baratie: WALK_POLY,
   alabasta: PALACE_ARENA_POLY,
   skypiea: PALACE_ARENA_POLY,
   thrillerbark: PALACE_ARENA_POLY,
   enieslobby: ENIES_LOBBY_POLY,
-  marineford: MARINEFORD_POLY
+  marineford: MARINEFORD_POLY,
+  water7: WATER7_POLY
 };
 function walkPoly() {
   return WALK_POLYS[selectedMap] || WALK_POLY;
@@ -235,7 +281,8 @@ const MAP_OBSTACLES = {
   skypiea: [],
   thrillerbark: [],
   enieslobby: [],
-  marineford: []
+  marineford: [],
+  water7: []
 };
 function mapObstacles() { return MAP_OBSTACLES[selectedMap] || []; }
 // Distancia al cuadrado de (x,y) al segmento del obstáculo, y punto más cercano

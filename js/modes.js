@@ -47,8 +47,8 @@ function applyRunMode() {
 function modeTimeScale() { return (gameState === 'PLAYING' && RUN_MODES[runMode].speed) || 1; }
 
 // --- Tabla de récords: la mejor singladura de cada personaje en cada isla ---
-const RECORD_MAPS = ['baratie', 'alabasta', 'skypiea', 'thrillerbark', 'enieslobby', 'marineford'];
-const RECORD_MAP_NAMES = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford' };
+const RECORD_MAPS = ['baratie', 'alabasta', 'skypiea', 'thrillerbark', 'water7', 'enieslobby', 'marineford'];
+const RECORD_MAP_NAMES = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7' };
 const RECORD_CHARS = ['luffy', 'zoro', 'sanji', 'usopp', 'nami', 'chopper', 'robin'];
 
 function recordScore(r) { return (r.won ? 1e9 : 0) + (r.curse || 0) * 1e8 + Math.round(r.time) * 1e4 + Math.min(9999, r.kills); }

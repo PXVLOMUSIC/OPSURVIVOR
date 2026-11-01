@@ -30,6 +30,7 @@ const SPRITE_PATHS = {
     thrillerbarkMap: 'assets/maps/thrillerbark.png',
     enieslobbyMap: 'assets/maps/enieslobby.png',
     marinefordMap: 'assets/maps/marineford.png',
+    water7Map: 'assets/maps/water7.png',
     saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
     saber_poundho: 'assets/extracted/objetos_gba/sprite_025.png',
     bomb: 'assets/extracted/objetos_gba/sprite_034.png',
@@ -61,6 +62,9 @@ const ENEMY_ANIMS = {
     boss_lucci: { folder: 'lucci', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
     kaku: { folder: 'kaku', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
     spandam: { folder: 'spandam', idle: [0, 1, 2], attack: [3, 4, 5], faces: 1 },
+    // Water 7: Franky y el CP9 infiltrado en Galley-La (DS Gigant Battle)
+    boss_franky: { folder: 'franky', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
+    lucci_human: { folder: 'lucci_human', idle: [0, 1, 2, 3], attack: [4], faces: 1 },
     // Marineford: los tres Almirantes (DS Gigant Battle)
     boss_akainu: { folder: 'akainu', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
     aokiji: { folder: 'aokiji', idle: [0, 1, 2, 3, 4, 5, 6], attack: [7, 8, 9, 10], faces: 1 },
@@ -223,7 +227,7 @@ const ELITE_INFO = {
     jango:          { always: true, name: { all: 'Jango el Hipnotizador' } },
     fullbody:       { always: true, name: { all: 'Teniente Fullbody, Puño de Hierro' } },
     tashigi:        { always: true, name: { all: 'Sargento Mayor Tashigi' } },
-    krieg_knife:    { name: { all: 'Malabarista Veterano de Krieg' } },
+    krieg_knife:    { name: { water7: 'Matón de la Familia Franky', all: 'Malabarista Veterano de Krieg' } },
     marine_sword:   { name: { baratie: 'Cabo de Fullbody', alabasta: 'Cabo de Smoker', all: 'Cabo de la Marina' } },
     sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } },
     spandam:        { always: true, name: { all: 'Spandam y Funkfreed' } }
@@ -232,10 +236,11 @@ function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[select
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
     pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno',
     kaku: 'Kaku — CP9, Ushi Ushi no Mi: Jirafa', spandam: 'Spandam — Jefe del CP9',
+    lucci_human: 'Rob Lucci — CP9 infiltrado en Galley-La',
     aokiji: 'Almirante Aokiji — Hie Hie no Mi', kizaru: 'Almirante Kizaru — Pika Pika no Mi' };
-const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi' };
+const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000 };
+const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
@@ -264,7 +269,7 @@ const ENEMY_STATS = {
     // Bestiario ampliado: cada tipo tiene un papel (enjambre, embestida, bruto, kamikaze, fantasma)
     krieg_starved: [16, 96, 10], krieg_knife: [40, 70, 18], marine_sword: [44, 70, 18], jango: [140, 56, 22], fullbody: [170, 50, 30],
     tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3],
-    kaku: [150, 60, 28], spandam: [110, 54, 22], aokiji: [200, 50, 32], kizaru: [180, 70, 30]
+    kaku: [150, 60, 28], spandam: [110, 54, 22], aokiji: [200, 50, 32], kizaru: [180, 70, 30], lucci_human: [190, 62, 32]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
 //  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
@@ -348,6 +353,18 @@ const MAP_ENEMIES = {
         minibosses: [ { type: 'kaku', min: 3, hp: 750, speed: 52, damage: 32 }, { type: 'spandam', min: 6, hp: 650, speed: 50, damage: 26 } ],
         boss: 'boss_lucci',
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡LA GUARDIA DE ENIES LOBBY TE RODEA!', chargeText: '¡CARGAN LOS 10.000 MARINES!' }
+    },
+    water7: {
+        hpMult: 0.95, // dificultad del mapa (vida enemiga)
+        // Familia Franky (piratas de relleno) en el muelle; Kaku y Lucci se quitan la máscara de Galley-La; Franky de jefe
+        base: 'krieg_pirate',
+        pool: [
+            { type: 'krieg_bomber', min: 3, p: 0.10 }, { type: 'krieg_knife', min: 1, p: 0.20 },
+            { type: 'krieg_gunner', min: 1, p: 0.36 }, { type: 'krieg_starved', min: 0, p: 0.52 }
+        ],
+        minibosses: [ { type: 'kaku', min: 3, hp: 650, speed: 52, damage: 30 }, { type: 'lucci_human', min: 6, hp: 800, speed: 58, damage: 34 } ],
+        boss: 'boss_franky',
+        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
     },
     marineford: {
         hpMult: 1.1, // dificultad del mapa (vida enemiga)
@@ -446,7 +463,7 @@ function selectMap(id) {
     if (mapLocked(id)) { playSound('muted'); return; }
     playSound('ui');
     selectedMap = id;
-    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford' };
+    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }

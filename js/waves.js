@@ -27,6 +27,7 @@ const WAVE_TEXT = {
     skypiea:      { swarm: '¡LLUVIA DE TAMA DE SATORI!', horde: '¡EL EJÉRCITO SHANDIA ATACA!' },
     thrillerbark: { swarm: '¡NEGATIVE HOLLOWS!', horde: '¡NOCHE DE LOS ZOMBIS!' },
     enieslobby:   { swarm: '¡LA MARINA CRUZA EL PUENTE!', horde: '¡BUSTER CALL!' },
+    water7:       { swarm: '¡LA FAMILIA FRANKY ASALTA EL MUELLE!', horde: '¡AQUA LAGUNA SE ACERCA!' },
     marineford:   { swarm: '¡LOS MARINES SALTAN DE LOS BARCOS!', horde: '¡LA GUERRA EN LA CUMBRE!' }
 };
 

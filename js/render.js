@@ -155,8 +155,10 @@ function render() {
             const s = (ENEMY_DRAW_SCALE[e.type] || 1) * (e.isElite ? 1.3 : 1);
             // sprites con orientación conocida: miran hacia el jugador
             const fc = ENEMY_ANIMS[e.type] && ENEMY_ANIMS[e.type].faces;
-            if (fc && ((fc > 0) !== (player.x >= e.x))) ctx.scale(-1, 1);
+            const flip = fc && ((fc > 0) !== (player.x >= e.x));
+            if (flip) { ctx.save(); ctx.scale(-1, 1); }
             ctx.drawImage(eImg, -eImg.width*s/2, -eImg.height*s/2, eImg.width*s, eImg.height*s);
+            if (flip) ctx.restore(); // sin esto, el nombre del élite salía en espejo
         } else if (e.type === 'grunt') ctx.drawImage(Sprites.marine, -16, -16);
         else if (e.type === 'shooter') ctx.drawImage(Sprites.shooter, -16, -16);
         else if (e.type === 'pacifista') ctx.drawImage(Sprites.pacifista, -24, -24);

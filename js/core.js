@@ -56,7 +56,7 @@ const ENEMY_ANIMS = {
     boss_crocodile: { folder: 'crocodile', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10, 11], faces: 1 },
     boss_enel: { folder: 'enel', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
     // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
-    krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: -1 },
+    krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
     krieg_bomber: { folder: 'krieg_bomber', idle: [0, 1, 2, 3, 4], attack: [5, 6], faces: -1 },
     pearl: { folder: 'pearl', idle: [0, 1], attack: [2, 3] },
@@ -94,7 +94,14 @@ const ENEMY_ANIMS = {
     kumashi: { folder: 'kumashi', idle: [0,1,2,3], attack: [4,5,6,7] },
     elite_kumashi: { folder: 'kumashi', idle: [0,1,2,3], attack: [4,5,6,7] },
     absalom: { folder: 'absalom', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_absalom: { folder: 'absalom', idle: [0,1,2,3], attack: [4,5,6,7] }
+    elite_absalom: { folder: 'absalom', idle: [0,1,2,3], attack: [4,5,6,7] },
+    // Ampliación de bestiario (GBA One Piece / WSC Treasure Wars 2)
+    krieg_starved: { folder: 'krieg_starved', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
+    krieg_knife: { folder: 'krieg_knife', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
+    marine_sword: { folder: 'marine_sword', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    jango: { folder: 'jango', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10], faces: 1 },
+    fullbody: { folder: 'fullbody', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: -1 },
+    tashigi: { folder: 'tashigi', idle: [0, 1, 2, 3, 4], attack: [5, 6, 7, 8], faces: 1 }
 };
 const ENEMY_IMG = {};
 // === Iconos SVG (sin emojis, estilo línea profesional) ===
@@ -202,7 +209,13 @@ const ELITE_INFO = {
     miss_doublefinger: { always: true, name: { all: 'Miss Doublefinger — Toge Toge' } },
     satori:         { always: true, name: { all: 'Satori, Sacerdote del Bosque' } },
     shura:          { always: true, name: { all: 'Shura, Sacerdote del Cielo' } },
-    gedatsu:        { always: true, name: { all: 'Gedatsu, Sacerdote del Pantano' } }
+    gedatsu:        { always: true, name: { all: 'Gedatsu, Sacerdote del Pantano' } },
+    jango:          { always: true, name: { all: 'Jango el Hipnotizador' } },
+    fullbody:       { always: true, name: { all: 'Teniente Fullbody, Puño de Hierro' } },
+    tashigi:        { always: true, name: { all: 'Sargento Mayor Tashigi' } },
+    krieg_knife:    { name: { all: 'Malabarista Veterano de Krieg' } },
+    marine_sword:   { name: { baratie: 'Cabo de Fullbody', alabasta: 'Cabo de Smoker', all: 'Cabo de la Marina' } },
+    sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } }
 };
 function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[selectedMap] || i.name.all || i.name.baratie) : null; }
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
@@ -234,7 +247,20 @@ const ENEMY_STATS = {
     // raso = grunt, tirador = shooter, bruto = pacifista. Los oficiales con nombre van siempre como élite.
     krieg_pirate: [32, 78, 16], krieg_gunner: [48, 62, 22], krieg_bomber: [300, 46, 40],
     dugong: [32, 82, 16], mr5: [110, 52, 24], miss_valentine: [90, 60, 20], mr4: [160, 42, 28], miss_merry: [100, 66, 20], miss_doublefinger: [120, 54, 26],
-    shandia: [32, 78, 16], shandia_gunner: [48, 62, 22], satori: [130, 48, 24], shura: [120, 58, 26], gedatsu: [140, 46, 28]
+    shandia: [32, 78, 16], shandia_gunner: [48, 62, 22], satori: [130, 48, 24], shura: [120, 58, 26], gedatsu: [140, 46, 28],
+    // Bestiario ampliado: cada tipo tiene un papel (enjambre, embestida, bruto, kamikaze, fantasma)
+    krieg_starved: [16, 96, 10], krieg_knife: [40, 70, 18], marine_sword: [44, 70, 18], jango: [140, 56, 22], fullbody: [170, 50, 30],
+    tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3]
+};
+// Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
+//  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
+//  charge   cada pocos segundos embiste en línea recta a x3 de velocidad
+//  explode  al tocarte estalla (daño de golpe) y desaparece sin dar experiencia
+//  hollow   Horo Horo: te deprime (lentitud 40% 2 s) en vez de hacer mucho daño
+//  hypno    Jango: "Uno, dos... ¡Jango!" te duerme a medias (lentitud 60% 1,2 s) cada 7 s
+const ENEMY_BEHAVIOR = {
+    krieg_starved: 'zigzag', negative_hollow: 'hollow', krieg_knife: 'charge', sky_shark: 'charge',
+    tama: 'explode', jango: 'hypno'
 };
 // Tiradores: disparan balas (ver BALANCE.shooterCd / bulletDmg)
 const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner']);
@@ -251,10 +277,14 @@ const MAP_ENEMIES = {
         hpMult: 0.9, // dificultad del mapa (vida enemiga)
         // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
         base: 'krieg_pirate',
-        pool: [ { type: 'krieg_bomber', min: 3, p: 0.12 }, { type: 'krieg_gunner', min: 1, p: 0.25 } ],
+        pool: [
+            { type: 'fullbody', min: 5, p: 0.012 }, { type: 'jango', min: 4, p: 0.024 }, { type: 'krieg_bomber', min: 3, p: 0.12 },
+            { type: 'krieg_knife', min: 2, p: 0.20 }, { type: 'marine_sword', min: 4, p: 0.27 }, { type: 'krieg_gunner', min: 1, p: 0.40 },
+            { type: 'krieg_starved', min: 0, p: 0.55 }
+        ],
         minibosses: [ { type: 'pearl', min: 3, hp: 600, speed: 40, damage: 28 }, { type: 'gin', min: 6, hp: 800, speed: 52, damage: 32 } ],
         boss: 'boss_krieg',
-        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_pirate', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
+        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
     },
     alabasta: {
         hpMult: 1.0, // dificultad del mapa (vida enemiga)
@@ -262,11 +292,12 @@ const MAP_ENEMIES = {
         base: 'dugong',
         pool: [
             { type: 'miss_doublefinger', min: 5, p: 0.03 }, { type: 'mr4', min: 4, p: 0.06 }, { type: 'miss_merry', min: 4, p: 0.09 },
-            { type: 'miss_valentine', min: 2, p: 0.12 }, { type: 'mr5', min: 2, p: 0.15 }, { type: 'shooter', min: 1, p: 0.38 }
+            { type: 'miss_valentine', min: 2, p: 0.12 }, { type: 'mr5', min: 2, p: 0.15 }, { type: 'tashigi', min: 3, p: 0.165 },
+            { type: 'shooter', min: 1, p: 0.38 }, { type: 'marine_sword', min: 2, p: 0.52 }
         ],
         minibosses: [ { type: 'mr2', min: 3, hp: 700, speed: 50, damage: 30 }, { type: 'mr1', min: 5, hp: 850, speed: 46, damage: 34 } ],
         boss: 'boss_crocodile',
-        events: { ring: 'dugong', charge: 'shooter', runners: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
+        events: { ring: 'dugong', charge: 'marine_sword', runners: 'dugong', swarm: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
     },
     skypiea: {
         hpMult: 1.0, // dificultad del mapa (vida enemiga)
@@ -274,11 +305,11 @@ const MAP_ENEMIES = {
         base: 'shandia',
         pool: [
             { type: 'gedatsu', min: 4, p: 0.04 }, { type: 'shura', min: 3, p: 0.08 }, { type: 'satori', min: 2, p: 0.12 },
-            { type: 'shandia_gunner', min: 1, p: 0.38 }
+            { type: 'sky_shark', min: 3, p: 0.17 }, { type: 'shandia_gunner', min: 1, p: 0.38 }, { type: 'tama', min: 2, p: 0.46 }
         ],
         minibosses: [ { type: 'wiper', min: 3, hp: 750, speed: 50, damage: 30 }, { type: 'ohm', min: 5, hp: 900, speed: 44, damage: 34 } ],
         boss: 'boss_enel',
-        events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'shandia', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
+        events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'sky_shark', swarm: 'tama', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
         hpMult: 1.15, // dificultad del mapa (vida enemiga)
@@ -286,16 +317,16 @@ const MAP_ENEMIES = {
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
             { type: 'cindry', min: 4, p: 0.30 }, { type: 'hogback', min: 3, p: 0.40 }, { type: 'kumashi', min: 3, p: 0.50 },
-            { type: 'tararan', min: 2, p: 0.65 }
+            { type: 'tararan', min: 2, p: 0.65 }, { type: 'negative_hollow', min: 1, p: 0.71 }
         ],
         minibosses: [ { type: 'absalom', min: 4, hp: 650, speed: 45, damage: 30 }, { type: 'kuma', min: 6, hp: 800, speed: 45, damage: 35 } ],
         boss: 'boss_moria',
-        events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
+        events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
     }
 };
 // Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
 // Tararan (207x158 px) se reduce a ~75x57 para quedar a la altura de Hogback/Kumashi (~55-80 px).
-const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36 };
+const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3 };
 function mapEnemies() { return MAP_ENEMIES[selectedMap] || MAP_ENEMIES.baratie; }
 function makeEnemy(type, x, y, hpScale, extra) {
     const st = ENEMY_STATS[type] || ENEMY_STATS.grunt;
@@ -324,6 +355,51 @@ function preloadEnemySprites() {
 }
 assetsToLoad += 0;
 preloadEnemySprites();
+
+// === Enemigos dibujados por código (no hay hojas de sprites de ellos) ===
+// Tama de Satori (bola de nube con sorpresa), Tiburón del Cielo del Mar Blanco y Negative Hollow de Perona.
+function procEnemyFrames(w, h, n, draw) {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const g = c.getContext('2d'); g.imageSmoothingEnabled = false; draw(g, i);
+        c.complete = true; out.push(c);
+    }
+    return out;
+}
+function px(g, col, x, y, w, h) { g.fillStyle = col; g.fillRect(x, y, w, h); }
+(function buildProcEnemies() {
+    const tama = (g, i) => {
+        const bob = i % 2;
+        px(g, '#cbd5e1', 6, 9 + bob, 20, 16); px(g, '#f8fafc', 4, 11 + bob, 24, 12); px(g, '#ffffff', 8, 7 + bob, 16, 18);
+        px(g, '#e2e8f0', 9, 21 + bob, 14, 3);
+        // bola ("tama") con la cara de sorpresa de Satori
+        px(g, '#0f172a', 11, 13 + bob, 3, 3); px(g, '#0f172a', 18, 13 + bob, 3, 3);
+        px(g, '#ef4444', 14, 18 + bob, 4, 2);
+        if (i === 2) { px(g, '#f97316', 13, 3, 6, 4); px(g, '#facc15', 15, 1, 2, 3); }
+    };
+    const shark = (g, i) => {
+        const t = i % 2 ? 1 : 0;
+        px(g, '#64748b', 6, 10, 30, 10); px(g, '#94a3b8', 8, 16, 26, 5); px(g, '#e2e8f0', 10, 18, 20, 3);
+        px(g, '#475569', 18, 4, 6, 6); px(g, '#475569', 0, 7 - t, 7, 6); px(g, '#475569', 0, 17 + t, 7, 5);
+        px(g, '#0f172a', 32, 12, 2, 2); px(g, '#ffffff', 30, 19, 6, 2);
+        px(g, '#f8fafc', 4, 24, 34, 4); px(g, '#cbd5e1', 10, 27, 22, 2);
+        if (i === 2) { px(g, '#7f1d1d', 32, 18, 6, 3); }
+    };
+    const hollow = (g, i) => {
+        const w = i % 2;
+        g.globalAlpha = 0.9;
+        px(g, '#f1f5f9', 7, 5, 16, 16); px(g, '#e2e8f0', 5, 9, 20, 10);
+        px(g, '#f8fafc', 7, 21, 4, 4 + w); px(g, '#f8fafc', 13, 21, 4, 5 - w); px(g, '#f8fafc', 19, 21, 4, 4 + w);
+        g.globalAlpha = 1;
+        px(g, '#0f172a', 10, 10, 3, 4); px(g, '#0f172a', 17, 10, 3, 4);
+        px(g, '#1e293b', 12, 16, 6, 2); px(g, '#ec4899', 14, 3, 2, 2);
+    };
+    ENEMY_IMG.tama = { idle: procEnemyFrames(32, 30, 2, tama), attack: procEnemyFrames(32, 30, 3, tama).slice(2) };
+    ENEMY_IMG.sky_shark = { idle: procEnemyFrames(40, 30, 2, shark), attack: procEnemyFrames(40, 30, 3, shark).slice(2) };
+    ENEMY_IMG.negative_hollow = { idle: procEnemyFrames(30, 28, 2, hollow), attack: [] };
+    ENEMY_ANIMS.sky_shark = { faces: 1 }; ENEMY_ANIMS.tama = {}; ENEMY_ANIMS.negative_hollow = {};
+})();
 
 // --- CHARACTER SELECTION & ANIMATION ---
 let selectedCharacter = 'luffy';

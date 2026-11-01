@@ -104,7 +104,7 @@ function update(dt) {
 
     const len = Math.hypot(moveX, moveY);
     if (len > 0) {
-        const speedMult = gearSpeedMult();
+        const speedMult = gearSpeedMult() * (gameTime < (player._slowUntil || 0) ? player._slowMult : 1);
         const stepX = (moveX / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const stepY = (moveY / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const newX = player.x + stepX;
@@ -155,9 +155,19 @@ function update(dt) {
             continue;
         }
 
+        const beh = ENEMY_BEHAVIOR[e.type];
+        if (beh && enemyBehavior(e, beh, edx, edy, edist, dt)) { enemies.splice(i, 1); continue; }
         if (edist > 0) {
-            e.x += (edx / edist) * e.speed * gearEnemySpeedMult() * dt;
-            e.y += (edy / edist) * e.speed * gearEnemySpeedMult() * dt;
+            let vx = edx / edist, vy = edy / edist, sp = e.speed;
+            if (beh === 'zigzag' || beh === 'hollow') {
+                // ondulación perpendicular a la dirección (murciélagos de VS)
+                e._zz = (e._zz || Math.random() * 6) + dt * 5;
+                const w = Math.sin(e._zz) * 0.9;
+                vx -= (edy / edist) * w; vy += (edx / edist) * w;
+            }
+            if (e._dashT > 0) { vx = e._dashVx; vy = e._dashVy; sp *= 3; }
+            e.x += vx * sp * gearEnemySpeedMult() * dt;
+            e.y += vy * sp * gearEnemySpeedMult() * dt;
             // Los enemigos normales rodean rejas y barandillas; jefes y minijefes las atraviesan
             if (hasObstacles && !e.isBoss && !e.isMiniboss) [e.x, e.y] = pushOutOfObstacles(e.x, e.y, 10);
         }
@@ -171,6 +181,17 @@ function update(dt) {
             e.animTimer = 0;
         }
 
+        if (edist < 22 && beh === 'hollow') {
+            // Horo Horo no Mi: el fantasma atraviesa y te hunde ("Soy una babosa...") y desaparece
+            player._slowUntil = gameTime + 1.5; player._slowMult = 0.75;
+            player.hp -= e.damage * ((1 - (player.armor / 100)) * gearDamageTakenMult());
+            fxRing(e.x, e.y, '#ec4899', 14, 0.3);
+            if (!window._hollowTxt || gameTime > window._hollowTxt) { window._hollowTxt = gameTime + 4; spawnDamageText(player.x, player.y - 30, { amount: 'NEGATIVE...', isCrit: false, isOvercrit: false }); }
+            enemies.splice(i, 1);
+            if (player.hp <= 0) { triggerGameOver(); return; }
+            updateUI();
+            continue;
+        }
         if (edist < 22) {
             const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
             player.hp -= e.damage * BALANCE.contactMult * dt * dmgMult;
@@ -1095,6 +1116,36 @@ function updateEvents(dt) {
             enemies.push(makeEnemy(ev.runners, ex, ey, hpScale, { speed: 130, isEvent: true, name: 'X' }));
         }
     }
+}
+
+// Comportamientos especiales (ENEMY_BEHAVIOR en core.js). Devuelve true si el enemigo desaparece.
+function enemyBehavior(e, beh, edx, edy, edist, dt) {
+    if (beh === 'charge') {
+        if (e._dashT > 0) { e._dashT -= dt; return false; }
+        e._dashCd = (e._dashCd === undefined ? 1 + Math.random() * 2 : e._dashCd) - dt;
+        if (e._dashCd <= 0 && edist < 280 && edist > 40) {
+            e._dashCd = 3.2; e._dashT = 0.45; e._dashVx = edx / edist; e._dashVy = edy / edist; e.attackTimer = 0.45;
+        }
+    } else if (beh === 'explode') {
+        if (edist < 26) {
+            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
+            player.hp -= e.damage * dmgMult; player.hitTimer = 0.12; player._hurtFlash = 0.35;
+            cameraShake = Math.max(cameraShake, 2.2); playSound('hurt');
+            activeAttacks.push({ type: 'bazooka', x: e.x, y: e.y, radius: 50, life: 0.3, maxLife: 0.3, baseDamage: 0, hitEnemies: new Set() });
+            if (player.hp <= 0) triggerGameOver();
+            updateUI();
+            return true;
+        }
+        if (edist < 70) e.attackTimer = 0.2; // a punto de estallar
+    } else if (beh === 'hypno') {
+        e._hyp = (e._hyp === undefined ? 3 : e._hyp) - dt;
+        if (e._hyp <= 0 && edist < 300) {
+            e._hyp = 7; e.attackTimer = 0.8;
+            player._slowUntil = gameTime + 1.2; player._slowMult = 0.4;
+            window.spawnBanner = { text: 'UNO, DOS... ¡JANGO!', life: 1.2, color: '#c084fc' };
+        }
+    }
+    return false;
 }
 
 function killEnemy(e) {

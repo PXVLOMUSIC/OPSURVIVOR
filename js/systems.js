@@ -418,6 +418,15 @@ function renderAchievements() {
 }
 // === REGISTRO MARINO (bestiary) ===
 const BESTIARY_INFO = {
+    krieg_starved: 'Pirata Hambriento de Krieg — cien días a la deriva',
+    krieg_knife: 'Malabarista de Krieg — cuchillos al vuelo',
+    marine_sword: 'Cabo de la Marina — sable reglamentario',
+    jango: 'Jango — Uno, dos... ¡Jango!',
+    fullbody: 'Fullbody, Puño de Hierro — teniente de la Marina',
+    tashigi: 'Tashigi — espadachina de la G-5',
+    tama: 'Tama de Satori — bola de nube sorpresa',
+    sky_shark: 'Tiburón del Cielo — Mar Blanco',
+    negative_hollow: 'Negative Hollow — "Soy basura..."',
     grunt: 'Pirata Raso — hombre sin recompensa',
     shooter: 'Fusilero de la Armada',
     pacifista: 'Pacifista — arma secreta del Gobierno',

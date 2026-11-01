@@ -71,10 +71,10 @@ const CREW_START = {
 // Arma insignia: en manos de su dueño pega más y recarga antes. Sin Gears ni transformaciones,
 // es lo que mantiene a la tripulación a la altura de Luffy, Zoro y Sanji (medido con tools/balance-sim.js).
 const CREW_SIGNATURE = {
-    nami:    { dmg: 1.9, cd: 0.75, extra: sk => { sk.strikes += 2; sk.nearFirst = true; } },
+    nami:    { dmg: 2.1, cd: 0.75, extra: sk => { sk.strikes += 2; sk.nearFirst = true; } },
     usopp:   { dmg: 2.6, cd: 0.65 },
-    chopper: { dmg: 0.5, cd: 1.1 },
-    robin:   { dmg: 2.1, cd: 0.8 }
+    chopper: { dmg: 0.4, cd: 1.1 },
+    robin:   { dmg: 2.3, cd: 0.8 }
 };
 function applyCrewStart() {
     const c = CREW_START[selectedCharacter];

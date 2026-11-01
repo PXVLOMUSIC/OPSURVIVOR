@@ -1,11 +1,14 @@
 // --- RENDER ENGINE (Sea of Stars Aesthetic Pipeline) ---
 // Píxel vertical de la imagen de cada mapa que cae en y=0 del mundo (x=0 es el centro de la imagen)
+// Tamaño lógico de los mapas (px de la imagen original 1408x768). Las imágenes reales van a x2 (2816x1536)
+// para que 1 píxel de imagen = 1 píxel de pantalla; el código trabaja siempre con el tamaño lógico.
+const MAP_PX_W = 1408, MAP_PX_H = 768;
 const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446, enieslobby: 446, marineford: 446, water7: 446 };
 function cameraCenter() {
     const img = IMG[selectedMap + 'Map'];
     if (!assetsLoaded || !img || !img.complete || !img.width) return [player.x, player.y];
-    const halfW = img.width * MAP_SCALE / 2;
-    const top = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, bottom = top + img.height * MAP_SCALE;
+    const halfW = MAP_PX_W * MAP_SCALE / 2;
+    const top = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, bottom = top + MAP_PX_H * MAP_SCALE;
     const clampAxis = (v, lo, hi, view) => (hi - lo <= view) ? (lo + hi) / 2 : Math.min(Math.max(v, lo + view / 2), hi - view / 2);
     return [clampAxis(player.x, -halfW, halfW, VIEW_W), clampAxis(player.y, top, bottom, VIEW_H)];
 }
@@ -44,13 +47,18 @@ function render() {
     // Map Background: imagen del mapa centrada en x, con su origen vertical en MAP_ORIGIN_Y
     const mapImg = IMG[selectedMap + 'Map'];
     if (assetsLoaded && mapImg && mapImg.complete && mapImg.width) {
-        // Mapas pixelados (estilo GBA): se escalan sin suavizado para que el pixel se vea nítido como en los sprites
+        // Mapas en alta definición (sin pixelado): se dibujan con suavizado para que el fondo tenga
+        // igual o más definición que los sprites GBA, que siguen sin suavizar.
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = low ? 'low' : 'high';
+        // solo la parte visible: la imagen puede ir a más resolución que el tamaño lógico (k píxeles de imagen por píxel lógico)
+        const k = mapImg.width / MAP_PX_W;
+        const mx0 = -MAP_PX_W * MAP_SCALE / 2, my0 = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE;
+        const sx = Math.max(0, Math.floor((VIEW_RECT.x0 - mx0) / MAP_SCALE * k) - 2), sy = Math.max(0, Math.floor((VIEW_RECT.y0 - my0) / MAP_SCALE * k) - 2);
+        const ex = Math.min(mapImg.width, Math.ceil((VIEW_RECT.x1 - mx0) / MAP_SCALE * k) + 2), ey = Math.min(mapImg.height, Math.ceil((VIEW_RECT.y1 - my0) / MAP_SCALE * k) + 2);
+        const f = MAP_SCALE / k;
+        if (ex > sx && ey > sy) ctx.drawImage(mapImg, sx, sy, ex - sx, ey - sy, mx0 + sx * f, my0 + sy * f, (ex - sx) * f, (ey - sy) * f);
         ctx.imageSmoothingEnabled = false;
-        // solo la parte visible (en píxeles enteros de la imagen para no abrir costuras)
-        const mx0 = -mapImg.width * MAP_SCALE / 2, my0 = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE;
-        const sx = Math.max(0, Math.floor((VIEW_RECT.x0 - mx0) / MAP_SCALE) - 1), sy = Math.max(0, Math.floor((VIEW_RECT.y0 - my0) / MAP_SCALE) - 1);
-        const ex = Math.min(mapImg.width, Math.ceil((VIEW_RECT.x1 - mx0) / MAP_SCALE) + 1), ey = Math.min(mapImg.height, Math.ceil((VIEW_RECT.y1 - my0) / MAP_SCALE) + 1);
-        if (ex > sx && ey > sy) ctx.drawImage(mapImg, sx, sy, ex - sx, ey - sy, mx0 + sx * MAP_SCALE, my0 + sy * MAP_SCALE, (ex - sx) * MAP_SCALE, (ey - sy) * MAP_SCALE);
     } else {
         const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47', enieslobby: '#d9c48f', marineford: '#7a8a80', water7: '#8a9098' };
         ctx.fillStyle = fallback[selectedMap] || '#0284c7';

@@ -746,7 +746,10 @@ function updateHudPortrait() {
 const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'GATA LADRONA NAMI', usopp: 'SOGEKING (USOPP)', chopper: 'TONY TONY CHOPPER', robin: 'NICO ROBIN' };
 // Cómo se desbloquea cada personaje (se muestra en la carta bloqueada)
 const CHAR_LOCK_TEXT = { zoro: 'BLOQUEADO — TIENDA', sanji: 'BLOQUEADO — TIENDA', usopp: 'SOBREVIVE 5 MIN', nami: 'CONQUISTA EL BARATIE', chopper: 'DERROTA 1.500 ENEMIGOS', robin: 'CONQUISTA ALABASTA' };
+// Tripulación aún sin kit completo: visible en la selección pero no jugable
+const CHAR_COMING_SOON = { nami: true, usopp: true, chopper: true, robin: true };
 function selectCharacter(id) {
+    if (CHAR_COMING_SOON[id]) { showAchToast('PRÓXIMAMENTE — ' + CHAR_ANIMS[id].name); return; }
     if (!meta.unlocked[id]) {
         showAchToast('PERSONAJE BLOQUEADO — ' + (CHAR_LOCK_TEXT[id] || 'TIENDA'));
         return;
@@ -762,13 +765,15 @@ function selectCharacter(id) {
 // Marca las cartas bloqueadas según la meta-progresión
 function refreshCharCards() {
     document.querySelectorAll('#char-select .char-card').forEach(b => {
-        const unlocked = meta.unlocked[b.dataset.char];
+        const soon = !!CHAR_COMING_SOON[b.dataset.char];
+        const unlocked = meta.unlocked[b.dataset.char] && !soon;
         b.classList.toggle('locked', !unlocked);
+        b.classList.toggle('soon', soon);
         let overlay = b.querySelector('.char-locked-overlay');
         if (!unlocked && !overlay) {
             overlay = document.createElement('div');
             overlay.className = 'char-locked-overlay';
-            overlay.innerHTML = '<span class="char-locked-banner">' + (CHAR_LOCK_TEXT[b.dataset.char] || 'BLOQUEADO') + '</span>';
+            overlay.innerHTML = '<span class="char-locked-banner">' + (soon ? 'PRÓXIMAMENTE' : (CHAR_LOCK_TEXT[b.dataset.char] || 'BLOQUEADO')) + '</span>';
             b.appendChild(overlay);
         } else if (unlocked && overlay) {
             overlay.remove();

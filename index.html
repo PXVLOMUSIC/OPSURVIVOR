@@ -162,11 +162,11 @@
         <div id="char-select" style="display: flex; gap: 40px; margin: 14px 0 18px; flex-wrap: wrap; justify-content: center; align-items: stretch; position: relative; width: 100%; max-width: 960px;">
             <span class="side-deco side-left" aria-hidden="true">⚓</span>
             <span class="side-deco side-right" aria-hidden="true">⚓</span>
-            <button class="char-card" data-char="zoro" onclick="selectCharacter('zoro')">
-                <img src="assets/wanted/zoro.jpg" alt="Zoro" onerror="this.style.display='none'">
-            </button>
             <button class="char-card" data-char="luffy" onclick="selectCharacter('luffy')">
                 <img src="assets/wanted/luffy.jpg" alt="Luffy" onerror="this.style.display='none'">
+            </button>
+            <button class="char-card" data-char="zoro" onclick="selectCharacter('zoro')">
+                <img src="assets/wanted/zoro.jpg" alt="Zoro" onerror="this.style.display='none'">
             </button>
             <button class="char-card" data-char="sanji" onclick="selectCharacter('sanji')">
                 <img src="assets/wanted/sanji.jpg" alt="Sanji" onerror="this.style.display='none'">
@@ -177,6 +177,7 @@
             <button class="char-card crew" data-char="robin" onclick="selectCharacter('robin')"><img src="assets/wanted/robin.jpg" alt="Robin"></button>
         </div>
         <div id="char-selected" class="menu-name">Personaje: Luffy</div>
+        <div id="char-stats" class="char-stats"></div>
         <div class="menu-panel">
         <div id="map-select" style="display:flex; gap:16px; margin: 8px 0 12px; flex-wrap:wrap; justify-content:center; align-items:center;">
             <span class="menu-label">ELIGE ISLA</span>

@@ -250,6 +250,7 @@ function resetGame() {
     window.endlessMode = false; window.endlessBossKills = 0; window.nextBossAt = 0;
     initRunStats();
     gearReset();
+    applyCharStats(player, selectedCharacter); // atributos propios del personaje (core.js)
     // apply meta upgrades
     META_UPGRADES.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;

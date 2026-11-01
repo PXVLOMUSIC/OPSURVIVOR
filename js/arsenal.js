@@ -64,10 +64,11 @@ const ARSENAL_TYPES = new Set(['kabuto', 'thunder', 'impact', 'clutch']);
 
 // ---------- Tripulación desbloqueable: arma inicial y bonificación (como los personajes de VS) ----------
 const CREW_START = {
-    nami:    { weapon: 'climatact', text: '+20% Berries y +10% velocidad', apply: p => { p.greedBonus += 0.2; p.speed *= 1.1; } },
-    usopp:   { weapon: 'kabuto',    text: '+10% crítico y +20% suerte', apply: p => { p.critChance += 0.10; p.luckBonus += 0.2; } },
-    chopper: { weapon: 'roseo',     text: '+20 vida máxima y +0,5 PV/s (médico)', apply: p => { p.maxHp += 20; p.hp = p.maxHp; p.regenRate += 0.5; } },
-    robin:   { weapon: 'clutch',    text: '+10% área', apply: p => { p.areaBonus *= 1.1; } }
+    // los atributos de cada uno están en CHAR_STATS (js/core.js)
+    nami:    { weapon: 'climatact' },
+    usopp:   { weapon: 'kabuto' },
+    chopper: { weapon: 'roseo' },
+    robin:   { weapon: 'clutch' }
 };
 // Arma insignia: en manos de su dueño pega más y recarga antes. Sin Gears ni transformaciones,
 // es lo que mantiene a la tripulación a la altura de Luffy, Zoro y Sanji (medido con tools/balance-sim.js).
@@ -83,7 +84,6 @@ function applyCrewStart() {
     skills[c.weapon].level = 1;
     const sig = CREW_SIGNATURE[selectedCharacter];
     if (sig) { skills[c.weapon].baseDamage *= sig.dmg; skills[c.weapon].cooldown *= sig.cd; if (sig.extra) sig.extra(skills[c.weapon]); }
-    c.apply(player);
 }
 
 function arsenalHit(atk, e, dmgMult) {

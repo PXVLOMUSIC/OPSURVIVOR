@@ -411,8 +411,8 @@ const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
-    contactMult: 0.55,    // daño por contacto = daño del enemigo x esto (por segundo); 1.0 hasta bajar la velocidad del jugador a 92
-    hpGrowth: 1.24,        // multiplicador de vida enemiga por minuto (continuo); 1.32 con la velocidad antigua (185)
+    contactMult: 0.62,    // daño por contacto = daño del enemigo x esto (por segundo); 1.0 con la velocidad antigua (185)
+    hpGrowth: 1.28,        // multiplicador de vida enemiga por minuto (continuo); 1.32 con la velocidad antigua (185)
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
@@ -421,7 +421,7 @@ const BALANCE = {
     meatHeal: 30,         // muslo de carne = Floor Chicken de VS (+30 HP)
     enemyMeat: 0.03,      // probabilidad de muslo al morir un enemigo normal (VS: 0; con 0 el bot cae a 4/9/28)
     minSpawnDist: 300,    // los spawns recolocados dentro de arenas cerradas nunca caen encima del jugador
-    playerSpeed: 92       // velocidad base: algo por encima de los enemigos rasos (78-82); antes 185
+    playerSpeed: 100      // velocidad base: algo por encima de los enemigos rasos (78-82); 185 hasta el 2026-11-01. Cada personaje la multiplica (CHAR_STATS)
 };
 // === Economía (Berries) — referencia Vampire Survivors ===
 // En VS el oro sale sobre todo de braseros, cofres y la Moneda de oro al tenerlo todo (25);
@@ -734,6 +734,33 @@ const CHAR_SKILLS = {
     // Tripulación desbloqueable (estilo VS: arma inicial propia + bonificación; el resto del arsenal es compartido)
     nami: ['climatact'], usopp: ['kabuto'], chopper: ['roseo'], robin: ['clutch']
 };
+// Atributos propios de cada personaje (como en VS), según su lore y su rol. Cada uno tiene un punto fuerte para su build.
+// speed y area multiplican; power, cd y armor son %; crit, luck, greed, pickup y growth se suman; maxHp es absoluto; regen en PV/s.
+const CHAR_STATS = {
+    luffy:   { maxHp: 100, speed: 1.10, power: 20,              text: 'El más rápido y fuerte: +10% velocidad y +20% poder' },
+    zoro:    { maxHp: 115, speed: 0.95, armor: 8, area: 1.10,   text: 'Aguante de espadachín: 115 de vida, +8% armadura y +10% área; −5% velocidad' },
+    sanji:   { maxHp: 100, speed: 1.05, crit: 0.10, cd: 5,      text: 'Patadas veloces: +10% crítico, −5% recarga y +5% velocidad' },
+    nami:    { maxHp: 80,  speed: 1.05, greed: 0.20, luck: 0.20, text: 'Navegante ladrona: +20% Berries, +20% suerte y +5% velocidad; 80 de vida' },
+    usopp:   { maxHp: 80,  crit: 0.10, pickup: 0.30,            text: 'Francotirador: +10% crítico y +30% recogida; 80 de vida' },
+    chopper: { maxHp: 120, speed: 0.95, regen: 0.5,             text: 'Médico: 120 de vida y +0,5 PV/s; −5% velocidad' },
+    robin:   { maxHp: 90,  area: 1.15, cd: 5,                   text: 'Hana Hana: +15% área y −5% recarga; 90 de vida' }
+};
+function applyCharStats(p, ch) {
+    const s = CHAR_STATS[ch];
+    if (!s) return;
+    p.maxHp = s.maxHp || 100; p.hp = p.maxHp;
+    if (s.speed) p.speed *= s.speed;
+    if (s.power) p.powerPct += s.power;
+    if (s.area) p.areaBonus *= s.area;
+    if (s.cd) p.cdReduction += s.cd;
+    if (s.armor) p.armor += s.armor;
+    if (s.crit) p.critChance += s.crit;
+    if (s.luck) p.luckBonus += s.luck;
+    if (s.greed) p.greedBonus += s.greed;
+    if (s.pickup) p.pickupBonus += s.pickup;
+    if (s.growth) p.growthBonus += s.growth;
+    if (s.regen) p.regenRate += s.regen;
+}
 // Objetos que no son técnicas propias, pero que en el canon solo usan algunos personajes.
 const ITEM_CHARS = {
     rumble: ['chopper'],                          // la Rumble Ball altera la Zoan de Chopper; nadie más la toma
@@ -794,13 +821,20 @@ function selectCharacter(id) {
     selectedCharacter = id;
     void CHAR_IMG[id];
     document.getElementById('char-selected').innerText = 'Personaje: ' + CHAR_ANIMS[id].name;
+    showCharStats(id);
     document.querySelectorAll('#char-select .char-card').forEach(b => b.classList.toggle('selected', b.dataset.char === id));
     updateHudPortrait();
 }
 
+function showCharStats(id) {
+    const el = document.getElementById('char-stats');
+    if (el && CHAR_STATS[id]) el.innerText = CHAR_STATS[id].text;
+}
 // Marca las cartas bloqueadas según la meta-progresión
 function refreshCharCards() {
+    showCharStats(selectedCharacter);
     document.querySelectorAll('#char-select .char-card').forEach(b => {
+        if (CHAR_STATS[b.dataset.char]) b.title = CHAR_ANIMS[b.dataset.char].name + ' — ' + CHAR_STATS[b.dataset.char].text;
         const soon = !!CHAR_COMING_SOON[b.dataset.char];
         const unlocked = meta.unlocked[b.dataset.char] && !soon;
         b.classList.toggle('locked', !unlocked);

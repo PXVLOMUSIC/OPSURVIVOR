@@ -187,6 +187,7 @@ function resetGame() {
     player.level = 1; player.xp = 0; player.nextXp = 6;
     player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0;
     player.passives = {};
+    player.revives = 0; // antes no se reiniciaba y los "Revivir" sin usar se acumulaban entre partidas
     player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};
     player.arcana = []; player._arcanaPending = 0;
     window.freezeTimer = 0; window.vacuumTimer = 0; window.haoTimer = 0;

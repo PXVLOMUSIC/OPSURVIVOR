@@ -1710,7 +1710,7 @@ function selectUpgrade(id) {
 function triggerGameOver() {
     if (player.revives > 0) {
         player.revives--;
-        player.hp = player.maxHp * 0.5;
+        player.hp = player.maxHp * 0.3; // Revivir: 30% (antes 50%)
         cameraShake = 2;
         playSound('levelup');
         updateUI();

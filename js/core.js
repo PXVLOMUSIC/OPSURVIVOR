@@ -1,17 +1,136 @@
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false });
 
 let VIEW_W = 800, VIEW_H = 600;
-
+// === Rendimiento: escala de render (resolución interna del canvas) ===
+// El mundo se dibuja en píxeles CSS (VIEW_W x VIEW_H) y el canvas interno mide VIEW * RS.
+// RS < 1 dibuja menos píxeles y el navegador lo amplía sin suavizado (el arte es pixel art).
+// Calidad: 'auto' (baja sola si caen los FPS), 'high' (1), 'medium' (0.75), 'low' (0.5).
+const RS_LEVELS = [1, 0.75, 0.5];
+let RS = 1;
+let _rsAuto = 0; // nivel elegido por la calidad automática
+function qualityMode() { return (typeof windowOpts !== 'undefined' && windowOpts && windowOpts.quality) || 'auto'; }
+function targetRS() {
+    const q = qualityMode();
+    if (q === 'high') return 1;
+    if (q === 'medium') return 0.75;
+    if (q === 'low') return 0.5;
+    return RS_LEVELS[_rsAuto];
+}
+// Efectos baratos (sin sombras ni brillos de suelo) en calidad baja
+function lowFx() { return RS <= 0.5; }
 function resizeCanvas() {
     VIEW_W = window.innerWidth;
     VIEW_H = window.innerHeight;
-    canvas.width = VIEW_W;
-    canvas.height = VIEW_H;
+    RS = targetRS();
+    canvas.width = Math.max(1, Math.round(VIEW_W * RS));
+    canvas.height = Math.max(1, Math.round(VIEW_H * RS));
+    canvas.style.width = VIEW_W + 'px';
+    canvas.style.height = VIEW_H + 'px';
+    ctx.setTransform(RS, 0, 0, RS, 0, 0);
     ctx.imageSmoothingEnabled = false;
+    _needsRedraw = true; // cambiar el tamaño borra el canvas
+    document.body && document.body.classList.toggle('q-low', RS <= 0.5);
 }
+let _needsRedraw = true;
 window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
 resizeCanvas();
+function applyQuality() { if (targetRS() !== RS) resizeCanvas(); }
+
+// Calidad automática: mide el intervalo real entre frames durante la partida.
+// Si va por debajo de ~45 FPS durante 2 s baja un nivel; si va sobrado 8 s sube uno.
+const _perf = { last: 0, acc: 0, n: 0, slow: 0, fast: 0 };
+function perfTick(now) {
+    if (gameState !== 'PLAYING' || document.hidden) { _perf.last = 0; return; }
+    if (_perf.last) {
+        const d = now - _perf.last;
+        if (d < 250) { _perf.acc += d; _perf.n++; }
+    }
+    _perf.last = now;
+    if (_perf.acc < 2000) return;
+    const avg = _perf.acc / _perf.n;
+    _perf.acc = 0; _perf.n = 0;
+    if (qualityMode() !== 'auto') return;
+    if (avg > 22) { _perf.fast = 0; if (++_perf.slow >= 1 && _rsAuto < RS_LEVELS.length - 1) { _rsAuto++; _perf.slow = 0; resizeCanvas(); } }
+    else if (avg < 17.5) { _perf.slow = 0; if (++_perf.fast >= 4 && _rsAuto > 0) { _rsAuto--; _perf.fast = 0; resizeCanvas(); } }
+    else { _perf.slow = 0; _perf.fast = 0; }
+}
+
+// === Compatibilidad: filtros de color sin ctx.filter ===
+// ctx.filter es lento por frame y Safari < 18 no lo soporta. Cada sprite filtrado se pinta una vez
+// en un canvas aparte (con ctx.filter si existe, o con una matriz de color equivalente) y se reutiliza.
+const CANVAS_FILTER_OK = (() => { try { const t = document.createElement('canvas').getContext('2d'); t.filter = 'blur(1px)'; return t.filter === 'blur(1px)'; } catch (e) { return false; } })();
+const _filterCache = new WeakMap();
+function _filterMatrix(fn, v) {
+    const c = Math.cos(v), sn = Math.sin(v), k = 1 - v;
+    switch (fn) {
+        case 'brightness': return [v, 0, 0, 0, v, 0, 0, 0, v, 0];
+        case 'contrast': return [v, 0, 0, 0, v, 0, 0, 0, v, (0.5 - 0.5 * v) * 255];
+        case 'saturate': return [0.213 + 0.787 * v, 0.715 - 0.715 * v, 0.072 - 0.072 * v, 0.213 - 0.213 * v, 0.715 + 0.285 * v, 0.072 - 0.072 * v, 0.213 - 0.213 * v, 0.715 - 0.715 * v, 0.072 + 0.928 * v, 0];
+        case 'grayscale': return [0.2126 + 0.7874 * k, 0.7152 - 0.7152 * k, 0.0722 - 0.0722 * k, 0.2126 - 0.2126 * k, 0.7152 + 0.2848 * k, 0.0722 - 0.0722 * k, 0.2126 - 0.2126 * k, 0.7152 - 0.7152 * k, 0.0722 + 0.9278 * k, 0];
+        case 'sepia': return [0.393 + 0.607 * k, 0.769 - 0.769 * k, 0.189 - 0.189 * k, 0.349 - 0.349 * k, 0.686 + 0.314 * k, 0.168 - 0.168 * k, 0.272 - 0.272 * k, 0.534 - 0.534 * k, 0.131 + 0.869 * k, 0];
+        case 'hue-rotate': return [0.213 + c * 0.787 - sn * 0.213, 0.715 - c * 0.715 - sn * 0.715, 0.072 - c * 0.072 + sn * 0.928,
+            0.213 - c * 0.213 + sn * 0.143, 0.715 + c * 0.285 + sn * 0.140, 0.072 - c * 0.072 - sn * 0.283,
+            0.213 - c * 0.213 - sn * 0.787, 0.715 - c * 0.715 + sn * 0.715, 0.072 + c * 0.928 + sn * 0.072, 0];
+    }
+    return null;
+}
+function _applyFilterManually(g, w, h, filter) {
+    const ops = [];
+    filter.replace(/([a-z-]+)\(([-\d.]+)(deg|%)?\)/g, (_, fn, num, unit) => {
+        let v = parseFloat(num);
+        if (unit === '%') v /= 100;
+        if (fn === 'hue-rotate') v = v * Math.PI / 180;
+        if (fn === 'grayscale' || fn === 'sepia') v = Math.min(1, v);
+        const m = _filterMatrix(fn, v);
+        if (m) ops.push(m);
+    });
+    const d = g.getImageData(0, 0, w, h), px = d.data;
+    for (let i = 0; i < px.length; i += 4) {
+        if (!px[i + 3]) continue;
+        let r = px[i], gg = px[i + 1], b = px[i + 2];
+        for (const m of ops) {
+            const nr = m[0] * r + m[1] * gg + m[2] * b + m[9], ng = m[3] * r + m[4] * gg + m[5] * b + m[9], nb = m[6] * r + m[7] * gg + m[8] * b + m[9];
+            r = nr < 0 ? 0 : (nr > 255 ? 255 : nr); gg = ng < 0 ? 0 : (ng > 255 ? 255 : ng); b = nb < 0 ? 0 : (nb > 255 ? 255 : nb);
+        }
+        px[i] = r; px[i + 1] = gg; px[i + 2] = b;
+    }
+    g.putImageData(d, 0, 0);
+}
+// Devuelve el sprite con el filtro CSS aplicado (cacheado). Si aún no ha cargado devuelve el original.
+function filteredSprite(img, filter) {
+    if (!filter || filter === 'none' || !img || !img.width) return img;
+    let m = _filterCache.get(img);
+    if (!m) { m = {}; _filterCache.set(img, m); }
+    if (m[filter]) return m[filter];
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const g = c.getContext('2d');
+    try {
+        if (CANVAS_FILTER_OK) { g.filter = filter; g.drawImage(img, 0, 0); }
+        else { g.drawImage(img, 0, 0); _applyFilterManually(g, c.width, c.height, filter); }
+    } catch (e) { g.filter = 'none'; g.drawImage(img, 0, 0); }
+    return (m[filter] = c);
+}
+// Dibuja con el filtro que haya en ctx.filter (puesto por los Gears) usando la caché
+function takeCtxFilter(c) {
+    const f = c.filter;
+    if (f && f !== 'none') c.filter = 'none';
+    return (f && f !== 'none') ? f : null;
+}
+
+// === Carga de imágenes bajo demanda ===
+// Cada ruta se descarga y decodifica una sola vez (varios frames y enemigos comparten archivos).
+const IMG_CACHE = {};
+function loadImg(path) {
+    let img = IMG_CACHE[path];
+    if (img) return img;
+    img = IMG_CACHE[path] = new Image();
+    img.decoding = 'async';
+    img.src = path;
+    return img;
+}
 
 // --- SPRITE IMAGE LOADING ---
 const IMG = {};
@@ -117,7 +236,13 @@ const ENEMY_ANIMS = {
     fullbody: { folder: 'fullbody', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: -1 },
     tashigi: { folder: 'tashigi', idle: [0, 1, 2, 3, 4], attack: [5, 6, 7, 8], faces: 1 }
 };
-const ENEMY_IMG = {};
+const ENEMY_IMG = new Proxy({}, {
+    get(t, type) {
+        if (typeof type !== 'string') return t[type];
+        if (!(type in t)) { const set = (typeof ENEMY_ANIMS !== 'undefined') && buildEnemyImages(type); if (set) t[type] = set; }
+        return t[type];
+    }
+});
 // === Iconos SVG (sin emojis, estilo línea profesional) ===
 const SVG = (inner) => `<svg viewBox="0 0 24 24" class="op-ico" aria-hidden="true">${inner}</svg>`;
 const S = 'stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -391,25 +516,16 @@ function makeEnemy(type, x, y, hpScale, extra) {
 function enemyPath(folder, idx) {
     return 'assets/extracted/' + folder + '/sprite_' + String(idx).padStart(3,'0') + '.png';
 }
-function preloadEnemySprites() {
-    for (const [type, cfg] of Object.entries(ENEMY_ANIMS)) {
-        ENEMY_IMG[type] = { idle: [], attack: [] };
-        const loadSet = (arr, key) => {
-            arr.forEach((idx, i) => {
-                const img = new Image();
-                img.src = enemyPath(cfg.folder, idx);
-                ENEMY_IMG[type][key][i] = img;
-                assetsToLoad++;
-                img.onload = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-                img.onerror = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-            });
-        };
-        loadSet(cfg.idle, 'idle');
-        loadSet(cfg.attack, 'attack');
-    }
+// Los sprites de cada enemigo se cargan la primera vez que se piden (ENEMY_IMG[tipo]).
+// Así solo se descargan los del mapa que se juega (prefetchRun) y no los ~60 tipos al abrir el juego.
+function buildEnemyImages(type) {
+    const cfg = ENEMY_ANIMS[type];
+    if (!cfg || !cfg.folder) return null;
+    return {
+        idle: (cfg.idle || []).map(idx => loadImg(enemyPath(cfg.folder, idx))),
+        attack: (cfg.attack || []).map(idx => loadImg(enemyPath(cfg.folder, idx)))
+    };
 }
-assetsToLoad += 0;
-preloadEnemySprites();
 
 // === Enemigos dibujados por código (no hay hojas de sprites de ellos) ===
 // Tama de Satori (bola de nube con sorpresa), Tiburón del Cielo del Mar Blanco y Negative Hollow de Perona.
@@ -463,6 +579,7 @@ function selectMap(id) {
     if (mapLocked(id)) { playSound('muted'); return; }
     playSound('ui');
     selectedMap = id;
+    prefetchRun(id, selectedCharacter);
     const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
@@ -564,6 +681,7 @@ function selectCharacter(id) {
     }
     playSound('ui');
     selectedCharacter = id;
+    void CHAR_IMG[id];
     document.getElementById('char-selected').innerText = 'Personaje: ' + CHAR_ANIMS[id].name;
     document.querySelectorAll('#char-select .char-card').forEach(b => b.classList.toggle('selected', b.dataset.char === id));
     updateHudPortrait();
@@ -587,28 +705,22 @@ function refreshCharCards() {
 }
 
 // Preload character animation frames
-const CHAR_IMG = {}; // { char: { action: [Image...] } }
-function preloadCharacterSprites() {
-    for (const [key, cfg] of Object.entries(CHAR_ANIMS)) {
-        CHAR_IMG[key] = {};
-        for (const action of ['idle','walk','attack','hit','death','balloon']) {
-            CHAR_IMG[key][action] = [];
-            const idxs = cfg[action] || [0];
-            idxs.forEach((idx, i) => {
-                const img = new Image();
-                img.onload = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-                img.onerror = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-                img.src = animPath(key, idx);
-                CHAR_IMG[key][action][i] = img;
-                assetsToLoad++;
-            });
+// Animaciones de cada personaje: se cargan la primera vez que se piden (al elegirlo en el menú)
+const CHAR_IMG = new Proxy({}, {
+    get(t, key) {
+        if (typeof key !== 'string') return t[key];
+        if (!(key in t) && CHAR_ANIMS[key]) {
+            const cfg = CHAR_ANIMS[key], set = {};
+            for (const action of ['idle','walk','attack','hit','death','balloon']) set[action] = (cfg[action] || [0]).map(idx => loadImg(animPath(key, idx)));
+            t[key] = set;
         }
+        return t[key];
     }
-}
-assetsToLoad += 0;
-preloadCharacterSprites();
+}); // { char: { action: [Image...] } }
 function preloadSprites() {
     for (const [key, path] of Object.entries(SPRITE_PATHS)) {
+        // los mapas pesan mucho: solo se cargan al elegirlos (ensureMapImage)
+        if (/Map$/.test(key)) { IMG[key] = new Image(); continue; }
         const img = new Image();
         img.onload = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
         img.onerror = () => { console.warn('No se pudo cargar', path); assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
@@ -616,4 +728,21 @@ function preloadSprites() {
         IMG[key] = img;
     }
 }
+assetsToLoad = Object.keys(SPRITE_PATHS).filter(k => !/Map$/.test(k)).length;
 preloadSprites();
+function ensureMapImage(id) {
+    const key = id + 'Map', img = IMG[key];
+    if (img && !img.getAttribute('src') && SPRITE_PATHS[key]) { img.decoding = 'async'; img.src = SPRITE_PATHS[key]; }
+    return img;
+}
+// Precarga lo que necesita una partida: mapa, personaje y todos los enemigos que nombra MAP_ENEMIES del mapa
+function prefetchRun(map, ch) {
+    ensureMapImage(map);
+    void CHAR_IMG[ch];
+    const walk = v => {
+        if (typeof v === 'string') { if (ENEMY_ANIMS[v]) void ENEMY_IMG[v]; }
+        else if (Array.isArray(v)) v.forEach(walk);
+        else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+    };
+    walk(MAP_ENEMIES[map]);
+}

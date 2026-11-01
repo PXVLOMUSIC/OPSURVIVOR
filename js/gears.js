@@ -447,7 +447,7 @@ function gearDrawWorld(ctx) {
 function gearDrawHUD(ctx) {
     if (gearCardLevel() <= 0) return;
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(RS, 0, 0, RS, 0, 0);
     if (window._gearFlash > 0) {
         ctx.fillStyle = 'rgba(255,255,255,' + Math.min(0.6, window._gearFlash * 2).toFixed(3) + ')';
         ctx.fillRect(0, 0, VIEW_W, VIEW_H);

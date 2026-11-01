@@ -333,6 +333,13 @@
                 <label>EFECTOS (SFX): <span id="opt-sfx-val">80</span>%</label>
                 <input type="range" id="opt-sfx" min="0" max="100" value="80" style="width:100%;" oninput="setVolSfx(this.value)">
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-shake" checked> Sacudida de cámara</label>
+                <label style="display:flex; align-items:center; gap:8px; justify-content:space-between;">Calidad gráfica
+                    <select id="opt-quality" style="font:inherit; padding:2px 6px;">
+                        <option value="auto">Automática</option>
+                        <option value="high">Alta</option>
+                        <option value="medium">Media</option>
+                        <option value="low">Baja (móviles lentos)</option>
+                    </select></label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-particles"> Partículas reducidas (dispositivos lentos)</label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-flashes"> Menos destellos (fotosensibilidad)</label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-dmgnums" checked> Mostrar números de daño</label>

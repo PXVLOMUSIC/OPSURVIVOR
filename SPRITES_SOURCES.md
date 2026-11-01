@@ -13,6 +13,7 @@
 - assets/extracted/<personaje>_gba/ (extraídos de los PNG locales)
 - assets/sprites/ (representativos para el juego)
 - source-art/ (hojas originales y frames limpios; no se cargan en el juego)
+- source-art/sprites_originales/ (colección completa de hojas por juego, Luffy_Gears, CATALOGO_ROLES.txt y CREDITOS.txt; solo local, ignorada en .gitignore por ser material de uso no comercial y pesado)
 
 ## Notas
 - Si se descargan nuevos sheets, procesar con source-art/process_animations.py (tratar fondo como transparente).

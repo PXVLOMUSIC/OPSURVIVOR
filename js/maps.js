@@ -252,6 +252,7 @@ const WALK_POLYS = {
   thrillerbark: PALACE_ARENA_POLY,
   enieslobby: ENIES_LOBBY_POLY,
   marineford: MARINEFORD_POLY,
+  wano: WHOLECAKE_POLY, // misma cubierta que Whole Cake
   water7: WATER7_POLY,
   wholecake: WHOLECAKE_POLY
 };
@@ -288,6 +289,7 @@ const MAP_OBSTACLES = {
   thrillerbark: [],
   enieslobby: [],
   marineford: [],
+  wano: [],
   water7: []
 };
 function mapObstacles() { return MAP_OBSTACLES[selectedMap] || []; }

@@ -90,7 +90,7 @@ function propBreak(e) {
     for (const o of table) { r -= o.w * (o.rare ? luck : 1); if (r <= 0) { pick = o; break; } }
     e._drop = pick.drop;
     if (pick.drop === 'beli') {
-        for (let k = 0; k < pick.n; k++) drops.push({ x: e.x + (k - (pick.n - 1) / 2) * 10, y: e.y, type: 'beli', value: Math.round(pick.v * player.greedBonus * (player.runBeliMult || 1)) });
+        for (let k = 0; k < pick.n; k++) drops.push({ x: e.x + (k - (pick.n - 1) / 2) * 10, y: e.y, type: 'beli', src: 'prop', value: Math.round(pick.v * beliScale()) });
     } else drops.push({ x: e.x, y: e.y, type: pick.drop });
 }
 
@@ -114,8 +114,8 @@ function openChestRoulette(count, tier, beliVal, evolvedNames) {
                 items.push({ id, title: card.querySelector('h4').innerText, icon: card.querySelector('.upgrade-icon').innerHTML });
                 selectUpgrade(id);
             } else {
-                const extra = Math.round((75 + player.level * 25) * 2 * player.greedBonus * (player.runBeliMult || 1));
-                scoreBeli += extra;
+                const extra = Math.round(ECONOMY.bag * 2 * beliScale());
+                addBeli(extra, 'bag');
                 items.push({ id: null, title: '+' + extra.toLocaleString('en-US') + ' Berries', icon: ICONS.cart });
             }
         }

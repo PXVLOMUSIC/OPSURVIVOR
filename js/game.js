@@ -438,9 +438,9 @@ function update(dt) {
                     // recompensa al terminar la animacion de apertura
                     // VS: la ruleta del cofre revela 1, 3 o 5 objetos (js/loot.js)
                     const count = chestItemCount();
-                    const tierBase = d.tier === 2 ? 350 : (d.tier === 1 ? 200 : 60);
-                    const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus * (player.runBeliMult || 1));
-                    scoreBeli += beliVal;
+                    const tierBase = ECONOMY.chestBase[d.tier] || ECONOMY.chestBase[0];
+                    const beliVal = Math.round((tierBase + Math.random() * tierBase) * beliScale());
+                    addBeli(beliVal, 'chest');
                     const evoBefore = Object.keys(skills).filter(k => skills[k].evolved);
                     if (d.canEvolve) checkEvolutions();
                     const evoNames = Object.keys(skills).filter(k => skills[k].evolved && !evoBefore.includes(k)).map(k => EVOLUTIONS[k].name);
@@ -478,7 +478,7 @@ function update(dt) {
                 player.xp += d.value * player.growthBonus; playSound('gem');
                 while (player.xp >= player.nextXp) levelUp();
             } else if (d.type === 'beli') {
-                scoreBeli += d.value; playSound('coin');
+                addBeli(d.value, d.src || 'coin'); playSound('coin');
             } else if (d.type === 'meat') {
                 player.hp = Math.min(player.maxHp, player.hp + BALANCE.meatHeal); playSound('meat');
             } else if (d.type === 'denden') {
@@ -1226,7 +1226,7 @@ function killEnemy(e) {
         if (dropChest) drops.push({ x: e.x, y: e.y, type: 'chest', tier: chestTier,
             canEvolve: chestTier >= 1, ground: true, opened: false, openTimer: 0, value: 1 });
     }
-    if (Math.random() < 0.20) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(8 * player.greedBonus * (player.runBeliMult || 1)) });
+    if (!e.isProp && Math.random() < ECONOMY.enemyChance) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', src: 'enemy', value: Math.round(ECONOMY.enemyCoin * beliScale()) });
     // VS: los enemigos normales solo sueltan gemas; curas y consumibles salen de barriles y faroles (js/loot.js).
     // BALANCE.enemyMeat: pequeña concesión (no está en VS) porque aquí la vista es más corta y hay menos barriles.
     if (BALANCE.enemyMeat && Math.random() < BALANCE.enemyMeat) drops.push({ x: e.x, y: e.y, type: 'meat' });
@@ -1252,8 +1252,8 @@ function killEnemy(e) {
         for (let k = 0; k < qty; k++) {
             const ang = Math.random() * Math.PI * 2;
             const sp = 40 + Math.random() * 130;
-            drops.push({ x: e.x + Math.cos(ang) * sp, y: e.y + Math.sin(ang) * sp, type: 'beli',
-                value: Math.round((60 + Math.random() * 70) * player.greedBonus * (player.runBeliMult || 1)) });
+            drops.push({ x: e.x + Math.cos(ang) * sp, y: e.y + Math.sin(ang) * sp, type: 'beli', src: 'avalanche',
+                value: Math.round((ECONOMY.avalanche[0] + Math.random() * ECONOMY.avalanche[1]) * beliScale()) });
         }
         if (!e.isBoss) window.spawnBanner = { text: '¡AVALANCHA DE BELI!', life: 1.2, color: '#ffd700' };
         playSound('beli_rush');
@@ -1264,7 +1264,7 @@ function killEnemy(e) {
         if (window.endlessMode) {
             window.endlessBossKills++;
             window.nextBossAt = gameTime + 300;
-            scoreBeli += Math.round(1500 * (player.runBeliMult || 1));
+            addBeli(ECONOMY.endlessBoss * beliScale(), 'endless');
             window.spawnBanner = { text: '¡BRIGADA CAÍDA — EL MAR ENVÍA OTRA MÁS FUERTE!', life: 2.0, color: '#f87171' };
             playSound('boss');
         } else {
@@ -1608,7 +1608,7 @@ function showUpgradeScreen(count, isChest) {
     let upgradeShowingFallback = false;
     if (!container.children.length) {
         upgradeShowingFallback = true;
-        const goldVal = Math.round((75 + player.level * 25) * (upgradeIsChest ? 2 : 1) * player.greedBonus * (player.runBeliMult || 1));
+        const goldVal = Math.round(ECONOMY.bag * (upgradeIsChest ? 2 : 1) * beliScale());
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.innerHTML = `
@@ -1619,7 +1619,7 @@ function showUpgradeScreen(count, isChest) {
             </div>
         `;
         card.onclick = () => {
-            scoreBeli += goldVal;
+            addBeli(goldVal, 'bag');
             playSound('coin');
             document.getElementById('upgrade-screen').style.display = 'none';
             resumeAfterUpgrade();

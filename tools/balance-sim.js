@@ -13,6 +13,7 @@ const PAR = +process.argv[7] || 8;
 const GEAR = +process.argv[8] || 2;
 // [forzar] = 'evo': a partir del minuto 4 la carta de transformación está evolucionada (mide el techo de Gear 4/5, Enma e Ifrit)
 const FORCE_EVO = process.argv[9] === 'evo';
+// TMAX=780 cambia el tope de 12 min; IMMORTAL_BOSS=1 alarga la partida para medir el oro de una singladura larga
 // BAL='{"hpGrowth":1.3}' sobrescribe valores de BALANCE para probar ajustes sin tocar el código
 const BAL_OVERRIDE = process.env.BAL ? JSON.parse(process.env.BAL) : null;
 
@@ -29,7 +30,7 @@ async function runOne(browser, ch, map, meta) {
     page.on('pageerror', e => console.error('ERR', ch, map, e.message));
     await page.goto(URL_);
     await page.waitForFunction(() => typeof startGame === 'function' && assetsLoaded, null, { timeout: 60000 }).catch(() => {});
-    const res = await page.evaluate(async ({ ch, map, forceEvo, metaLvl, bal }) => {
+    const res = await page.evaluate(async ({ ch, map, forceEvo, metaLvl, bal, tmax, immortalBoss }) => {
         if (bal) Object.assign(BALANCE, bal);
         META_UPGRADES.forEach(u => { meta.upgrades[u.id] = (u.id === 'curse' || (metaLvl === 2 && u.id === 'revival')) ? 0 : (metaLvl === 1 ? u.max : (metaLvl === 2 ? Math.ceil(u.max / 2) : 0)); });
         window.playSound = () => {}; window.updateMusic = () => {};
@@ -109,6 +110,7 @@ async function runOne(browser, ch, map, meta) {
             if (typeof gearReady === 'function' && gearReady()) { const gv = gearAvailable(); gearActivate(); gu[gv] = (gu[gv] || 0) + 1; }
             const preHp = player.hp;
             update(DT);
+            if (immortalBoss) for (const e of enemies) if (e.isBoss) e.hp = e.maxHp;
             { const loss = preHp - player.hp; if (loss > 0) { let big = enemies.some(e => (e.isBoss||e.isMiniboss) && Math.hypot(e.x-player.x,e.y-player.y) < 40); let c = enemies.filter(e => Math.hypot(e.x-player.x,e.y-player.y) < 22).length; const key = big ? 'boss' : (c ? (c >= 5 ? 'swarm' : 'contact') : 'bullet'); src[key] = (src[key]||0) + loss; } }
             if (player.hp < lastHp) dmgTaken += lastHp - player.hp;
             lastHp = player.hp;
@@ -119,18 +121,19 @@ async function runOne(browser, ch, map, meta) {
             if (on > maxOn) maxOn = on;
             if (gameTime - lastSample >= 60) {
                 lastSample = gameTime;
-                samples.push({ m: Math.round(gameTime / 60), on, alive: enemies.length, kills: window.runStats ? window.runStats.kills : 0, lvl: player.level, hp: Math.round(player.hp), maxHp: player.maxHp, power: player.powerPct });
+                samples.push({ m: Math.round(gameTime / 60), on, alive: enemies.length, kills: window.runStats ? window.runStats.kills : 0, lvl: player.level, hp: Math.round(player.hp), maxHp: player.maxHp, power: player.powerPct, beli: scoreBeli });
             }
-            if (gameTime > 720) break; // 12 min de tope: si no mata al boss, cuenta como derrota
+            if (gameTime > tmax) break; // 12 min de tope: si no mata al boss, cuenta como derrota
             if (performance.now() - t0 > 240000) break;
         }
         const boss = enemies.find(e => e.isBoss);
-        return { ch, map, state: gameState, time: Math.round(gameTime), lvl: player.level, kills, minHp: Math.round(minHp), src: Object.fromEntries(Object.entries(src).map(([k,v])=>[k,Math.round(v)])),
+        const beli = scoreBeli, beliSrc = window.beliSrc || {};
+        return { ch, map, state: gameState, time: Math.round(gameTime), beli, beliSrc, lvl: player.level, kills, minHp: Math.round(minHp), src: Object.fromEntries(Object.entries(src).map(([k,v])=>[k,Math.round(v)])),
             maxOn, dmgTaken: Math.round(dmgTaken), bossHpLeft: boss ? Math.round(boss.hp / boss.maxHp * 100) : null,
             gearMax: (typeof meta !== 'undefined' && meta.gear) ? meta.gear.unlocked : null, gearUses: gu,
             weapons: Object.keys(skills).filter(k => skills[k].level > 0).map(k => k + skills[k].level + (skills[k].evolved ? '*' : '')).join(' '),
             samples, realMs: Math.round(performance.now() - t0) };
-    }, { ch, map, forceEvo: FORCE_EVO, metaLvl: meta, bal: BAL_OVERRIDE });
+    }, { ch, map, forceEvo: FORCE_EVO, metaLvl: meta, bal: BAL_OVERRIDE, tmax: +process.env.TMAX || 720, immortalBoss: !!process.env.IMMORTAL_BOSS });
     await ctx.close();
     return res;
 }
@@ -141,7 +144,7 @@ async function runOne(browser, ch, map, meta) {
     for (const ch of CHARS) for (const map of MAPS) for (let i = 0; i < RUNS; i++) jobs.push([ch, map]);
     const out = [];
     let idx = 0;
-    async function worker() { while (idx < jobs.length) { const j = jobs[idx++]; try { const r = await runOne(browser, j[0], j[1], META); out.push(r); console.error(JSON.stringify({ ch: r.ch, map: r.map, st: r.state, t: r.time, lvl: r.lvl, k: r.kills, on: r.maxOn, boss: r.bossHpLeft, gears: r.gearUses })); } catch (e) { console.error('fail', j, e.message); } } }
+    async function worker() { while (idx < jobs.length) { const j = jobs[idx++]; try { const r = await runOne(browser, j[0], j[1], META); out.push(r); console.error(JSON.stringify({ ch: r.ch, map: r.map, st: r.state, t: r.time, lvl: r.lvl, k: r.kills, on: r.maxOn, boss: r.bossHpLeft, gears: r.gearUses, beli: r.beli, src: r.beliSrc })); } catch (e) { console.error('fail', j, e.message); } } }
     await Promise.all(Array.from({ length: PAR }, worker));
     await browser.close();
     console.log(JSON.stringify(out));

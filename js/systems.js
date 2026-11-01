@@ -175,30 +175,40 @@ function closeShop() {
 function renderShop() {
     const container = document.getElementById('shop-options');
     container.innerHTML = '';
-    document.getElementById('shop-beli').innerText = fmtBeli(meta.beli);    META_UPGRADES.forEach(u => {
+    document.getElementById('shop-beli').innerText = fmtBeli(meta.beli);
+    const open = META_UPGRADES.filter(metaUpgradeUnlocked).length;
+    const ul = document.getElementById('shop-unlocked');
+    if (ul) ul.innerText = 'DESBLOQUEADAS ' + open + '/' + META_UPGRADES.length;
+    // VS: primero lo disponible y después lo bloqueado, con el logro que lo desbloquea
+    const list = META_UPGRADES.filter(metaUpgradeUnlocked).concat(META_UPGRADES.filter(u => !metaUpgradeUnlocked(u)));
+    list.forEach(u => {
         const lvl = meta.upgrades[u.id] || 0;
+        const locked = !metaUpgradeUnlocked(u);
+        const maxed = lvl >= u.max;
         const cost = metaUpgradeCost(u, lvl);
         const card = document.createElement('div');
-        card.className = 'upgrade-card';
+        card.className = 'upgrade-card' + (locked ? ' shop-locked' : '');
         card.style.display = 'flex';
         card.style.alignItems = 'center';
         card.style.gap = '10px';
+        const ach = locked ? ACHIEVEMENTS.find(a => a.unlock === u.lock) : null;
+        const desc = locked ? '🔒 <b>' + (ach ? ach.name : 'Bloqueada') + ':</b> ' + (ach ? ach.desc.replace(/ Desbloquea .*$/, '') : '') : u.desc;
         card.innerHTML = `
-            <div class="upgrade-icon">${u.icon || ICONS.up}</div>
+            <div class="upgrade-icon">${locked ? ICONS.unlock : (u.icon || ICONS.up)}</div>
             <div class="upgrade-info" style="flex:1;">
-                <h4>${u.name} (Nv ${lvl}/${u.max})</h4>
-                <p>${u.desc}</p>
+                <h4>${u.name}${locked ? '' : ' (Nv ' + lvl + '/' + u.max + ')'}</h4>
+                <p>${desc}</p>
             </div>
             <div class="upgrade-buy" style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:90px;">
-                <div style="font-family:'Bangers',sans-serif; font-size:16px; color:#b45309; letter-spacing:1px;">${cost.toLocaleString('en-US')} ฿</div>
-                <button class="btn-buy" style="padding:6px 14px; font-size:13px; font-weight:700; border-radius:8px; border:2px solid #b45309; background:linear-gradient(135deg,#facc15,#b45309); color:#1a0f06; cursor:pointer; font-family:'Bangers',sans-serif; letter-spacing:1px;">COMPRAR</button>
+                <div style="font-family:'Bangers',sans-serif; font-size:16px; color:#b45309; letter-spacing:1px;">${locked ? '???' : (maxed ? 'MÁX' : cost.toLocaleString('en-US') + ' ฿')}</div>
+                <button class="btn-buy" style="padding:6px 14px; font-size:13px; font-weight:700; border-radius:8px; border:2px solid #b45309; background:linear-gradient(135deg,#facc15,#b45309); color:#1a0f06; cursor:pointer; font-family:'Bangers',sans-serif; letter-spacing:1px;">${locked ? 'BLOQUEADA' : 'COMPRAR'}</button>
             </div>
         `;
         const btn = card.querySelector('.btn-buy');
-        if (lvl < u.max && meta.beli >= cost) {
+        if (!locked && !maxed && meta.beli >= cost) {
             btn.onclick = (e) => { e.stopPropagation(); buyUpgrade(u.id); };
         } else {
-            card.style.opacity = '0.5';
+            if (!locked) card.style.opacity = '0.5';
             btn.disabled = true;
             btn.style.cursor = 'not-allowed';
             btn.style.opacity = '0.5';
@@ -227,7 +237,7 @@ function renderShop() {
         `;
         const btn = card.querySelector('.btn-buy');
         if (meta.beli >= cost) {
-            btn.onclick = (e) => { e.stopPropagation(); meta.beli -= cost; meta.unlocked[ch] = true; saveMeta(); renderShop(); updateMetaUI(); };
+            btn.onclick = (e) => { e.stopPropagation(); meta.beli -= cost; meta.unlocked[ch] = true; saveMeta(); renderShop(); updateMetaUI(); flashShopWallet(); };
         } else {
             card.style.opacity = '0.5';
             btn.disabled = true;
@@ -241,7 +251,7 @@ function renderShop() {
 function buyUpgrade(id) {
     const u = META_UPGRADES.find(x => x.id === id);
     const lvl = meta.upgrades[id] || 0;
-    if (lvl >= u.max) return;
+    if (lvl >= u.max || !metaUpgradeUnlocked(u)) return;
     const cost = metaUpgradeCost(u, lvl);
     if (meta.beli < cost) return;
     meta.beli -= cost;
@@ -250,6 +260,12 @@ function buyUpgrade(id) {
     saveMeta();
     renderShop();
     updateMetaUI();
+    flashShopWallet();
+}
+function flashShopWallet() {
+    const w = document.querySelector('.shop-wallet');
+    if (!w) return;
+    w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash');
 }
 function resetMeta() {
     if (!confirm('¿Resetear todas las mejoras permanentes? (No devuelve Berries)')) return;
@@ -262,26 +278,37 @@ function resetMeta() {
 // VS: los logros premian con Beli y desbloquean personajes sin pagar la tienda.
 // Se comprueban en tiempo real (killEnemy / evolveWeapon) y al terminar la partida.
 const ACHIEVEMENTS = [
-    { id: 'first_blood',  name: 'Primera Sangre',      desc: 'Derrota a tu primer enemigo.',                  check: s => s.kills >= 1,    reward: 100 },
-    { id: 'evolve_one',   name: 'Arma Legendaria',     desc: 'Evoluciona cualquier arma por primera vez.',    check: s => s.evolves >= 1,  reward: 500 },
-    { id: 'hunt_500',     name: 'Cazamarinos',         desc: 'Derrota 500 enemigos en total.',                check: s => s.kills >= 500,  reward: 1000 },
-    { id: 'elites_25',    name: 'Cabezas de Cartel',   desc: 'Derrota 25 élites con nombre propio.',          check: s => s.elites >= 25,  reward: 1000 },
-    { id: 'survive_10',   name: 'Hasta el Fondo del Mar', desc: 'Sobrevive los 8 minutos completos.',        check: s => Math.max(...Object.values(s.maxTime)) >= 480, reward: 1500 },
-    { id: 'gold_20k',     name: 'Sueño del Gold Roger', desc: 'Acumula 20,000 Berries en total.',                check: s => s.beliTotal >= 20000, reward: 2000 },
-    { id: 'win_luffy',    name: 'Hay Que Ser Leyenda', desc: 'Conquista una isla con Luffy, el Hombre-Goma.', check: s => s.winsByChar.luffy >= 1, reward: 2000, unlock: 'zoro' },
-    { id: 'win_zoro',     name: 'El Mejor Espadachín del Mundo', desc: 'Conquista una isla con Zoro.',        check: s => s.winsByChar.zoro >= 1, reward: 2000, unlock: 'sanji' },
-    { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 3000 },
-    { id: 'win_curse4',   name: 'Rey del Mar Peligroso', desc: 'Conquista una isla con el Clima Peligroso 4.', check: s => (s.winsByCurse[4] || 0) >= 1, reward: 5000 },
-    { id: 'endless_30',   name: 'Leyenda del Grand Line', desc: 'Navega el Modo Infinito hasta el minuto 30.', check: s => Math.max(...Object.values(s.maxTime)) >= 1800, reward: 5000 },
-    { id: 'unlock_usopp',   name: 'El Valiente Guerrero del Mar', desc: 'Sobrevive 5 minutos en cualquier isla. Desbloquea el Kabuto de Usopp en el arsenal.', check: s => Math.max(...Object.values(s.maxTime)) >= 300, reward: 1000, unlock: 'usopp', unlockText: 'KABUTO (USOPP: PRÓXIMAMENTE)' },
-    { id: 'unlock_nami',    name: 'La Gata Ladrona',      desc: 'Conquista el Baratie. Desbloquea el Clima-Tact de Nami en el arsenal.', check: s => (meta.wins.baratie || 0) >= 1, reward: 1500, unlock: 'nami', unlockText: 'CLIMA-TACT (NAMI: PRÓXIMAMENTE)' },
-    { id: 'unlock_chopper', name: 'Doctor del Reino de Drum', desc: 'Derrota 1.500 enemigos en total. Desbloquea la Rumble Ball de Chopper en el arsenal.', check: s => s.kills >= 1500, reward: 1500, unlock: 'chopper', unlockText: 'RUMBLE BALL (CHOPPER: PRÓXIMAMENTE)' },
-    { id: 'unlock_robin',   name: 'Miss All Sunday',      desc: 'Conquista Alabasta. Robin llegará próximamente.',     check: s => (meta.wins.alabasta || 0) >= 1, reward: 2000, unlock: 'robin', unlockText: 'ROBIN (PRÓXIMAMENTE)' },
-    { id: 'win_skypiea',    name: 'No Hay Dios en el Cielo', desc: 'Conquista Skypiea. Desbloquea el Dial de Impacto.',  check: s => (meta.wins.skypiea || 0) >= 1, reward: 2000, unlock: 'item_dial', unlockText: 'DIAL DE IMPACTO' },
-    { id: 'win_thriller',   name: 'Recupera tu Sombra',   desc: 'Conquista Thriller Bark. Desbloquea la Bandera Pirata.', check: s => (meta.wins.thrillerbark || 0) >= 1, reward: 2000, unlock: 'item_jolly', unlockText: 'BANDERA PIRATA' },
-    { id: 'mode_haki',      name: 'Haki del Rey',         desc: 'Conquista 2 islas distintas. Desbloquea el Modo Haki.', check: s => Object.values(meta.wins).filter(v => v > 0).length >= 2, reward: 2500, unlock: 'mode_haki', unlockText: 'MODO HAKI' },
-    { id: 'mode_inverso',   name: 'El Mundo al Revés',    desc: 'Conquista una isla con el Clima Peligroso 2 o más. Desbloquea el Modo Inverso.', check: s => [2, 3, 4].some(c => (s.winsByCurse[c] || 0) >= 1), reward: 3000, unlock: 'mode_inverso', unlockText: 'MODO INVERSO' },
-    { id: 'dual_shichibukai', name: 'Doble Ejecución', desc: 'Derrota a los 2 Shichibukai en una misma singladura.', check: s => s.moriaThis && s.kumaThis, reward: 2500 }
+    { id: 'first_blood',  name: 'Primera Sangre',      desc: 'Derrota a tu primer enemigo.',                  check: s => s.kills >= 1,    reward: 40 },
+    { id: 'evolve_one',   name: 'Arma Legendaria',     desc: 'Evoluciona cualquier arma por primera vez.',    check: s => s.evolves >= 1,  reward: 200 },
+    { id: 'hunt_500',     name: 'Cazamarinos',         desc: 'Derrota 500 enemigos en total.',                check: s => s.kills >= 500,  reward: 400 },
+    { id: 'elites_25',    name: 'Cabezas de Cartel',   desc: 'Derrota 25 élites con nombre propio.',          check: s => s.elites >= 25,  reward: 400 },
+    { id: 'survive_10',   name: 'Hasta el Fondo del Mar', desc: 'Sobrevive los 8 minutos completos.',        check: s => Math.max(...Object.values(s.maxTime)) >= 480, reward: 600 },
+    { id: 'gold_20k',     name: 'Sueño del Gold Roger', desc: 'Acumula 20,000 Berries en total.',                check: s => s.beliTotal >= 20000, reward: 800 },
+    { id: 'win_luffy',    name: 'Hay Que Ser Leyenda', desc: 'Conquista una isla con Luffy, el Hombre-Goma.', check: s => s.winsByChar.luffy >= 1, reward: 800, unlock: 'zoro' },
+    { id: 'win_zoro',     name: 'El Mejor Espadachín del Mundo', desc: 'Conquista una isla con Zoro.',        check: s => s.winsByChar.zoro >= 1, reward: 800, unlock: 'sanji' },
+    { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 1200 },
+    { id: 'win_curse4',   name: 'Rey del Mar Peligroso', desc: 'Conquista una isla con el Clima Peligroso 4.', check: s => (s.winsByCurse[4] || 0) >= 1, reward: 2000 },
+    { id: 'endless_30',   name: 'Leyenda del Grand Line', desc: 'Navega el Modo Infinito hasta el minuto 30.', check: s => Math.max(...Object.values(s.maxTime)) >= 1800, reward: 2000 },
+    { id: 'unlock_usopp',   name: 'El Valiente Guerrero del Mar', desc: 'Sobrevive 5 minutos en cualquier isla. Desbloquea el Kabuto de Usopp en el arsenal.', check: s => Math.max(...Object.values(s.maxTime)) >= 300, reward: 400, unlock: 'usopp', unlockText: 'KABUTO (USOPP: PRÓXIMAMENTE)' },
+    { id: 'unlock_nami',    name: 'La Gata Ladrona',      desc: 'Conquista el Baratie. Desbloquea el Clima-Tact de Nami en el arsenal.', check: s => (meta.wins.baratie || 0) >= 1, reward: 600, unlock: 'nami', unlockText: 'CLIMA-TACT (NAMI: PRÓXIMAMENTE)' },
+    { id: 'unlock_chopper', name: 'Doctor del Reino de Drum', desc: 'Derrota 1.500 enemigos en total. Desbloquea la Rumble Ball de Chopper en el arsenal.', check: s => s.kills >= 1500, reward: 600, unlock: 'chopper', unlockText: 'RUMBLE BALL (CHOPPER: PRÓXIMAMENTE)' },
+    { id: 'unlock_robin',   name: 'Miss All Sunday',      desc: 'Conquista Alabasta. Robin llegará próximamente.',     check: s => (meta.wins.alabasta || 0) >= 1, reward: 800, unlock: 'robin', unlockText: 'ROBIN (PRÓXIMAMENTE)' },
+    { id: 'win_skypiea',    name: 'No Hay Dios en el Cielo', desc: 'Conquista Skypiea. Desbloquea el Dial de Impacto.',  check: s => (meta.wins.skypiea || 0) >= 1, reward: 800, unlock: 'item_dial', unlockText: 'DIAL DE IMPACTO' },
+    { id: 'win_thriller',   name: 'Recupera tu Sombra',   desc: 'Conquista Thriller Bark. Desbloquea la Bandera Pirata.', check: s => (meta.wins.thrillerbark || 0) >= 1, reward: 800, unlock: 'item_jolly', unlockText: 'BANDERA PIRATA' },
+    { id: 'mode_haki',      name: 'Haki del Rey',         desc: 'Conquista 2 islas distintas. Desbloquea el Modo Haki.', check: s => Object.values(meta.wins).filter(v => v > 0).length >= 2, reward: 1000, unlock: 'mode_haki', unlockText: 'MODO HAKI' },
+    { id: 'mode_inverso',   name: 'El Mundo al Revés',    desc: 'Conquista una isla con el Clima Peligroso 2 o más. Desbloquea el Modo Inverso.', check: s => [2, 3, 4].some(c => (s.winsByCurse[c] || 0) >= 1), reward: 1200, unlock: 'mode_inverso', unlockText: 'MODO INVERSO' },
+    // VS: las PowerUps de la tienda se desbloquean con logros (META_SHOP_LOCKS en state.js)
+    { id: 'shop_armor',    name: 'Tekkai',             desc: 'Sobrevive 3 minutos en cualquier isla. Desbloquea Armadura en la tienda.', check: s => Math.max(...Object.values(s.maxTime)) >= 180, reward: 100, unlock: 'shop_armor', unlockText: 'TIENDA: ARMADURA' },
+    { id: 'shop_area',     name: 'Gomu Gomu no Gatling', desc: 'Derrota 300 enemigos en total. Desbloquea Área en la tienda.', check: s => s.kills >= 300, reward: 100, unlock: 'shop_area', unlockText: 'TIENDA: ÁREA' },
+    { id: 'shop_cooldown', name: 'Sake de Binks',      desc: 'Alcanza el nivel 20 en una singladura. Desbloquea Cooldown en la tienda.', check: s => (s.maxLevel || 0) >= 20, reward: 150, unlock: 'shop_cooldown', unlockText: 'TIENDA: COOLDOWN' },
+    { id: 'shop_luck',     name: 'Rey de los Francotiradores', desc: 'Derrota 10 élites en total. Desbloquea Crítico en la tienda.', check: s => s.elites >= 10, reward: 150, unlock: 'shop_luck', unlockText: 'TIENDA: CRÍTICO' },
+    { id: 'shop_skip',     name: 'Soru',               desc: 'Evoluciona un arma. Desbloquea Saltos en la tienda.', check: s => s.evolves >= 1, reward: 150, unlock: 'shop_skip', unlockText: 'TIENDA: SALTOS' },
+    { id: 'shop_growth',   name: 'Comer para Crecer',  desc: 'Alcanza el nivel 30 en una singladura. Desbloquea Crecimiento en la tienda.', check: s => (s.maxLevel || 0) >= 30, reward: 200, unlock: 'shop_growth', unlockText: 'TIENDA: CRECIMIENTO' },
+    { id: 'shop_reroll',   name: 'Log Pose',           desc: 'Conquista cualquier isla. Desbloquea Rerolls en la tienda.', check: s => Object.values(meta.wins).some(v => v > 0), reward: 200, unlock: 'shop_reroll', unlockText: 'TIENDA: REROLLS' },
+    { id: 'shop_banish',   name: 'Buster Call',        desc: 'Derrota 3.000 enemigos en total. Desbloquea Destierros en la tienda.', check: s => s.kills >= 3000, reward: 300, unlock: 'shop_banish', unlockText: 'TIENDA: DESTIERROS' },
+    { id: 'shop_curse',    name: 'Nuevo Mundo',        desc: 'Conquista 3 islas distintas. Desbloquea Maldición en la tienda.', check: s => Object.values(meta.wins).filter(v => v > 0).length >= 3, reward: 400, unlock: 'shop_curse', unlockText: 'TIENDA: MALDICIÓN' },
+    { id: 'shop_revival',  name: 'Yomi Yomi no Mi',    desc: 'Conquista Thriller Bark. Desbloquea Revivir en la tienda.', check: s => (meta.wins.thrillerbark || 0) >= 1, reward: 400, unlock: 'shop_revival', unlockText: 'TIENDA: REVIVIR' },
+    { id: 'dual_shichibukai', name: 'Doble Ejecución', desc: 'Derrota a los 2 Shichibukai en una misma singladura.', check: s => s.moriaThis && s.kumaThis, reward: 1000 }
 ];
 function mergeRunStats() {
     // VS: acumula las estadisticas de la run al terminar (evita saveMeta por kill)
@@ -318,6 +345,7 @@ function mergeRunStats() {
     // en Infinito solo cuenta lo ganado desde la victoria (lo anterior ya se sumó)
     st2.beliTotal += scoreBeli - (window._beliStatsBanked || 0);
     window._beliStatsBanked = scoreBeli;
+    st2.maxLevel = Math.max(st2.maxLevel || 0, player.level);
     for (const k in window.runStats.killsByType) st2.killsByType[k] = (st2.killsByType[k] || 0) + window.runStats.killsByType[k];
     // tiempo maximo por mapa
     if (gameTime > (st2.maxTime[selectedMap] || 0)) st2.maxTime[selectedMap] = gameTime;
@@ -372,7 +400,8 @@ function checkAchievements() {
         killsByType: st.killsByType,
         // Doble Ejecucion: SOLO la singlatura actual (no sobrevive al merge)
         moriaThis: !!(rs && rs.moriaThis),
-        kumaThis: !!(rs && rs.kumaThis) };
+        kumaThis: !!(rs && rs.kumaThis),
+        maxLevel: Math.max(st.maxLevel || 0, rs && typeof player !== 'undefined' ? player.level : 0) };
     for (const a of ACHIEVEMENTS) {
         if (meta.achievements[a.id]) continue;
         let ok = false;

@@ -72,7 +72,9 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - El origen vertical de cada imagen está en `MAP_ORIGIN_Y` (`js/render.js`). La cámara no deja ver nada fuera de la imagen. `mapLocked()` (`js/core.js`) permite bloquear un mapa.
 
 ## Progreso permanente
-Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, logros (`ACHIEVEMENTS`) y evoluciones de armas (`EVOLUTIONS`). Algunos logros desbloquean contenido: personajes, los modos Haki e Inverso y objetos del arsenal (`ITEM_LOCK` en js/loot.js: Kabuto, Clima-Tact, Rumble Ball, Dial de Impacto y Bandera Pirata).
+Economía (`ECONOMY` y `beliScale()` en js/core.js, como en VS): el oro sale sobre todo de jefes, cofres y barriles; los enemigos normales sueltan una moneda de 5 al 4% y, con todo al máximo, cada subida de nivel da 25 Berries (50 en cofre). Las islas difíciles pagan más (raíz de `hpMult` relativo al Baratie). `addBeli(valor, fuente)` registra cada ganancia en `window.beliSrc` y el bot la devuelve. Medido con el bot en los 9 mapas (2026-11-01): ~2,7k Berries por partida sin mejoras y ~4,1k con la mitad (2,3-2,9k por victoria en el Baratie, ~9k en Wano). Comprarlo todo (tienda, transformaciones y personajes, ~336k) lleva ~90-100 partidas, unas 11-12 horas.
+
+Tienda con 15 mejoras (`META_UPGRADES`): al principio solo Poder, Salud, Velocidad, Recogida y Avaricia; las otras 10 tienen `lock` y se desbloquean con un logro `shop_*` (Tekkai, Log Pose, Yomi Yomi no Mi...), que la tienda muestra en la carta bloqueada. El monedero está en la cabecera fija de la tienda y solo la lista hace scroll. 10 Voluntades de D, logros (`ACHIEVEMENTS`) y evoluciones de armas (`EVOLUTIONS`). Algunos logros desbloquean contenido: personajes, los modos Haki e Inverso y objetos del arsenal (`ITEM_LOCK` en js/loot.js: Kabuto, Clima-Tact, Rumble Ball, Dial de Impacto y Bandera Pirata).
 - Orden de `possibleUpgrades` (js/game.js): el reparto de cartas usa un sort aleatorio que favorece a los primeros de la lista, y el balance está medido así. Los objetos nuevos van siempre al final. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).
 
 ## Sprites

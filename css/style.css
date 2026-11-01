@@ -1219,4 +1219,50 @@ body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-
     #upgrade-options .upgrade-card::after { display: none; }
     #arcana-options .upgrade-card::after { font-size: 22px; top: 2px; right: 6px; }
     .upgrade-toolbar { margin-top: 8px; }
+
+/* ============================================================
+   TIENDA: cabecera con el monedero siempre visible; solo la lista hace scroll
+   ============================================================ */
+#shop-screen .shop-board {
+    display: flex; flex-direction: column;
+    width: 90%; max-width: 640px;
+    max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding: 14px 18px 12px;
+}
+#shop-screen .shop-head {
+    flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding-bottom: 8px; border-bottom: 2px dashed rgba(79,46,24,0.45);
+}
+#shop-screen .shop-head .wanted-title { margin: 0; font-size: 34px; }
+.shop-wallet {
+    display: flex; align-items: center; gap: 6px;
+    background: #17140f; color: #facc15; border: 2px solid #b45309; border-radius: 999px;
+    padding: 4px 14px 4px 6px; font-family: 'Bangers', sans-serif; font-size: 24px; letter-spacing: 1px;
+    box-shadow: 2px 3px 0 rgba(70,50,20,0.4); white-space: nowrap;
+}
+.shop-wallet .shop-coin {
+    display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fde68a, #f59e0b 60%, #b45309); color: #3d2314; font-size: 18px;
+}
+.shop-wallet.flash { animation: shopWalletFlash 0.45s ease-out; }
+@keyframes shopWalletFlash { 0% { transform: scale(1.18); color: #fff; } 100% { transform: scale(1); } }
+#shop-screen .shop-scroll {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: 8px 4px 4px;
+}
+#shop-screen .shop-back { flex: 0 0 auto; margin-top: 10px; align-self: center; }
+.upgrade-card.shop-locked { opacity: 0.6; filter: grayscale(0.85); }
+.upgrade-card.shop-locked .upgrade-info p b { color: #7a4a1e; }
+@media (max-height: 500px) {
+    #shop-screen .shop-board { padding: 8px 12px 8px !important; }
+    #shop-screen .shop-head .wanted-title { font-size: 24px !important; }
+    .shop-wallet { font-size: 19px; padding: 2px 10px 2px 4px; }
+    .shop-wallet .shop-coin { width: 22px; height: 22px; font-size: 14px; }
+    #shop-screen .shop-back { margin-top: 6px !important; padding: 6px 22px !important; }
+}
+#shop-screen .shop-head .wanted-title { white-space: nowrap; }
+@media (max-width: 520px) {
+    #shop-screen .shop-head .wanted-title { font-size: 26px; letter-spacing: 4px !important; }
+    #shop-screen .shop-head .wanted-title::before, #shop-screen .shop-head .wanted-title::after { content: none; }
+    #shop-screen .shop-board { width: 96%; padding: 10px 10px 10px; }
 }

@@ -499,13 +499,13 @@ function gearUpdateButton() {
 // ---- hitos persistentes ----
 // Se añaden a ACHIEVEMENTS: el campo gear desbloquea ese Gear para siempre.
 const GEAR_ACHIEVEMENTS = [
-    { id: 'gear_3', name: 'Gear Third', desc: 'Conquista una isla con Luffy. Desbloquea el Gear 3.', check: s => (s.winsByChar.luffy || 0) >= 1, reward: 500, gear: 3 },
-    { id: 'gear_4', name: 'Gear Fourth', desc: 'Conquista una isla con Luffy en Clima Peligroso 2 o más. Desbloquea el Gear 4.', check: s => (s.luffyBestCurse || -1) >= 2, reward: 1500, gear: 4 },
-    { id: 'gear_5', name: 'Despertar de Nika', desc: 'Conquista una isla con Luffy en Clima Peligroso 4. Desbloquea el Gear 5.', check: s => (s.luffyBestCurse || -1) >= 4, reward: 3000, gear: 5 },
-    { id: 'zoro_asura', name: 'Kyutoryu Asura', desc: 'Conquista una isla con Zoro. Desbloquea Kyutoryu Asura.', check: s => (s.winsByChar.zoro || 0) >= 1, reward: 500, gear: 3, formChar: 'zoro', gearText: 'KYUTORYU ASURA' },
-    { id: 'zoro_enma', name: 'Rey del Infierno', desc: 'Conquista una isla con Zoro en Clima Peligroso 2 o más. Desbloquea el Rey del Infierno.', check: s => ((s.bestCurseBy || {}).zoro ?? -1) >= 2, reward: 1500, gear: 4, formChar: 'zoro', gearText: 'REY DEL INFIERNO' },
-    { id: 'sanji_stealth', name: 'Stealth Black', desc: 'Conquista una isla con Sanji. Desbloquea el Raid Suit Stealth Black.', check: s => (s.winsByChar.sanji || 0) >= 1, reward: 500, gear: 3, formChar: 'sanji', gearText: 'RAID SUIT STEALTH BLACK' },
-    { id: 'sanji_ifrit', name: 'Ifrit Jambe', desc: 'Conquista una isla con Sanji en Clima Peligroso 2 o más. Desbloquea Ifrit Jambe.', check: s => ((s.bestCurseBy || {}).sanji ?? -1) >= 2, reward: 1500, gear: 4, formChar: 'sanji', gearText: 'IFRIT JAMBE' }
+    { id: 'gear_3', name: 'Gear Third', desc: 'Conquista una isla con Luffy. Desbloquea el Gear 3.', check: s => (s.winsByChar.luffy || 0) >= 1, reward: 200, gear: 3 },
+    { id: 'gear_4', name: 'Gear Fourth', desc: 'Conquista una isla con Luffy en Clima Peligroso 2 o más. Desbloquea el Gear 4.', check: s => (s.luffyBestCurse || -1) >= 2, reward: 600, gear: 4 },
+    { id: 'gear_5', name: 'Despertar de Nika', desc: 'Conquista una isla con Luffy en Clima Peligroso 4. Desbloquea el Gear 5.', check: s => (s.luffyBestCurse || -1) >= 4, reward: 1200, gear: 5 },
+    { id: 'zoro_asura', name: 'Kyutoryu Asura', desc: 'Conquista una isla con Zoro. Desbloquea Kyutoryu Asura.', check: s => (s.winsByChar.zoro || 0) >= 1, reward: 200, gear: 3, formChar: 'zoro', gearText: 'KYUTORYU ASURA' },
+    { id: 'zoro_enma', name: 'Rey del Infierno', desc: 'Conquista una isla con Zoro en Clima Peligroso 2 o más. Desbloquea el Rey del Infierno.', check: s => ((s.bestCurseBy || {}).zoro ?? -1) >= 2, reward: 600, gear: 4, formChar: 'zoro', gearText: 'REY DEL INFIERNO' },
+    { id: 'sanji_stealth', name: 'Stealth Black', desc: 'Conquista una isla con Sanji. Desbloquea el Raid Suit Stealth Black.', check: s => (s.winsByChar.sanji || 0) >= 1, reward: 200, gear: 3, formChar: 'sanji', gearText: 'RAID SUIT STEALTH BLACK' },
+    { id: 'sanji_ifrit', name: 'Ifrit Jambe', desc: 'Conquista una isla con Sanji en Clima Peligroso 2 o más. Desbloquea Ifrit Jambe.', check: s => ((s.bestCurseBy || {}).sanji ?? -1) >= 2, reward: 600, gear: 4, formChar: 'sanji', gearText: 'IFRIT JAMBE' }
 ];
 function gearOnAchievement(a) {
     if (!a.gear) return;
@@ -552,7 +552,7 @@ function renderGearShop(container) {
             btn.onclick = (e) => {
                 e.stopPropagation();
                 meta.beli -= cost; meta.gear.up[u.id] = lvl + 1;
-                playSound('buy'); saveMeta(); renderShop(); updateMetaUI();
+                playSound('buy'); saveMeta(); renderShop(); updateMetaUI(); if (typeof flashShopWallet === 'function') flashShopWallet();
             };
         } else {
             card.style.opacity = '0.5'; btn.disabled = true; btn.style.cursor = 'not-allowed'; btn.style.opacity = '0.5';

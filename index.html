@@ -249,12 +249,17 @@
 
     <!-- Shop Screen -->
     <div id="shop-screen" class="overlay-screen" style="display: none;">
-        <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
-            <div class="wanted-title">TIENDA</div>
-            <div class="wanted-subtitle">MEJORAS PERMANENTES — BERRIES: <span id="shop-beli">0</span>฿</div>
-            <div class="upgrade-list" id="shop-options"></div>
-            <button class="btn-start" style="margin-top:12px; background: linear-gradient(135deg, #f43f5e, #be123c);" onclick="resetMeta()">RESETEAR MEJORAS</button>
-            <button class="btn-start" style="margin-top:12px;" onclick="closeShop()">VOLVER</button>
+        <div class="wanted-board shop-board">
+            <div class="shop-head">
+                <div class="wanted-title">TIENDA</div>
+                <div class="shop-wallet" aria-live="polite"><span class="shop-coin">฿</span><span id="shop-beli">0</span></div>
+            </div>
+            <div class="shop-scroll">
+                <div class="wanted-subtitle">MEJORAS PERMANENTES · <span id="shop-unlocked"></span></div>
+                <div class="upgrade-list" id="shop-options"></div>
+                <button class="btn-start" style="margin-top:12px; background: linear-gradient(135deg, #f43f5e, #be123c);" onclick="resetMeta()">RESETEAR MEJORAS</button>
+            </div>
+            <button class="btn-start shop-back" onclick="closeShop()">VOLVER</button>
         </div>
     </div>
 

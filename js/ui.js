@@ -283,7 +283,7 @@ function resetGame() {
     skills.hakiPulse.level = 0; skills.hakiPulse.baseDamage = 12; skills.hakiPulse.evolved = false;
 
     enemies = []; enemyBullets = []; drops = []; particles = []; damageTexts = []; activeAttacks = [];
-    gameTime = 0; scoreBeli = 0; bossSpawned = false;
+    gameTime = 0; scoreBeli = 0; window.beliSrc = {}; bossSpawned = false;
     window.minibossesSpawned = {}; window.mirrorMinibossSpawned = false; window.waveIdx = 0;
     window.spawnBanner = null;
     applyCrewStart(); // arma inicial y bonus de Nami, Usopp, Chopper y Robin (js/arsenal.js)

@@ -422,6 +422,21 @@ const BALANCE = {
     enemyMeat: 0.03,      // probabilidad de muslo al morir un enemigo normal (VS: 0; con 0 el bot cae a 4/9/28)
     minSpawnDist: 300     // los spawns recolocados dentro de arenas cerradas nunca caen encima del jugador
 };
+// === Economía (Berries) — referencia Vampire Survivors ===
+// En VS el oro sale sobre todo de braseros, cofres y la Moneda de oro al tenerlo todo (25);
+// los enemigos normales casi nunca sueltan monedas. Antes una partida de 13 min daba más de 100k,
+// el 70% de la «Bolsa de Berries» (75 + 25 x nivel por subida con todo al máximo).
+const ECONOMY = {
+    enemyChance: 0.04, enemyCoin: 5,    // moneda suelta de un enemigo normal
+    propCoin: 10,                        // 3 monedas por brasero/barril
+    avalanche: [15, 20],                 // monedas de jefe/Shichibukai: 15 + rand x 20 cada una
+    chestBase: [20, 50, 100],            // cofre bronce / plata / oro: base + rand x base
+    bag: 25,                             // subida de nivel sin nada que mejorar (VS Gold Coin); x2 en cofre
+    endlessBoss: 300                     // cada jefe del Modo Infinito
+};
+// Multiplicador de Berries: Avaricia x Clima Peligroso x dificultad del mapa (raíz de hpMult relativo: Wano x1.5;
+// las islas difíciles ya pagan más porque traen más élites y Shichibukai)
+function beliScale() { return player.greedBonus * (player.runBeliMult || 1) * Math.sqrt(Math.max(1, (mapEnemies().hpMult || 0.72) / 0.72)); }
 function enemyHpScale() { return Math.pow(BALANCE.hpGrowth, gameTime / 60) * player.curse * (mapEnemies().hpMult || 1); }
 // === Enemigos por mapa (contexto de cada arco) ===
 // Estadísticas base de cada tipo: [vida, velocidad, daño]. La vida se multiplica por hpScale.

@@ -418,8 +418,8 @@ const BALANCE = {
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
     shooterCd: 3.0,       // segundos entre disparos de cada fusilero (antes 2.3)
     bulletDmg: 9,         // daño por bala (antes 14)
-    meatHeal: 30,
-    enemyMeat: 0.03,      // probabilidad de muslo al morir un enemigo normal (VS: 0; con 0 el bot cae a 4/9/28)         // muslo de carne = Floor Chicken de VS (+30 HP)
+    meatHeal: 30,         // muslo de carne = Floor Chicken de VS (+30 HP)
+    enemyMeat: 0.03,      // probabilidad de muslo al morir un enemigo normal (VS: 0; con 0 el bot cae a 4/9/28)
     minSpawnDist: 300     // los spawns recolocados dentro de arenas cerradas nunca caen encima del jugador
 };
 function enemyHpScale() { return Math.pow(BALANCE.hpGrowth, gameTime / 60) * player.curse * (mapEnemies().hpMult || 1); }

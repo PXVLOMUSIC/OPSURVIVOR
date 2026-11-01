@@ -38,6 +38,8 @@ window.addEventListener('keydown', e => {
     }
 });
 window.addEventListener('keyup', e => { keys[e.code] = false; });
+// al cambiar de ventana con una tecla pulsada no llega el keyup y el personaje seguía andando solo
+window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
 const joystickZone = document.getElementById('joystick-zone');
 const joystickKnob = document.getElementById('joystick-knob');
@@ -156,8 +158,7 @@ function startGame() {
     applyRunCurse();
     // VS: el jugador elige 1 Arcana al empezar la partida
     showArcanaScreen();
-    lastTime = performance.now();
-    requestAnimationFrame(gameLoop);
+    startLoop();
 }
 
 function showShop() {
@@ -313,7 +314,9 @@ function mergeRunStats() {
     st2.kills += window.runStats.kills;
     st2.elites += window.runStats.elites;
     st2.evolves += window.runStats.evolves;
-    st2.beliTotal += scoreBeli;
+    // en Infinito solo cuenta lo ganado desde la victoria (lo anterior ya se sumó)
+    st2.beliTotal += scoreBeli - (window._beliStatsBanked || 0);
+    window._beliStatsBanked = scoreBeli;
     for (const k in window.runStats.killsByType) st2.killsByType[k] = (st2.killsByType[k] || 0) + window.runStats.killsByType[k];
     // tiempo maximo por mapa
     if (gameTime > (st2.maxTime[selectedMap] || 0)) st2.maxTime[selectedMap] = gameTime;

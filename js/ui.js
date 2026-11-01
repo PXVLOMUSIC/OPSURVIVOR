@@ -67,13 +67,11 @@ function updateMetaUI() {
     });
 }
 function restartGame() {
-    document.getElementById('gameover-screen').style.display = 'none';
-    document.getElementById('victory-screen').style.display = 'none';
+    try { battleMusic.pause(); battleMusic.currentTime = 0; } catch (e) {}
     resetGame();
     applyRunCurse();
     showArcanaScreen(); // VS: 1 Voluntad de D al empezar cada partida
-    lastTime = performance.now();
-    requestAnimationFrame(gameLoop);
+    startLoop();
 }
 
 var soundEnabled = true;
@@ -186,10 +184,9 @@ function showControls() {
     document.getElementById('controls-screen').style.display = 'flex';
 }
 function backToMenu() {
-    document.getElementById('pause-screen').style.display = 'none';
-    document.getElementById('controls-screen').style.display = 'none';
-    document.getElementById('gameover-screen').style.display = 'none';
-    document.getElementById('victory-screen').style.display = 'none';
+    hideRunScreens();
+    clearInput();
+    const cv = document.getElementById('gameCanvas'); if (cv) cv.classList.remove('inverse-world'); // el Modo Inverso no se queda en el menú
     gameState = 'START';
     document.getElementById('start-screen').style.display = 'flex';
     updateMusic();
@@ -198,7 +195,39 @@ function backToMenu() {
 // Copia de los valores iniciales de cada habilidad: las mejoras y evoluciones cambian
 // rango, radio y cooldown, y antes esos cambios se arrastraban a la siguiente partida.
 const SKILL_DEFAULTS = JSON.parse(JSON.stringify(skills));
+// Lo mismo con el jugador: los efectos se guardan como campos sueltos (p. ej. _slowUntil de la
+// ralentización de Jango o Perona, medido con el reloj de la partida). Al volver gameTime a 0, un
+// efecto de la partida anterior seguía activo hasta alcanzar ese minuto. Se borra todo lo añadido.
+const PLAYER_DEFAULTS = JSON.parse(JSON.stringify(player));
+function resetObject(obj, defaults) {
+    for (const k of Object.keys(obj)) if (!(k in defaults)) delete obj[k];
+    Object.assign(obj, JSON.parse(JSON.stringify(defaults)));
+}
+// Pantallas de partida que no deben seguir abiertas al empezar otra o al volver al menú
+function hideRunScreens() {
+    ['pause-screen', 'controls-screen', 'gameover-screen', 'victory-screen', 'upgrade-screen', 'arcana-screen', 'chest-screen'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = 'none';
+    });
+    if (window._chestAnim) { clearInterval(window._chestAnim); window._chestAnim = null; }
+}
+// Entradas: una tecla o un dedo que seguían pulsados al morir no deben mover al siguiente personaje
+function clearInput() {
+    for (const k in keys) keys[k] = false;
+    joystick.active = false; joystick.dx = 0; joystick.dy = 0; joystick.touchId = null;
+    if (joystickZone) joystickZone.style.display = 'none';
+    if (joystickKnob) joystickKnob.style.transform = 'translate(0px, 0px)';
+}
 function resetGame() {
+    resetObject(player, PLAYER_DEFAULTS);
+    for (const k in SKILL_DEFAULTS) resetObject(skills[k], SKILL_DEFAULTS[k]);
+    hideRunScreens();
+    clearInput();
+    cameraShake = 0;
+    groundDecals = [];
+    if (typeof enemyGrid !== 'undefined' && enemyGrid.clear) enemyGrid.clear();
+    upgradeIsChest = false; _banishing = false;
+    window._hollowTxt = 0; window._gearFlash = 0; window._propTimer = 0; window._applyOnly = false;
+    window._beliBanked = 0; window._beliStatsBanked = 0;
     player.x = 0; player.y = 0;
     player.hp = 100; player.maxHp = 100;
     player.walkFrame = 0; player.isMoving = false;
@@ -227,7 +256,6 @@ function resetGame() {
         if (lvl > 0) u.apply(player, lvl);
     });
 
-    for (const k in SKILL_DEFAULTS) Object.assign(skills[k], JSON.parse(JSON.stringify(SKILL_DEFAULTS[k])));
     skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 25; skills.pistol.evolved = false;
     skills.gatling.level = 0; skills.gatling.baseDamage = 10; skills.gatling.evolved = false;
     skills.bazooka.level = 0; skills.bazooka.baseDamage = 45; skills.bazooka.evolved = false;

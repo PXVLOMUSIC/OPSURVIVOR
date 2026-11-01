@@ -1,4 +1,13 @@
 let _renderedState = null;
+// Un solo bucle: si se volvía al menú y se empezaba otra partida antes del siguiente frame, quedaban
+// dos bucles vivos (doble render y doble coste por frame).
+let _loopActive = false;
+function startLoop() {
+    lastTime = performance.now();
+    if (_loopActive) return;
+    _loopActive = true;
+    requestAnimationFrame(gameLoop);
+}
 function gameLoop(now) {
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
@@ -16,7 +25,7 @@ function gameLoop(now) {
 
     if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA' || gameState === 'CHEST') {
         requestAnimationFrame(gameLoop);
-    }
+    } else _loopActive = false;
 }
 
 function calculateDamage(baseAtk) {
@@ -1812,7 +1821,16 @@ function selectUpgrade(id) {
     // no re-armamos rAF: el bucle sigue activo (evita doble gameLoop)
 }
 
+// Berries de la partida que aún no han entrado en la bolsa. Al seguir en Modo Infinito tras la
+// victoria, lo ya cobrado no se vuelve a sumar al morir (antes se cobraba dos veces).
+function bankRunBeli() {
+    const owed = scoreBeli - (window._beliBanked || 0);
+    window._beliBanked = scoreBeli;
+    return owed;
+}
 function triggerGameOver() {
+    // varios golpes mortales en el mismo frame (explosiones, balas) llamaban aquí dos veces y cobraban doble
+    if (gameState === 'GAMEOVER' || gameState === 'VICTORY') return;
     if (player.revives > 0) {
         player.revives--;
         player.hp = player.maxHp * 0.3; // Revivir: 30% (antes 50%)
@@ -1824,11 +1842,11 @@ function triggerGameOver() {
     gameState = 'GAMEOVER';
     const endKills = window.runStats ? window.runStats.kills : 0;
     mergeRunStats();
-    const newRecord = recordRun(false);
+    const newRecord = recordRun(!!window.endlessMode); // en Infinito la isla ya está conquistada
     playSound('death');
     playSound('gameover');
     checkAchievements();
-    meta.beli += scoreBeli;
+    meta.beli += bankRunBeli();
     saveMeta();
     updateMetaUI();
     const st = meta.stats;
@@ -1840,8 +1858,9 @@ function triggerGameOver() {
 }
 
 function triggerVictory() {
+    if (gameState === 'GAMEOVER' || gameState === 'VICTORY') return;
     gameState = 'VICTORY';
-    meta.beli += scoreBeli; // VS: la botin de la singladura entra en la bolsa al terminar
+    meta.beli += bankRunBeli(); // VS: la botin de la singladura entra en la bolsa al terminar
     playSound('victory');
     const prevBest = meta.stats.maxTime[selectedMap] || 0;
     mergeRunStats();
@@ -1875,9 +1894,8 @@ function startEndless() {
     initRunStats(); // nueva singlatura estadistica para la fase infinita (ya se mergeo la anterior)
     document.getElementById('victory-screen').style.display = 'none';
     gameState = 'PLAYING';
-    lastTime = performance.now();
     showAchToast('MODO INFINITO — bosses cada 5 minutos, cada uno un 60% más fuerte');
-    requestAnimationFrame(gameLoop); // el bucle se detuvo al pasar a VICTORY
+    startLoop(); // el bucle se detuvo al pasar a VICTORY
 }
 
 // formato con separador de miles (el simbolo ฿ va en el markup)

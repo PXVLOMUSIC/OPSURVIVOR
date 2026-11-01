@@ -65,13 +65,23 @@ const ARSENAL_TYPES = new Set(['kabuto', 'thunder', 'impact', 'clutch']);
 const CREW_START = {
     nami:    { weapon: 'climatact', text: '+20% Berries y +10% velocidad', apply: p => { p.greedBonus += 0.2; p.speed *= 1.1; } },
     usopp:   { weapon: 'kabuto',    text: '+10% crítico y +20% suerte', apply: p => { p.critChance += 0.10; p.luckBonus += 0.2; } },
-    chopper: { weapon: 'roseo',     text: '+20 vida máxima y +1 PV/s (médico)', apply: p => { p.maxHp += 20; p.hp = p.maxHp; p.regenRate += 1; } },
+    chopper: { weapon: 'roseo',     text: '+20 vida máxima y +0,5 PV/s (médico)', apply: p => { p.maxHp += 20; p.hp = p.maxHp; p.regenRate += 0.5; } },
     robin:   { weapon: 'clutch',    text: '+10% área', apply: p => { p.areaBonus *= 1.1; } }
+};
+// Arma insignia: en manos de su dueño pega más y recarga antes. Sin Gears ni transformaciones,
+// es lo que mantiene a la tripulación a la altura de Luffy, Zoro y Sanji (medido con tools/balance-sim.js).
+const CREW_SIGNATURE = {
+    nami:    { dmg: 1.9, cd: 0.75, extra: sk => { sk.strikes += 2; sk.nearFirst = true; } },
+    usopp:   { dmg: 2.6, cd: 0.65 },
+    chopper: { dmg: 0.65, cd: 1.1 },
+    robin:   { dmg: 2.1, cd: 0.8 }
 };
 function applyCrewStart() {
     const c = CREW_START[selectedCharacter];
     if (!c) return;
     skills[c.weapon].level = 1;
+    const sig = CREW_SIGNATURE[selectedCharacter];
+    if (sig) { skills[c.weapon].baseDamage *= sig.dmg; skills[c.weapon].cooldown *= sig.cd; if (sig.extra) sig.extra(skills[c.weapon]); }
     c.apply(player);
 }
 
@@ -107,7 +117,9 @@ function handleArsenal(dt, cdMult) {
         ct.timer += dt;
         if (ct.timer >= ct.cooldown * cdMult) {
             ct.timer = 0;
-            const near = enemies.filter(e => Math.abs(e.x - player.x) < VIEW_W / 2 && Math.abs(e.y - player.y) < VIEW_H / 2);
+            const near = enemies.filter(e => !e.isProp && Math.abs(e.x - player.x) < VIEW_W / 2 && Math.abs(e.y - player.y) < VIEW_H / 2);
+            // Nami controla el clima: sus rayos caen primero sobre quien se le acerca
+            if (ct.nearFirst) { near.sort((a, b) => Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y)); near.length = Math.min(near.length, ct.strikes * 2); }
             for (let k = 0; k < ct.strikes && near.length; k++) {
                 const e = near.splice(Math.floor(Math.random() * near.length), 1)[0];
                 activeAttacks.push({ type: 'thunder', x: e.x, y: e.y, radius: (ct.evolved ? 46 : 30) * player.areaBonus,
@@ -135,7 +147,7 @@ function handleArsenal(dt, cdMult) {
     if (cl.level > 0) {
         cl.timer += dt;
         if (cl.timer >= cl.cooldown * cdMult) {
-            const near = enemies.filter(e => Math.hypot(e.x - player.x, e.y - player.y) < 330 * player.areaBonus)
+            const near = enemies.filter(e => !e.isProp && Math.hypot(e.x - player.x, e.y - player.y) < 330 * player.areaBonus)
                 .sort((a, b) => Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y)).slice(0, cl.targets);
             if (near.length) {
                 cl.timer = 0; player.attackTimer = 0.3;

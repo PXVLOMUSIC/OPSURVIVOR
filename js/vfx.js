@@ -9,7 +9,8 @@
 const VFX_MAP = {
     baratie:  { dust: ['#9a6b40', '#b98a5a', '#d6b58e'], debris: ['#6b4423', '#8b5a2b', '#a0703f'], debrisShape: 'chip' },
     alabasta: { dust: ['#e6c487', '#d8ad68', '#f2dcaa'], debris: ['#c99a55', '#e0b874', '#b8863e'], debrisShape: 'grain' },
-    skypiea:  { dust: ['#ffffff', '#eef6ff', '#dbeafe'], debris: ['#ffffff', '#e0f2fe', '#f8fafc'], debrisShape: 'puff' }
+    skypiea:  { dust: ['#ffffff', '#eef6ff', '#dbeafe'], debris: ['#ffffff', '#e0f2fe', '#f8fafc'], debrisShape: 'puff' },
+    enieslobby: { dust: ['#d9c48f', '#c8b27a', '#ece0b8'], debris: ['#b89f68', '#d9c48f', '#9c8456'], debrisShape: 'chip' }
 };
 // Colores de personaje (anime): piel de Luffy, haki, pantalón negro de Sanji
 const SKIN = '#f3c196', SKIN_DARK = '#a8693f', SKIN_G2 = '#f6a5a0';

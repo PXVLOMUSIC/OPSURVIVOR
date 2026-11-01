@@ -28,6 +28,7 @@ const SPRITE_PATHS = {
     alabastaMap: 'assets/maps/alabasta.png',
     skypieaMap: 'assets/maps/skypiea.png',
     thrillerbarkMap: 'assets/maps/thrillerbark.png',
+    enieslobbyMap: 'assets/maps/enieslobby.png',
     saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
     saber_poundho: 'assets/extracted/objetos_gba/sprite_025.png',
     bomb: 'assets/extracted/objetos_gba/sprite_034.png',
@@ -55,6 +56,10 @@ const ENEMY_ANIMS = {
     boss_krieg: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
     boss_crocodile: { folder: 'crocodile', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10, 11], faces: 1 },
     boss_enel: { folder: 'enel', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    // Enies Lobby: CP9 (DS Gigant Battle)
+    boss_lucci: { folder: 'lucci', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
+    kaku: { folder: 'kaku', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    spandam: { folder: 'spandam', idle: [0, 1, 2], attack: [3, 4, 5], faces: 1 },
     // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
     krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
@@ -215,20 +220,22 @@ const ELITE_INFO = {
     tashigi:        { always: true, name: { all: 'Sargento Mayor Tashigi' } },
     krieg_knife:    { name: { all: 'Malabarista Veterano de Krieg' } },
     marine_sword:   { name: { baratie: 'Cabo de Fullbody', alabasta: 'Cabo de Smoker', all: 'Cabo de la Marina' } },
-    sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } }
+    sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } },
+    spandam:        { always: true, name: { all: 'Spandam y Funkfreed' } }
 };
 function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[selectedMap] || i.name.all || i.name.baratie) : null; }
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
-    pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno' };
-const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai' };
+    pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno',
+    kaku: 'Kaku — CP9, Ushi Ushi no Mi: Jirafa', spandam: 'Spandam — Jefe del CP9' };
+const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000 };
+const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
     contactMult: 1.0,     // daño por contacto = daño del enemigo x esto (por segundo); antes 0.8
-    hpGrowth: 1.36,       // multiplicador de vida enemiga por minuto (continuo); antes 1.22
+    hpGrowth: 1.29,       // multiplicador de vida enemiga por minuto (continuo); 1.36 antes del PR #8
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
@@ -250,7 +257,8 @@ const ENEMY_STATS = {
     shandia: [32, 78, 16], shandia_gunner: [48, 62, 22], satori: [130, 48, 24], shura: [120, 58, 26], gedatsu: [140, 46, 28],
     // Bestiario ampliado: cada tipo tiene un papel (enjambre, embestida, bruto, kamikaze, fantasma)
     krieg_starved: [16, 96, 10], krieg_knife: [40, 70, 18], marine_sword: [44, 70, 18], jango: [140, 56, 22], fullbody: [170, 50, 30],
-    tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3]
+    tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3],
+    kaku: [150, 60, 28], spandam: [110, 54, 22]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
 //  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
@@ -312,7 +320,7 @@ const MAP_ENEMIES = {
         events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'sky_shark', swarm: 'tama', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
-        hpMult: 1.15, // dificultad del mapa (vida enemiga)
+        hpMult: 1.08, // dificultad del mapa (vida enemiga)
         base: 'inupen',
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
@@ -322,6 +330,18 @@ const MAP_ENEMIES = {
         minibosses: [ { type: 'absalom', min: 4, hp: 650, speed: 45, damage: 30 }, { type: 'kuma', min: 6, hp: 800, speed: 45, damage: 35 } ],
         boss: 'boss_moria',
         events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
+    },
+    enieslobby: {
+        hpMult: 1.05, // dificultad del mapa (vida enemiga)
+        // Los marines y la guardia de Enies Lobby; Spandam con Funkfreed y Kaku del CP9; Rob Lucci de jefe
+        base: 'grunt',
+        pool: [
+            { type: 'spandam', min: 3, p: 0.02 }, { type: 'tashigi', min: 4, p: 0.04 }, { type: 'fullbody', min: 2, p: 0.06 },
+            { type: 'shooter', min: 1, p: 0.30 }, { type: 'marine_sword', min: 0, p: 0.52 }
+        ],
+        minibosses: [ { type: 'kaku', min: 3, hp: 750, speed: 52, damage: 32 }, { type: 'spandam', min: 6, hp: 650, speed: 50, damage: 26 } ],
+        boss: 'boss_lucci',
+        events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡LA GUARDIA DE ENIES LOBBY TE RODEA!', chargeText: '¡CARGAN LOS 10.000 MARINES!' }
     }
 };
 // Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
@@ -408,7 +428,7 @@ function selectMap(id) {
     if (mapLocked(id)) { playSound('muted'); return; }
     playSound('ui');
     selectedMap = id;
-    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark' };
+    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }

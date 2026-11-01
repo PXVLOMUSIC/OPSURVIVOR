@@ -1,6 +1,6 @@
 // --- RENDER ENGINE (Sea of Stars Aesthetic Pipeline) ---
 // Píxel vertical de la imagen de cada mapa que cae en y=0 del mundo (x=0 es el centro de la imagen)
-const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446 };
+const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446, enieslobby: 446 };
 function cameraCenter() {
     const img = IMG[selectedMap + 'Map'];
     if (!assetsLoaded || !img || !img.complete || !img.width) return [player.x, player.y];
@@ -32,7 +32,7 @@ function render() {
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(mapImg, -mapImg.width * MAP_SCALE / 2, -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, mapImg.width * MAP_SCALE, mapImg.height * MAP_SCALE);
     } else {
-        const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47' };
+        const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47', enieslobby: '#d9c48f' };
         ctx.fillStyle = fallback[selectedMap] || '#0284c7';
         ctx.fillRect(MAP_BOUNDS.minX - 1200, MAP_BOUNDS.minY - 1200, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 2400, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 2400);
     }

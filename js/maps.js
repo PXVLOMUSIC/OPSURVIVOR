@@ -87,11 +87,68 @@ const PALACE_ARENA_POLY = [
   [-1125.7,-195.5],
   [-1155.0,-78.2],
 ];
+// Enies Lobby: contorno de la línea roja que dibujó Pablo sobre su mapa (mismo origen que la plaza de palacio).
+const ENIES_LOBBY_POLY = [
+  [-367.4,-356.8],
+  [-349.1,-353.1],
+  [-349.1,-342.1],
+  [-330.8,-323.8],
+  [-110.9,-316.5],
+  [83.3,-316.5],
+  [152.9,-327.5],
+  [292.1,-323.8],
+  [321.4,-327.5],
+  [347.1,-349.5],
+  [380.1,-349.5],
+  [416.7,-334.8],
+  [446.0,-246.8],
+  [482.7,-206.5],
+  [581.6,-191.8],
+  [647.5,-191.8],
+  [647.5,-158.8],
+  [662.2,-144.2],
+  [761.1,-147.8],
+  [790.4,-140.5],
+  [827.1,-114.8],
+  [871.0,-37.9],
+  [944.3,149.1],
+  [973.6,251.8],
+  [973.6,284.7],
+  [1017.6,372.7],
+  [1024.9,409.4],
+  [618.2,413.1],
+  [577.9,405.7],
+  [347.1,405.7],
+  [-23.0,398.4],
+  [-114.6,409.4],
+  [-305.1,413.1],
+  [-327.1,420.4],
+  [-843.7,420.4],
+  [-862.1,413.1],
+  [-1045.3,420.4],
+  [-1048.9,413.1],
+  [-1008.6,325.1],
+  [-1001.3,270.1],
+  [-983.0,222.4],
+  [-935.3,130.8],
+  [-876.7,-26.9],
+  [-825.4,-133.2],
+  [-814.4,-136.8],
+  [-799.8,-118.5],
+  [-689.8,-118.5],
+  [-656.9,-147.8],
+  [-627.6,-199.2],
+  [-473.7,-217.5],
+  [-437.0,-265.1],
+  [-429.7,-327.5],
+  [-418.7,-349.5]
+];
 const WALK_POLYS = {
   baratie: WALK_POLY,
   alabasta: PALACE_ARENA_POLY,
   skypiea: PALACE_ARENA_POLY,
-  thrillerbark: PALACE_ARENA_POLY
+  thrillerbark: PALACE_ARENA_POLY,
+  enieslobby: ENIES_LOBBY_POLY
 };
 function walkPoly() {
   return WALK_POLYS[selectedMap] || WALK_POLY;
@@ -123,7 +180,8 @@ const MAP_OBSTACLES = {
   baratie: [],
   alabasta: [],
   skypiea: [],
-  thrillerbark: []
+  thrillerbark: [],
+  enieslobby: []
 };
 function mapObstacles() { return MAP_OBSTACLES[selectedMap] || []; }
 // Distancia al cuadrado de (x,y) al segmento del obstáculo, y punto más cercano

@@ -25,7 +25,8 @@ const WAVE_TEXT = {
     baratie:      { swarm: '¡BANCO DE PIRATAS HAMBRIENTOS!', horde: '¡ABORDAJE DE LA FLOTA DE KRIEG!' },
     alabasta:     { swarm: '¡ESTAMPIDA DE DUGONGOS KUNG-FU!', horde: '¡LOS REBELDES Y BAROQUE WORKS CHOCAN!' },
     skypiea:      { swarm: '¡LLUVIA DE TAMA DE SATORI!', horde: '¡EL EJÉRCITO SHANDIA ATACA!' },
-    thrillerbark: { swarm: '¡NEGATIVE HOLLOWS!', horde: '¡NOCHE DE LOS ZOMBIS!' }
+    thrillerbark: { swarm: '¡NEGATIVE HOLLOWS!', horde: '¡NOCHE DE LOS ZOMBIS!' },
+    enieslobby:   { swarm: '¡LA MARINA CRUZA EL PUENTE!', horde: '¡BUSTER CALL!' }
 };
 
 function waveSpot(x, y) { return selectedMap !== 'baratie' ? clampToArena(x, y) : [x, y]; }

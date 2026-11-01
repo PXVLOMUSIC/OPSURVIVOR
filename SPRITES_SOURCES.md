@@ -29,3 +29,4 @@ Misma fuente y licencia: spritedatabase.net, uso exclusivamente no comercial. El
 - Alabasta: Tashigi (WonderSwan Treasure Wars 2, 4344).
 - Tama de Satori, tiburón del cielo, Negative Hollow, barriles, vasijas y faroles: dibujados por código en `js/core.js` y `js/loot.js`, sin sprite externo.
 - Nami, Usopp, Chopper y Robin: WonderSwan Grand Battle Swan Colosseum (4306, 4307, 4309, 4310), espejados para mirar a la izquierda como el resto de personajes. Sus carteles de Se Busca (`assets/wanted/`) están generados con el sprite y la recompensa del manga; el de Usopp es el de Sogeking.
+- Enies Lobby: Rob Lucci, Kaku y Spandam (DS Gigant Battle, 12061 rip de Nightmare, 12058 rip de Bonzai, 12236 rip de Maverick-PK). Mapa: arte de Pablo (`source-art/maps/hd/enieslobby.png`), colisión sacada de su línea roja.

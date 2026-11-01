@@ -636,7 +636,7 @@ function drawAttackFX(atk) {
                     vfxLine(atk.x, footY - 90, atk.x, footY - 30);
                     if (img && img.complete) {
                         ctx.save(); ctx.globalAlpha = legAlpha * 0.9;
-                        const ph = 44, pw = ph * (img.width / img.height);
+                        const ph = 44 * SPRITE_ZOOM, pw = ph * (img.width / img.height);
                         ctx.drawImage(img, atk.x - pw / 2, footY - 30 - ph / 2, pw, ph);
                         ctx.restore();
                     }
@@ -941,7 +941,7 @@ function drawParticles() {
                     ctx.globalAlpha = a * 0.45;
                     ctx.save(); ctx.translate(p.x, p.y);
                     if (p.facing === 1) ctx.scale(-1, 1);
-                    const ph = p.size || 48, pw = ph * (p.img.width / p.img.height);
+                    const ph = (p.size || 48) * SPRITE_ZOOM, pw = ph * (p.img.width / p.img.height);
                     ctx.drawImage(p.img, -pw / 2, -ph / 2, pw, ph);
                     ctx.restore();
                 }

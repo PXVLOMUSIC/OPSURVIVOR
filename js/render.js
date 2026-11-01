@@ -3,6 +3,9 @@
 // Tamaño lógico de los mapas (px de la imagen original 1408x768). Las imágenes reales van a x2 (2816x1536)
 // para que 1 píxel de imagen = 1 píxel de pantalla; el código trabaja siempre con el tamaño lógico.
 const MAP_PX_W = 1408, MAP_PX_H = 768;
+// Tamaño de dibujado de personajes y enemigos (petición de Pablo, 2026-11-01: se veían pequeños).
+// Solo afecta al dibujo: hitboxes, alcances y velocidades no cambian.
+const SPRITE_ZOOM = 1.3;
 const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446, enieslobby: 446, marineford: 446, water7: 446 };
 function cameraCenter() {
     const img = IMG[selectedMap + 'Map'];
@@ -127,6 +130,8 @@ function render() {
     for (let e of enemies) {
         ctx.save();
         ctx.translate(e.x, e.y);
+        ctx.save();
+        ctx.scale(SPRITE_ZOOM, SPRITE_ZOOM);
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.beginPath(); ctx.ellipse(0, 14, (e.isBoss || e.isMiniboss) ? 24 : 14, 6, 0, 0, Math.PI * 2); ctx.fill();
@@ -171,18 +176,19 @@ function render() {
         else if (e.type === 'boss_krieg') ctx.drawImage(Sprites.krieg, -32, -32);
         else { ctx.fillStyle = '#999'; ctx.fillRect(-16, -16, 32, 32); }
         ctx.filter = 'none';
+        ctx.restore(); // fin de SPRITE_ZOOM: barra de vida y nombre a tamaño normal
 
         if (e.hp < e.maxHp) {
             const barW = (e.isBoss || e.isMiniboss) ? 56 : 26;
-            ctx.fillStyle = '#020617'; ctx.fillRect(-barW/2, -28, barW, 5);
+            ctx.fillStyle = '#020617'; ctx.fillRect(-barW/2, -28 * SPRITE_ZOOM, barW, 5);
             ctx.fillStyle = e.isBoss ? '#facc15' : (e.isElite ? '#fbbf24' : '#f43f5e');
-            ctx.fillRect(-barW/2, -28, (e.hp / e.maxHp) * barW, 5);
+            ctx.fillRect(-barW/2, -28 * SPRITE_ZOOM, (e.hp / e.maxHp) * barW, 5);
         }
         // Indicador visual de congelado (Campana de Skypiea)
         if (window.freezeTimer > 0) {
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = 'rgba(103, 232, 249, 0.5)';
-            ctx.beginPath(); ctx.arc(0, 0, (e.isBoss || e.isMiniboss) ? 26 : 18, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(0, 0, ((e.isBoss || e.isMiniboss) ? 26 : 18) * SPRITE_ZOOM, 0, Math.PI * 2); ctx.fill();
             ctx.globalAlpha = 1;
         }
         // Etiqueta de lore (élites con nombre, Shichibukai y bosses)
@@ -194,9 +200,9 @@ function render() {
                 ctx.textAlign = 'center';
                 ctx.lineWidth = 4;
                 ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-                ctx.strokeText(loreName, 0, -44);
+                ctx.strokeText(loreName, 0, -44 * SPRITE_ZOOM);
                 ctx.fillStyle = e.isBoss ? '#facc15' : (e.isMiniboss ? '#ffa500' : '#fbbf24');
-                ctx.fillText(loreName, 0, -44);
+                ctx.fillText(loreName, 0, -44 * SPRITE_ZOOM);
                 ctx.textAlign = 'left';
             }
         }
@@ -251,6 +257,7 @@ function render() {
     drawPlayerAuraBack();
     ctx.save();
     ctx.translate(player.x, player.y);
+    ctx.scale(SPRITE_ZOOM, SPRITE_ZOOM);
     gearDrawAura(ctx);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill();

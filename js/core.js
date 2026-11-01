@@ -412,12 +412,14 @@ const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
     contactMult: 1.0,     // daño por contacto = daño del enemigo x esto (por segundo); antes 0.8
-    hpGrowth: 1.32,        // multiplicador de vida enemiga por minuto (continuo); 1.36 antes del PR #8
+    hpGrowth: 1.27,        // multiplicador de vida enemiga por minuto (continuo); 1.32 antes de las tasas de botín de VS
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
     shooterCd: 3.0,       // segundos entre disparos de cada fusilero (antes 2.3)
     bulletDmg: 9,         // daño por bala (antes 14)
+    meatHeal: 30,
+    enemyMeat: 0.03,      // probabilidad de muslo al morir un enemigo normal (VS: 0; con 0 el bot cae a 4/9/28)         // muslo de carne = Floor Chicken de VS (+30 HP)
     minSpawnDist: 300     // los spawns recolocados dentro de arenas cerradas nunca caen encima del jugador
 };
 function enemyHpScale() { return Math.pow(BALANCE.hpGrowth, gameTime / 60) * player.curse * (mapEnemies().hpMult || 1); }

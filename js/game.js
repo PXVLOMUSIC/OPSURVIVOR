@@ -480,7 +480,7 @@ function update(dt) {
             } else if (d.type === 'beli') {
                 scoreBeli += d.value; playSound('coin');
             } else if (d.type === 'meat') {
-                player.hp = Math.min(player.maxHp, player.hp + 40); playSound('meat');
+                player.hp = Math.min(player.maxHp, player.hp + BALANCE.meatHeal); playSound('meat');
             } else if (d.type === 'denden') {
                 // Den Den Mushi dorado (VS Rosary): limpia la pantalla de enemigos — sin drops
                 window.spawnBanner = { text: '¡DEN DEN MUSHI DORADO! Pantalla limpia', life: 2.0, color: '#ffd700' };
@@ -1227,12 +1227,9 @@ function killEnemy(e) {
             canEvolve: chestTier >= 1, ground: true, opened: false, openTimer: 0, value: 1 });
     }
     if (Math.random() < 0.20) drops.push({ x: e.x + (Math.random()*12-6), y: e.y, type: 'beli', value: Math.round(8 * player.greedBonus * (player.runBeliMult || 1)) });
-    // Pickups estilo VS con lore One Piece (drop raro escalado por Suerte):
-    // Den Den Mushi dorado (Rosary) / Campana de Skypiea (Orologion) / Iman Magico (Vacuum)
-    const pk = Math.random();
-    if (pk < 0.001 * player.luckBonus) drops.push({ x: e.x, y: e.y, type: 'denden' });
-    else if (pk < 0.005 * player.luckBonus) drops.push({ x: e.x, y: e.y, type: 'bell' });
-    else if (pk < 0.010 * player.luckBonus) drops.push({ x: e.x, y: e.y, type: 'vacuum' });
+    // VS: los enemigos normales solo sueltan gemas; curas y consumibles salen de barriles y faroles (js/loot.js).
+    // BALANCE.enemyMeat: pequeña concesión (no está en VS) porque aquí la vista es más corta y hay menos barriles.
+    if (BALANCE.enemyMeat && Math.random() < BALANCE.enemyMeat) drops.push({ x: e.x, y: e.y, type: 'meat' });
     // VS: cada miniboss derrotado otorga una Voluntad de D a mitad de partida
     if (e.isMiniboss) player._arcanaPending = (player._arcanaPending || 0) + 1;
     // VS: nube de muerte — destello + chispas del color del enemigo
@@ -1262,8 +1259,6 @@ function killEnemy(e) {
         playSound('beli_rush');
         fxStars(e.x, e.y, (windowOpts && windowOpts.fewerFlashes) ? 6 : 18);
     }
-    // la mayor parte de la carne sale ahora de barriles y faroles (js/loot.js)
-    if (Math.random() < 0.04) drops.push({ x: e.x, y: e.y, type: 'meat' });
     // Boss derrotado = victoria (estilo Vampire Survivors) — salvo Modo Infinito
     if (e.isBoss) {
         if (window.endlessMode) {

@@ -16,7 +16,22 @@ function itemLocked(id) {
 // --- Objetos del suelo (los braseros de VS): barriles y faroles que se rompen a golpes ---
 const PROP_TYPES = ['barrel', 'jar', 'lantern'];
 const PROP_BY_MAP = { baratie: 'barrel', alabasta: 'jar', skypiea: 'barrel', thrillerbark: 'lantern', enieslobby: 'barrel', marineford: 'barrel', water7: 'barrel', wholecake: 'jar', wano: 'lantern' };
-const PROP_MAX = 4, PROP_EVERY = 6;
+// VS (wiki, Light source): cada segundo hay un intento de aparición con un 10% de base que la Suerte
+// sube hasta un tope del 50% (Mad Forest); tope de destructibles por mapa (10 en Mad Forest; aquí 6 por la vista más corta).
+const PROP_MAX = 6, PROP_CHANCE = 0.10, PROP_CHANCE_MAX = 0.5;
+// Tabla de botín de VS (pesos de la wiki; nivel mínimo del jugador en la partida).
+// Monedas: Gold Coin 50 / Coin Bag 10 / Rich Coin Bag 1 (nv 5). Floor Chicken 12 = muslo de carne.
+// Orologion 2 (nv 4) = Campana de Shandora, Vacuum 2 (nv 12) = Imán, Rosary 1 (nv 8) = Den Den Mushi dorado.
+// La Suerte multiplica solo los objetos raros (no las monedas). Nduja y tréboles no tienen equivalente: no entran.
+const PROP_LOOT = [
+    { drop: 'beli', w: 50, n: 1, v: 10 },
+    { drop: 'beli', w: 10, n: 3, v: 10 },
+    { drop: 'beli', w: 1, n: 5, v: 20, lvl: 5, rare: true },
+    { drop: 'meat', w: 12, rare: true },
+    { drop: 'bell', w: 2, lvl: 4, rare: true },
+    { drop: 'vacuum', w: 2, lvl: 12, rare: true },
+    { drop: 'denden', w: 1, lvl: 8, rare: true }
+];
 (function buildProps() {
     const barrel = (g) => {
         px(g, '#5b3410', 3, 3, 18, 22); px(g, '#8b5a2b', 5, 3, 14, 22); px(g, '#a16d38', 8, 3, 5, 22);
@@ -39,14 +54,15 @@ const PROP_MAX = 4, PROP_EVERY = 6;
 
 function updateProps(dt) {
     window._propTimer = (window._propTimer || 0) + dt;
-    if (window._propTimer < PROP_EVERY) return;
-    window._propTimer = 0;
+    if (window._propTimer < 1) return;
+    window._propTimer -= 1;
     // los que se quedan muy lejos desaparecen, como en VS
     for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
         if (e.isProp && Math.hypot(e.x - player.x, e.y - player.y) > 1100) enemies.splice(i, 1);
     }
     if (enemies.filter(e => e.isProp).length >= PROP_MAX) return;
+    if (Math.random() >= Math.min(PROP_CHANCE_MAX, PROP_CHANCE * player.luckBonus)) return;
     const poly = walkPoly();
     for (let k = 0; k < 8; k++) {
         const ang = Math.random() * Math.PI * 2, r = 280 + Math.random() * 320;
@@ -66,16 +82,16 @@ function propBreak(e) {
         const ang = Math.random() * Math.PI * 2, sp = 50 + Math.random() * 80;
         particles.push({ x: e.x, y: e.y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: 0.5, maxLife: 0.5, color: e.type === 'lantern' ? '#a3e635' : '#a16d38', shape: 'spark', size: 2.5, grav: 160 });
     }
-    // VS: el brasero suelta pollo, monedas o una reliquia rara (escala con Suerte)
-    const r = Math.random(), luck = player.luckBonus;
-    if (r < 0.02 * luck) e._drop = 'denden';
-    else if (r < 0.07 * luck) e._drop = 'bell';
-    else if (r < 0.22 * luck) e._drop = 'vacuum';
-    else if (r < 0.62) e._drop = 'meat';
-    else e._drop = 'beli';
-    if (e._drop === 'beli') {
-        for (let k = 0; k < 3; k++) drops.push({ x: e.x + (k - 1) * 10, y: e.y, type: 'beli', value: Math.round(25 * player.greedBonus * (player.runBeliMult || 1)) });
-    } else drops.push({ x: e.x, y: e.y, type: e._drop });
+    // VS: el brasero suelta monedas casi siempre; carne, campana, imán o Den Den con menos peso (escala con Suerte)
+    const luck = player.luckBonus;
+    const table = PROP_LOOT.filter(o => !o.lvl || player.level >= o.lvl);
+    const total = table.reduce((a, o) => a + o.w * (o.rare ? luck : 1), 0);
+    let r = Math.random() * total, pick = table[0];
+    for (const o of table) { r -= o.w * (o.rare ? luck : 1); if (r <= 0) { pick = o; break; } }
+    e._drop = pick.drop;
+    if (pick.drop === 'beli') {
+        for (let k = 0; k < pick.n; k++) drops.push({ x: e.x + (k - (pick.n - 1) / 2) * 10, y: e.y, type: 'beli', value: Math.round(pick.v * player.greedBonus * (player.runBeliMult || 1)) });
+    } else drops.push({ x: e.x, y: e.y, type: pick.drop });
 }
 
 // --- Cofre con ruleta (VS): el cofre se abre solo y la ruleta revela 1, 3 o 5 objetos ---

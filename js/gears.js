@@ -34,7 +34,7 @@ const FORMS = {
         // Raid Suit Stealth Black: invisible → casi no le alcanzan
         3: { name: 'RAID SUIT: STEALTH BLACK', short: 'RS', color: '#475569', dur: 9, sound: 'haoshoku', dmg: 1.6, cd: 0.85, spd: 1.15, taken: 0.45, atk: 'stealth', atkCd: 1.0 },
         // Ifrit Jambe (Onigashima): llamas azules; su cuerpo se resiente al acabar
-        4: { name: 'IFRIT JAMBE', short: 'IJ', color: '#3b82f6', dur: 12, sound: 'boom', dmg: 1.9, cd: 0.7, spd: 1.25, taken: 0.65, atk: 'ifrit', atkCd: 1.2, pen: ['exhausted', 6], penText: 'EL CUERPO ARDE... AGOTADO' }
+        4: { name: 'IFRIT JAMBE', short: 'IJ', color: '#3b82f6', dur: 12, sound: 'boom', dmg: 2.1, cd: 0.7, spd: 1.25, taken: 0.6, atk: 'ifrit', atkCd: 1.2, pen: ['exhausted', 6], penText: 'EL CUERPO ARDE... AGOTADO' }
     }
 };
 const GEAR_INFO = FORMS.luffy; // compatibilidad

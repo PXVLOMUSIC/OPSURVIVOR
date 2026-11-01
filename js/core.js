@@ -215,7 +215,7 @@ const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
     contactMult: 1.0,     // daño por contacto = daño del enemigo x esto (por segundo); antes 0.8
-    hpGrowth: 1.28,       // multiplicador de vida enemiga por minuto (continuo); antes 1.22
+    hpGrowth: 1.36,       // multiplicador de vida enemiga por minuto (continuo); antes 1.22
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega

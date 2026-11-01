@@ -90,16 +90,16 @@ let gameState = 'START';
 // (Might 5, Armor 3, Max Health 3, Cooldown 2, Area 2, MoveSpeed 2, Magnet 2, Luck 5, Growth 5).
 // Antes casi todo llegaba a nivel 10 y con la mitad ya se ganaba el 100% de las partidas.
 const META_UPGRADES = [
-    { id: 'damage', name: 'Poder', desc: '+5% daño por nivel', cost: 2000, max: 5, icon: ICONS.power, apply: (p, lvl) => { p.powerPct += lvl * 5; } },
-    { id: 'hp', name: 'Salud', desc: '+10 HP max por nivel', cost: 1500, max: 3, icon: ICONS.heart, apply: (p, lvl) => { p.maxHp += lvl * 10; p.hp = p.maxHp; } },
+    { id: 'damage', name: 'Poder', desc: '+2% daño por nivel', cost: 2000, max: 5, icon: ICONS.power, apply: (p, lvl) => { p.powerPct += lvl * 2; } },
+    { id: 'hp', name: 'Salud', desc: '+5 HP max por nivel', cost: 1500, max: 3, icon: ICONS.heart, apply: (p, lvl) => { p.maxHp += lvl * 5; p.hp = p.maxHp; } },
     { id: 'speed', name: 'Velocidad', desc: '+5% velocidad por nivel', cost: 1800, max: 2, icon: ICONS.speed, apply: (p, lvl) => { p.speed *= (1 + lvl * 0.05); } },
     { id: 'area', name: 'Área', desc: '+5% área por nivel', cost: 1800, max: 2, icon: ICONS.area, apply: (p, lvl) => { p.areaBonus *= (1 + lvl * 0.05); } },
-    { id: 'cooldown', name: 'Cooldown', desc: '-3% cooldown por nivel', cost: 2000, max: 2, icon: ICONS.cd, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 3); } },
-    { id: 'armor', name: 'Armadura', desc: '+3% armadura por nivel', cost: 2500, max: 3, icon: ICONS.armor, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 3); } },
-    { id: 'luck', name: 'Crítico', desc: '+2% prob. crítica por nivel', cost: 3000, max: 5, icon: ICONS.crit, apply: (p, lvl) => { p.critChance += lvl * 0.02; } },
+    { id: 'cooldown', name: 'Cooldown', desc: '-2% cooldown por nivel', cost: 2000, max: 2, icon: ICONS.cd, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 2); } },
+    { id: 'armor', name: 'Armadura', desc: '+2% armadura por nivel', cost: 2500, max: 3, icon: ICONS.armor, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 2); } },
+    { id: 'luck', name: 'Crítico', desc: '+1% prob. crítica por nivel', cost: 3000, max: 5, icon: ICONS.crit, apply: (p, lvl) => { p.critChance += lvl * 0.01; } },
     { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 1500, max: 2, icon: ICONS.pickup, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
-    { id: 'growth', name: 'Crecimiento', desc: '+3% XP por nivel', cost: 2000, max: 5, icon: ICONS.growth, apply: (p, lvl) => { p.growthBonus += lvl * 0.03; } },
-    { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 50% HP', cost: 15000, max: 1, icon: ICONS.revive, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
+    { id: 'growth', name: 'Crecimiento', desc: '+2% XP por nivel', cost: 2000, max: 5, icon: ICONS.growth, apply: (p, lvl) => { p.growthBonus += lvl * 0.02; } },
+    { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 30% HP', cost: 15000, max: 1, icon: ICONS.revive, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
     { id: 'greed', name: 'Avaricia', desc: '+20% Berries por nivel', cost: 1200, max: 10, icon: ICONS.coin, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
     { id: 'curse', name: 'Maldición', desc: '+10% enemigos/HP/vel (riesgo/recompensa)', cost: 4000, max: 5, icon: ICONS.skull, apply: (p, lvl) => { p.curse += lvl * 0.10; } },
     { id: 'reroll', name: 'Rerolls', desc: '+3 rerolls de opciones por partida', cost: 2000, max: 10, icon: ICONS.dice, apply: (p, lvl) => { p.rerollUses += lvl * 3; } },

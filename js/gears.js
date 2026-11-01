@@ -15,10 +15,10 @@ const FORM_METER = { luffy: 'GEAR', zoro: 'HAKI', sanji: 'RAID SUIT' };
 const FORMS = {
     luffy: {
         2: { name: 'GEAR SECOND', short: 'G2', color: '#f472b6', dur: 8,  sound: 'gear2',    dmg: 1.15, cd: 0.6, spd: 'card', taken: 1 },
-        3: { name: 'GEAR THIRD',  short: 'G3', color: '#fb923c', dur: 9,  sound: 'boom',     dmg: 1.6,  cd: 1.0, spd: 1,   taken: 1,   area: 1.6, atk: 'elephant', atkCd: 1.6, pen: ['chibi', 4], penText: '¡LUFFY ENCOGIDO!' },
-        4: { name: 'GEAR FOURTH: BOUNDMAN', short: 'G4', color: '#dc2626', dur: 12, sound: 'haoshoku', dmg: 2.2, cd: 0.7, spd: 1.2, taken: 0.5, atk: 'kong', atkCd: 1.3, pen: ['exhausted', 8], penText: '¡SIN HAKI! AGOTADO' },
+        3: { name: 'GEAR THIRD',  short: 'G3', color: '#fb923c', dur: 9,  sound: 'boom',     dmg: 1.45,  cd: 1.0, spd: 1,   taken: 1,   area: 1.6, atk: 'elephant', atkCd: 1.6, pen: ['chibi', 4], penText: '¡LUFFY ENCOGIDO!' },
+        4: { name: 'GEAR FOURTH: BOUNDMAN', short: 'G4', color: '#dc2626', dur: 12, sound: 'haoshoku', dmg: 1.9, cd: 0.7, spd: 1.2, taken: 0.6, atk: 'kong', atkCd: 1.3, pen: ['exhausted', 8], penText: '¡SIN HAKI! AGOTADO' },
         // canon: el coste de Nika es el agotamiento (Luffy arrugado y sin fuerzas), no perder vida
-        5: { name: 'GEAR FIFTH: NIKA', short: 'G5', color: '#f8fafc', dur: 15, sound: 'haoshoku', dmg: 2.6, cd: 0.6, spd: 1.3, taken: 0, enemySpd: 0.5, atk: 'dawn', atkCd: 1.2, pen: ['exhausted', 12], penText: 'NIKA SE APAGA... AGOTADO' }
+        5: { name: 'GEAR FIFTH: NIKA', short: 'G5', color: '#f8fafc', dur: 15, sound: 'haoshoku', dmg: 2.3, cd: 0.6, spd: 1.3, taken: 0, enemySpd: 0.5, atk: 'dawn', atkCd: 1.2, pen: ['exhausted', 12], penText: 'NIKA SE APAGA... AGOTADO' }
     },
     zoro: {
         // Ryuo (Wano): Haki que fluye por las espadas sin tocar → corta mas y mas rapido
@@ -26,7 +26,7 @@ const FORMS = {
         // Kyutoryu Asura: tres cabezas y nueve brazos, Ashura Ichibugin. Le deja sin fuerzas (Enies Lobby)
         3: { name: 'KYUTORYU: ASURA', short: 'AS', color: '#9333ea', dur: 9, sound: 'haoshoku', dmg: 1.6, cd: 0.8, spd: 1, taken: 0.8, area: 1.3, atk: 'asura', atkCd: 1.4, pen: ['exhausted', 4], penText: 'ASURA SE DESVANECE... AGOTADO' },
         // Rey del Infierno (Onigashima): Haoshoku en las espadas. Enma le chupa el Haki al terminar
-        4: { name: 'REY DEL INFIERNO: ENMA', short: 'EN', color: '#b91c1c', dur: 12, sound: 'haoshoku', dmg: 2.2, cd: 0.7, spd: 1.2, taken: 0.5, atk: 'hell', atkCd: 1.3, pen: ['exhausted', 8], penText: 'ENMA DEVORA SU HAKI... AGOTADO' }
+        4: { name: 'REY DEL INFIERNO: ENMA', short: 'EN', color: '#b91c1c', dur: 12, sound: 'haoshoku', dmg: 1.9, cd: 0.7, spd: 1.2, taken: 0.6, atk: 'hell', atkCd: 1.3, pen: ['exhausted', 8], penText: 'ENMA DEVORA SU HAKI... AGOTADO' }
     },
     sanji: {
         // Sky Walk: camina por el aire → mucha velocidad y dificil de alcanzar
@@ -34,7 +34,7 @@ const FORMS = {
         // Raid Suit Stealth Black: invisible → casi no le alcanzan
         3: { name: 'RAID SUIT: STEALTH BLACK', short: 'RS', color: '#475569', dur: 9, sound: 'haoshoku', dmg: 1.6, cd: 0.85, spd: 1.15, taken: 0.45, atk: 'stealth', atkCd: 1.0 },
         // Ifrit Jambe (Onigashima): llamas azules; su cuerpo se resiente al acabar
-        4: { name: 'IFRIT JAMBE', short: 'IJ', color: '#3b82f6', dur: 12, sound: 'boom', dmg: 2.2, cd: 0.7, spd: 1.25, taken: 0.55, atk: 'ifrit', atkCd: 1.2, pen: ['exhausted', 6], penText: 'EL CUERPO ARDE... AGOTADO' }
+        4: { name: 'IFRIT JAMBE', short: 'IJ', color: '#3b82f6', dur: 12, sound: 'boom', dmg: 1.9, cd: 0.7, spd: 1.25, taken: 0.65, atk: 'ifrit', atkCd: 1.2, pen: ['exhausted', 6], penText: 'EL CUERPO ARDE... AGOTADO' }
     }
 };
 const GEAR_INFO = FORMS.luffy; // compatibilidad

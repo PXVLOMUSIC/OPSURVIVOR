@@ -187,6 +187,7 @@ function resetGame() {
     player.level = 1; player.xp = 0; player.nextXp = 6;
     player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0;
     player.passives = {};
+    player.revives = 0; // antes no se reiniciaba y los "Revivir" sin usar se acumulaban entre partidas
     player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};
     player.arcana = []; player._arcanaPending = 0;
     window.freezeTimer = 0; window.vacuumTimer = 0; window.haoTimer = 0;
@@ -208,7 +209,7 @@ function resetGame() {
     });
 
     for (const k in SKILL_DEFAULTS) Object.assign(skills[k], JSON.parse(JSON.stringify(SKILL_DEFAULTS[k])));
-    skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 25; skills.pistol.evolved = false;
+    skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 23; skills.pistol.evolved = false;
     skills.gatling.level = 0; skills.gatling.baseDamage = 10; skills.gatling.evolved = false;
     skills.bazooka.level = 0; skills.bazooka.baseDamage = 45; skills.bazooka.evolved = false;
     skills.gear2.level = 0; skills.gear2.active = false; skills.gear2.remain = 0; skills.gear2.evolved = false;

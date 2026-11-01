@@ -1,11 +1,14 @@
 // --- RENDER ENGINE (Sea of Stars Aesthetic Pipeline) ---
 // Píxel vertical de la imagen de cada mapa que cae en y=0 del mundo (x=0 es el centro de la imagen)
+// Tamaño lógico de los mapas (px de la imagen original 1408x768). Las imágenes reales van a x2 (2816x1536)
+// para que 1 píxel de imagen = 1 píxel de pantalla; el código trabaja siempre con el tamaño lógico.
+const MAP_PX_W = 1408, MAP_PX_H = 768;
 const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446, enieslobby: 446, marineford: 446, water7: 446 };
 function cameraCenter() {
     const img = IMG[selectedMap + 'Map'];
     if (!assetsLoaded || !img || !img.complete || !img.width) return [player.x, player.y];
-    const halfW = img.width * MAP_SCALE / 2;
-    const top = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, bottom = top + img.height * MAP_SCALE;
+    const halfW = MAP_PX_W * MAP_SCALE / 2;
+    const top = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, bottom = top + MAP_PX_H * MAP_SCALE;
     const clampAxis = (v, lo, hi, view) => (hi - lo <= view) ? (lo + hi) / 2 : Math.min(Math.max(v, lo + view / 2), hi - view / 2);
     return [clampAxis(player.x, -halfW, halfW, VIEW_W), clampAxis(player.y, top, bottom, VIEW_H)];
 }
@@ -28,9 +31,12 @@ function render() {
     // Map Background: imagen del mapa centrada en x, con su origen vertical en MAP_ORIGIN_Y
     const mapImg = IMG[selectedMap + 'Map'];
     if (assetsLoaded && mapImg && mapImg.complete && mapImg.width) {
-        // Mapas pixelados (estilo GBA): se escalan sin suavizado para que el pixel se vea nítido como en los sprites
+        // Mapas en alta definición (sin pixelado): se dibujan con suavizado para que el fondo tenga
+        // igual o más definición que los sprites GBA, que siguen sin suavizar.
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(mapImg, -MAP_PX_W * MAP_SCALE / 2, -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, MAP_PX_W * MAP_SCALE, MAP_PX_H * MAP_SCALE);
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(mapImg, -mapImg.width * MAP_SCALE / 2, -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, mapImg.width * MAP_SCALE, mapImg.height * MAP_SCALE);
     } else {
         const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47', enieslobby: '#d9c48f', marineford: '#7a8a80', water7: '#8a9098' };
         ctx.fillStyle = fallback[selectedMap] || '#0284c7';

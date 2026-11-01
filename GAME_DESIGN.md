@@ -98,3 +98,12 @@ Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frame
 - Desbloqueo (`meta.gear.forms`): el nivel 2 con una victoria del personaje y el nivel 3 con una victoria en Clima 2 o más.
 - Balance con bot, todo desbloqueado (gear max 5): Luffy 83%, Sanji 78%, Zoro 73% (dentro de ±10). Para ello, Diable Jambe sube su daño base de 16 a 18.
 - Renombrados para no repetir nombres: la evolución de Santoryu pasa a "Rokudo no Tsuji" y la de Concassé a "Bien Cuit: Grill Shot".
+
+## Rendimiento y compatibilidad
+- Medir con `tools/perf-bench.js` (servir el repo y `node tools/perf-bench.js http://localhost:8765/index.html luffy thrillerbark 6 4 300 high`; el 4 simula una CPU 4 veces más lenta). Es determinista: si cambia `level` o `ent`, ha cambiado la simulación y por tanto el balance.
+- `updateUI()` durante la partida solo marca la interfaz como pendiente; `gameLoop` la vuelca una vez por frame. No escribir en el DOM del HUD cada frame.
+- Lo que se dibuja en el mundo debe respetar el culling: `onScreen(x, y, margen)` con `VIEW_RECT` (js/render.js).
+- No usar `ctx.filter` al dibujar cada frame: lento y sin soporte en Safari < 18. Usar `filteredSprite(img, 'filtro css')` (js/core.js), que lo cachea y tiene alternativa por matriz de color.
+- Resolución interna: `RS` (1, 0.75 o 0.5) según la opción Calidad gráfica; la automática baja si el juego va por debajo de ~45 FPS. Para dibujar en coordenadas de pantalla usar `ctx.setTransform(RS, 0, 0, RS, 0, 0)`, nunca `(1, 0, 0, 1, 0, 0)`. `lowFx()` indica calidad baja (sin sombras).
+- Imágenes bajo demanda: `ENEMY_IMG[tipo]` y `CHAR_IMG[personaje]` cargan sus frames la primera vez que se piden, y `loadImg(ruta)` descarga cada archivo una sola vez. `prefetchRun(mapa, personaje)` precarga el mapa y todo lo que nombra `MAP_ENEMIES[mapa]`.
+- `sw.js`: imágenes y sonidos primero desde la caché; HTML, JS y CSS primero desde la red. Sube `CACHE_VER` si cambias un asset sin cambiarle el nombre.

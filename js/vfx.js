@@ -913,6 +913,8 @@ function playerSpriteFilter() {
 // Dibujo de todas las partículas
 function drawParticles() {
     for (let p of particles) {
+        // culling: fuera de pantalla no se dibuja (los rayos con puntos propios se dibujan siempre)
+        if (!p.pts && !onScreen(p.x, p.y, 60 + (p.size || 0) * 2)) continue;
         const a = Math.max(0, p.life / (p.maxLife || 0.4));
         switch (p.shape) {
             case 'ring':

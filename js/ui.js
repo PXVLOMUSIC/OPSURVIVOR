@@ -1,5 +1,5 @@
 // === OPCIONES (persistente, VS-style sliders) ===
-let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, fewerFlashes: false, showDamageNumbers: true, autoPause: true, menuMusicMuted: false, master: 0.8 };
+let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, fewerFlashes: false, showDamageNumbers: true, autoPause: true, menuMusicMuted: false, master: 0.8, quality: 'auto' };
 function loadOpts() {
     try {
         const raw = JSON.parse(localStorage.getItem('op_survivor_opts'));
@@ -19,6 +19,9 @@ function applyOpts() {
     if (sliderS) { sliderS.value = Math.round(windowOpts.sfx * 100); document.getElementById('opt-sfx-val').innerText = Math.round(windowOpts.sfx * 100); }
     if (checkSh) checkSh.checked = windowOpts.shake;
     if (checkP) checkP.checked = windowOpts.fewerParticles;
+    const selQ = document.getElementById('opt-quality');
+    if (selQ) selQ.value = windowOpts.quality || 'auto';
+    if (typeof applyQuality === 'function') applyQuality();
     if (checkF) checkF.checked = windowOpts.fewerFlashes;
     if (checkD) checkD.checked = windowOpts.showDamageNumbers;
     if (checkA) checkA.checked = windowOpts.autoPause;
@@ -34,6 +37,8 @@ function closeOptions() {
     if (sliderS) windowOpts.sfx = sliderS.value / 100;
     if (checkSh) windowOpts.shake = checkSh.checked;
     if (checkP) windowOpts.fewerParticles = checkP.checked;
+    const selQ = document.getElementById('opt-quality');
+    if (selQ) windowOpts.quality = selQ.value;
     const checkF = document.getElementById('opt-flashes'), checkD = document.getElementById('opt-dmgnums'), checkA = document.getElementById('opt-autopause');
     if (checkF) windowOpts.fewerFlashes = checkF.checked;
     if (checkD) windowOpts.showDamageNumbers = checkD.checked;

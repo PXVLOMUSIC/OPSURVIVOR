@@ -16,7 +16,21 @@ function cameraCenter() {
     return [clampAxis(player.x, -halfW, halfW, VIEW_W), clampAxis(player.y, top, bottom, VIEW_H)];
 }
 
+// Rectángulo visible del mundo en este frame (culling: lo que cae fuera no se dibuja)
+const VIEW_RECT = { x0: 0, y0: 0, x1: 0, y1: 0 };
+function onScreen(x, y, m) { return x > VIEW_RECT.x0 - m && x < VIEW_RECT.x1 + m && y > VIEW_RECT.y0 - m && y < VIEW_RECT.y1 + m; }
+const ELITE_COLORS = {
+    elite_marine: ['rgba(255, 215, 0, 0.8)', '#ffd700'], elite_kuma: ['rgba(0, 255, 255, 0.8)', '#00ffff'], elite_moria: ['rgba(128, 0, 128, 0.8)', '#800080'],
+    elite_tararan: ['rgba(255, 165, 0, 0.8)', '#ffa500'], elite_hogback: ['rgba(139, 69, 19, 0.8)', '#8b4513'], elite_cindry: ['rgba(255, 105, 180, 0.8)', '#ff69b4'],
+    elite_pellona: ['rgba(148, 0, 211, 0.8)', '#9400d3'], elite_ryuma: ['rgba(255, 255, 255, 0.8)', '#ffffff'], elite_inupen: ['rgba(0, 191, 255, 0.8)', '#00bfff'],
+    elite_kumashi: ['rgba(169, 169, 169, 0.8)', '#a9a9a9'], elite_absalom: ['rgba(75, 0, 130, 0.8)', '#4b0082']
+};
+const ELITE_DEFAULT = ['rgba(255, 0, 255, 0.8)', '#ff00ff'];
+const FLASH_FILTER = 'brightness(2.4) saturate(0.4)';
+const PICKUP_SPRITE = { beli: 'money', meat: 'food', denden: 'conch', vacuum: 'tornado' };
+
 function render() {
+    ctx.setTransform(RS, 0, 0, RS, 0, 0);
     ctx.fillStyle = '#030712';
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 
@@ -30,6 +44,8 @@ function render() {
     const camX = VIEW_W / 2 - camCX + shakeX;
     const camY = VIEW_H / 2 - camCY + shakeY;
     ctx.translate(camX, camY);
+    VIEW_RECT.x0 = -camX; VIEW_RECT.y0 = -camY; VIEW_RECT.x1 = -camX + VIEW_W; VIEW_RECT.y1 = -camY + VIEW_H;
+    const low = lowFx();
 
     // Map Background: imagen del mapa centrada en x, con su origen vertical en MAP_ORIGIN_Y
     const mapImg = IMG[selectedMap + 'Map'];
@@ -37,8 +53,14 @@ function render() {
         // Mapas en alta definición (sin pixelado): se dibujan con suavizado para que el fondo tenga
         // igual o más definición que los sprites GBA, que siguen sin suavizar.
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(mapImg, -MAP_PX_W * MAP_SCALE / 2, -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE, MAP_PX_W * MAP_SCALE, MAP_PX_H * MAP_SCALE);
+        ctx.imageSmoothingQuality = low ? 'low' : 'high';
+        // solo la parte visible: la imagen puede ir a más resolución que el tamaño lógico (k píxeles de imagen por píxel lógico)
+        const k = mapImg.width / MAP_PX_W;
+        const mx0 = -MAP_PX_W * MAP_SCALE / 2, my0 = -MAP_ORIGIN_Y[selectedMap] * MAP_SCALE;
+        const sx = Math.max(0, Math.floor((VIEW_RECT.x0 - mx0) / MAP_SCALE * k) - 2), sy = Math.max(0, Math.floor((VIEW_RECT.y0 - my0) / MAP_SCALE * k) - 2);
+        const ex = Math.min(mapImg.width, Math.ceil((VIEW_RECT.x1 - mx0) / MAP_SCALE * k) + 2), ey = Math.min(mapImg.height, Math.ceil((VIEW_RECT.y1 - my0) / MAP_SCALE * k) + 2);
+        const f = MAP_SCALE / k;
+        if (ex > sx && ey > sy) ctx.drawImage(mapImg, sx, sy, ex - sx, ey - sy, mx0 + sx * f, my0 + sy * f, (ex - sx) * f, (ey - sy) * f);
         ctx.imageSmoothingEnabled = false;
     } else {
         const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47', enieslobby: '#d9c48f', marineford: '#7a8a80', water7: '#8a9098' };
@@ -48,7 +70,8 @@ function render() {
 
     // Drops (VS: los cofres son modelos en el suelo; el resto con glow)
     for (let d of drops) {
-        ctx.save();
+        if (!onScreen(d.x, d.y, 40)) continue;
+        // sin save/restore por objeto (caro con cientos): se restaura la matriz de cámara a mano
         if (d.type === 'chest') {
             const img = IMG['chest_t' + d.tier];
             if (img && img.complete) {
@@ -93,8 +116,7 @@ function render() {
         } else {
             ctx.translate(d.x, d.y + Math.sin(gameTime * 6 + d.x) * 3);
             // Pickups con sprite del propio lore (GBA): monedas, comida, Den Den, tornado
-            const spriteMap = { beli: 'money', meat: 'food', denden: 'conch', vacuum: 'tornado' };
-            const spriteKey = spriteMap[d.type];
+            const spriteKey = PICKUP_SPRITE[d.type];
             if (spriteKey && IMG[spriteKey] && IMG[spriteKey].complete) {
                 const glowCol = d.type === 'beli' ? '#facc15' : (d.type === 'meat' ? '#f87171' : (d.type === 'denden' ? '#fde047' : '#a78bfa'));
                 ctx.globalAlpha = 0.5 + Math.sin(gameTime * 6 + d.x) * 0.15;
@@ -114,46 +136,48 @@ function render() {
                 ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
             }
         }
-        ctx.restore();
+        ctx.setTransform(RS, 0, 0, RS, camX * RS, camY * RS);
     }
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = 1;
 
     // Enemy Bullets
+    ctx.fillStyle = '#f43f5e';
+    ctx.beginPath();
     for (let b of enemyBullets) {
-        ctx.fillStyle = '#f43f5e';
-        ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2); ctx.fill();
+        if (!onScreen(b.x, b.y, 8)) continue;
+        ctx.moveTo(b.x + 5, b.y); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
     }
+    ctx.fill();
 
     // Marcas en el suelo (js/vfx.js)
     drawGroundDecals();
 
     // Enemies with Soft Floor Shadows
-    for (let e of enemies) {
-        ctx.save();
-        ctx.translate(e.x, e.y);
-        ctx.save();
-        ctx.scale(SPRITE_ZOOM, SPRITE_ZOOM);
-
+    // sombras de todos los enemigos visibles en un solo trazado
+    if (!low) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        ctx.beginPath(); ctx.ellipse(0, 14, (e.isBoss || e.isMiniboss) ? 24 : 14, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        for (let e of enemies) {
+            if (!onScreen(e.x, e.y, 40 * SPRITE_ZOOM)) continue;
+            const rx = ((e.isBoss || e.isMiniboss) ? 24 : 14) * SPRITE_ZOOM, sy = e.y + 14 * SPRITE_ZOOM;
+            ctx.moveTo(e.x + rx, sy); ctx.ellipse(e.x, sy, rx, 6 * SPRITE_ZOOM, 0, 0, Math.PI * 2);
+        }
+        ctx.fill();
+    }
+    for (let e of enemies) {
+        // margen amplio: jefes grandes y nombres por encima del sprite
+        if (!onScreen(e.x, e.y, ((e.isBoss || e.isMiniboss || e.name) ? 160 : 70) * SPRITE_ZOOM)) continue;
+        
+        ctx.translate(e.x, e.y);
+        ctx.scale(SPRITE_ZOOM, SPRITE_ZOOM);
 
         const eState = (e.attackTimer > 0) ? 'attack' : 'idle';
         const eSet = (assetsLoaded && ENEMY_IMG[e.type] && ENEMY_IMG[e.type][eState] && ENEMY_IMG[e.type][eState].length) ? ENEMY_IMG[e.type][eState] : (assetsLoaded && ENEMY_IMG[e.type] ? ENEMY_IMG[e.type].idle : null);
         let eImg = null;
         if (eSet && eSet.length) eImg = eSet[e.animIndex % eSet.length];
         if (e.isElite) {
-            let col = 'rgba(255, 0, 255, 0.8)';
-            let glow = '#ff00ff';
-            if (e.type === 'elite_marine') { col = 'rgba(255, 215, 0, 0.8)'; glow = '#ffd700'; }
-            else if (e.type === 'elite_kuma') { col = 'rgba(0, 255, 255, 0.8)'; glow = '#00ffff'; }
-            else if (e.type === 'elite_moria') { col = 'rgba(128, 0, 128, 0.8)'; glow = '#800080'; }
-            else if (e.type === 'elite_tararan') { col = 'rgba(255, 165, 0, 0.8)'; glow = '#ffa500'; }
-            else if (e.type === 'elite_hogback') { col = 'rgba(139, 69, 19, 0.8)'; glow = '#8b4513'; }
-            else if (e.type === 'elite_cindry') { col = 'rgba(255, 105, 180, 0.8)'; glow = '#ff69b4'; }
-            else if (e.type === 'elite_pellona') { col = 'rgba(148, 0, 211, 0.8)'; glow = '#9400d3'; }
-            else if (e.type === 'elite_ryuma') { col = 'rgba(255, 255, 255, 0.8)'; glow = '#ffffff'; }
-            else if (e.type === 'elite_inupen') { col = 'rgba(0, 191, 255, 0.8)'; glow = '#00bfff'; }
-            else if (e.type === 'elite_kumashi') { col = 'rgba(169, 169, 169, 0.8)'; glow = '#a9a9a9'; }
-            else if (e.type === 'elite_absalom') { col = 'rgba(75, 0, 130, 0.8)'; glow = '#4b0082'; }
+            const ec = ELITE_COLORS[e.type] || ELITE_DEFAULT, col = ec[0], glow = ec[1];
             ctx.strokeStyle = col;
             ctx.lineWidth = 3;
             const glowImg = getGlow(glow, 24);
@@ -161,22 +185,22 @@ function render() {
             const r = eImg ? Math.max(eImg.width, eImg.height) * (ENEMY_DRAW_SCALE[e.type] || 1) * 0.65 + 4 : 20;
             ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
         }
-        if (e._flashUntil && gameTime < e._flashUntil) ctx.filter = 'brightness(2.4) saturate(0.4)';
-        if (eImg && eImg.complete) {
+        const flashing = e._flashUntil && gameTime < e._flashUntil;
+        if (eImg && eImg.complete && eImg.width) {
+            if (flashing) eImg = filteredSprite(eImg, FLASH_FILTER);
             const s = (ENEMY_DRAW_SCALE[e.type] || 1) * (e.isElite ? 1.3 : 1);
             // sprites con orientación conocida: miran hacia el jugador
             const fc = ENEMY_ANIMS[e.type] && ENEMY_ANIMS[e.type].faces;
             const flip = fc && ((fc > 0) !== (player.x >= e.x));
-            if (flip) { ctx.save(); ctx.scale(-1, 1); }
+            if (flip) ctx.scale(-1, 1);
             ctx.drawImage(eImg, -eImg.width*s/2, -eImg.height*s/2, eImg.width*s, eImg.height*s);
-            if (flip) ctx.restore(); // sin esto, el nombre del élite salía en espejo
+            if (flip) ctx.scale(-1, 1); // deshace el espejo: sin esto, el nombre del élite salía en espejo
         } else if (e.type === 'grunt') ctx.drawImage(Sprites.marine, -16, -16);
         else if (e.type === 'shooter') ctx.drawImage(Sprites.shooter, -16, -16);
         else if (e.type === 'pacifista') ctx.drawImage(Sprites.pacifista, -24, -24);
         else if (e.type === 'boss_krieg') ctx.drawImage(Sprites.krieg, -32, -32);
         else { ctx.fillStyle = '#999'; ctx.fillRect(-16, -16, 32, 32); }
-        ctx.filter = 'none';
-        ctx.restore(); // fin de SPRITE_ZOOM: barra de vida y nombre a tamaño normal
+        ctx.scale(1 / SPRITE_ZOOM, 1 / SPRITE_ZOOM); // fin de SPRITE_ZOOM: barra de vida y nombre a tamaño normal
 
         if (e.hp < e.maxHp) {
             const barW = (e.isBoss || e.isMiniboss) ? 56 : 26;
@@ -206,7 +230,7 @@ function render() {
                 ctx.textAlign = 'left';
             }
         }
-        ctx.restore();
+        ctx.setTransform(RS, 0, 0, RS, camX * RS, camY * RS);
     }
 
     // Ataques del jugador por encima de los enemigos (js/vfx.js)
@@ -216,7 +240,7 @@ function render() {
     const boss = enemies.find(e => e.isBoss && e.hp > 0);
     if (boss) {
         ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.setTransform(RS, 0, 0, RS, 0, 0);
         const bw = 420, bh = 14;
         const bx = VIEW_W / 2 - bw / 2, by = 100;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
@@ -240,7 +264,7 @@ function render() {
     if (window.spawnBanner && window.spawnBanner.life > 0) {
         const b = window.spawnBanner;
         ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.setTransform(RS, 0, 0, RS, 0, 0);
         ctx.globalAlpha = Math.max(0, Math.min(1, b.life / 0.4));
         ctx.font = 'bold 36px Bangers, Arial, sans-serif';
         ctx.textAlign = 'center';
@@ -274,16 +298,14 @@ function render() {
     }
     if (gearFrame) {
         // Gear 4 / Gear 5 / Luffy encogido: sprite propio a su altura
-        const gi = gearFrame.img, ph = gearFrame.h, pw = ph * (gi.width / gi.height);
+        const gi = filteredSprite(gearFrame.img, takeCtxFilter(ctx)), ph = gearFrame.h, pw = ph * (gi.width / gi.height);
         ctx.drawImage(gi, -pw / 2, 24 - ph, pw, ph);
-        ctx.filter = 'none';
-    } else if (img && img.complete) {
+    } else if (img && img.complete && img.width) {
         const ph = 48;
         const pw = ph * (img.width / img.height);
-        // respeta el filtro que haya puesto el Gear (agotado, Gear 2)
-        if (!ctx.filter || ctx.filter === 'none') ctx.filter = playerSpriteFilter();
-        ctx.drawImage(img, -pw/2, -ph/2, pw, ph);
-        ctx.filter = 'none';
+        // respeta el filtro que haya puesto el Gear (agotado, Gear 2); se aplica con la caché de sprites filtrados
+        const pf = takeCtxFilter(ctx) || playerSpriteFilter();
+        ctx.drawImage(filteredSprite(img, pf), -pw/2, -ph/2, pw, ph);
     } else if (assetsLoaded && IMG.player && IMG.player.complete) {
         const ph = 48;
         const pw = ph * (IMG.player.width / IMG.player.height);
@@ -298,14 +320,17 @@ function render() {
     drawParticles();
 
     // Damage Numbers (Overcrit / Crit formatting)
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    let _lastFont = '';
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
     for (let dtObj of damageTexts) {
-        ctx.font = dtObj.isOvercrit ? '900 17px Bangers, Arial, sans-serif' : (dtObj.isCrit ? 'bold 15px Bangers, Arial, sans-serif' : '12px sans-serif');
+        if (!onScreen(dtObj.x, dtObj.y, 40)) continue;
+        const font = dtObj.isOvercrit ? '900 17px Bangers, Arial, sans-serif' : (dtObj.isCrit ? 'bold 15px Bangers, Arial, sans-serif' : '12px sans-serif');
+        if (font !== _lastFont) { ctx.font = font; _lastFont = font; }
         ctx.fillStyle = dtObj.isOvercrit ? '#c084fc' : (dtObj.isCrit ? '#facc15' : '#ffffff');
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.95)';
         ctx.lineWidth = dtObj.isOvercrit ? 4 : (dtObj.isCrit ? 3.5 : 3);
-        ctx.lineJoin = 'round';
-        ctx.miterLimit = 2;
-        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
         ctx.strokeText(dtObj.text, dtObj.x, dtObj.y);
         ctx.fillText(dtObj.text, dtObj.x, dtObj.y);
     }
@@ -328,7 +353,7 @@ function render() {
     gearDrawHUD(ctx);
     if (vignetteAlpha > 0.001) {
         ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.setTransform(RS, 0, 0, RS, 0, 0);
         const grad = ctx.createRadialGradient(VIEW_W / 2, VIEW_H / 2, Math.min(VIEW_W, VIEW_H) * 0.22, VIEW_W / 2, VIEW_H / 2, Math.max(VIEW_W, VIEW_H) * 0.72);
         grad.addColorStop(0, 'rgba(244, 63, 94, 0)');
         grad.addColorStop(1, 'rgba(200, 20, 40, ' + Math.min(0.4, vignetteAlpha).toFixed(3) + ')');

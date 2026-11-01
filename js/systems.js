@@ -147,6 +147,7 @@ function startGame() {
     document.getElementById('start-screen').style.display = 'none';
     // Reinicia la musica de batalla en cada entrada a un nivel
     try { battleMusic.pause(); battleMusic.currentTime = 0; } catch (e) {}
+    prefetchRun(selectedMap, selectedCharacter);
     resetGame();
     updateHudPortrait();
     applyRunCurse();
@@ -468,7 +469,10 @@ function bestiaryThumb(type) {
     if (BESTIARY_THUMB[type]) return BESTIARY_THUMB[type];
     const cfg = ENEMY_IMG[type];
     const img = (cfg && cfg.idle && cfg.idle[0]) ? cfg.idle[0] : null;
-    if (!img || !img.width || !img.complete === undefined) return null;
+    if (!img) return null;
+    // sprites de archivo: se usa la ruta directamente (se carga al abrir el bestiario, sin esperar ni copiar a dataURL)
+    if (img instanceof HTMLImageElement) return (BESTIARY_THUMB[type] = img.getAttribute('src'));
+    if (!img.width) return null;
     try {
         const c = document.createElement('canvas');
         c.width = img.width; c.height = img.height;

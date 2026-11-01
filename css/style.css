@@ -12,17 +12,25 @@ body, html {
     background-color: #030712;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #fff;
+    /* móviles: sin rebote al arrastrar, sin zoom por doble toque ni resaltado azul al tocar */
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-text-size-adjust: 100%;
 }
 #game-container {
     position: relative;
     width: 100vw;
     height: 100vh;
+    height: 100dvh; /* iOS/Android: alto real visible con la barra del navegador */
     display: flex;
     justify-content: center;
     align-items: center;
 }
 canvas {
     display: block;
+    touch-action: none;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     background-color: #0f172a;
@@ -168,6 +176,7 @@ canvas {
     width: 100%;
     height: 100%;
     background: rgba(3, 7, 18, 0.9);
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     display: flex;
     flex-direction: column;
@@ -351,6 +360,7 @@ svg.op-ico {
 /* --- Capas de pantalla: mar nocturno del Grand Line --- */
 .overlay-screen {
     background: radial-gradient(ellipse at 50% 118%, rgba(20,90,140,0.55) 0%, rgba(7,27,51,0.94) 55%, rgba(2,8,23,0.97) 100%);
+    -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
 }
 
@@ -653,7 +663,7 @@ body.opt-calm .bar-inner-hp.hp-low { animation: none; }
     letter-spacing: 2px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.6);
 }
-#weapons-hud > div { backdrop-filter: blur(2px); }
+/* sin backdrop-filter en el HUD: difuminar el canvas que cambia cada frame es caro en móviles */
 #volume-slider { accent-color: #b45309; }
 input[type="range"] {
     -webkit-appearance: none;
@@ -1029,3 +1039,6 @@ body.opt-calm .btn-sail { animation: none; }
 }
 .upgrade-info h4 .lvl-tag small { font-size: 10px; opacity: 0.7; margin-left: 1px; }
 .upgrade-info h4 .lvl-tag.new { background: #b91c1c; }
+
+/* Calidad baja: sin desenfoques de fondo (muy caros en GPUs de gama baja) */
+body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }

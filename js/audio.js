@@ -6,6 +6,8 @@ let audioCtx = null;
 const menuMusic = new Audio('assets/music/menu.mp3');
 const battleMusic = new Audio('assets/music/battle.mp3');
 menuMusic.loop = true; battleMusic.loop = true;
+// la de batalla no se descarga hasta que suena (ahorra ~2 MB al abrir el juego en datos móviles)
+battleMusic.preload = 'none'; menuMusic.preload = 'auto';
 function updateMusic() {
     if (!soundEnabled) { menuMusic.pause(); battleMusic.pause(); return; }
     const vol = masterVolume * (windowOpts ? windowOpts.music : 1) * 0.75;
@@ -65,7 +67,7 @@ function preloadSfx() {
     sfxPreloaded = true;
     for (const k in SFX_FILES) {
         fetch('assets/sfx/' + SFX_FILES[k]).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(
-            b => audioCtx.decodeAudioData(b)
+            b => new Promise((ok, ko) => { const p = audioCtx.decodeAudioData(b, ok, ko); if (p && p.catch) p.catch(ko); })
         ).then(buf => { sfxBuffers[k] = buf; }).catch(() => {});
     }
 }

@@ -1,12 +1,16 @@
+let _renderedState = null;
 function gameLoop(now) {
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
 
     if (gameState === 'PLAYING') update(dt * modeTimeScale()); // Modo Haki: todo va más rápido (js/modes.js)
-    render();
+    flushUI();
+    // en pausa, mejoras, cofres o Voluntades la escena está quieta: se dibuja una vez y no se repinta cada frame
+    if (gameState === 'PLAYING' || _renderedState !== gameState || _needsRedraw) { render(); _renderedState = gameState; _needsRedraw = false; }
+    perfTick(now);
 
-    const _pb = document.getElementById('pause-btn');
-    if (_pb) _pb.style.display = (gameState === 'PLAYING') ? 'block' : 'none';
+    const _pbShow = gameState === 'PLAYING' ? 'block' : 'none';
+    if (_pbShow !== _uiCache.pauseBtn) { _uiCache.pauseBtn = _pbShow; const _pb = uiEl('pause-btn'); if (_pb) _pb.style.display = _pbShow; }
     // música: solo al cambiar de estado (evita .play() cada frame)
     if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); gearUpdateButton(); }
 
@@ -1879,27 +1883,44 @@ function startEndless() {
 // formato con separador de miles (el simbolo ฿ va en el markup)
 function fmtBeli(n) { return Math.floor(n).toLocaleString('en-US'); }
 
+// Rendimiento: updateUI() se llama desde muchos sitios (a veces varias veces por frame, una por enemigo
+// que toca al jugador). Durante la partida solo marca la interfaz como pendiente y gameLoop la vuelca una vez.
+let _uiDirty = false;
 function updateUI() {
-    document.getElementById('hp-text').innerText = `${Math.max(0, Math.ceil(player.hp))}/${player.maxHp}`;
-    document.getElementById('hp-bar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
+    if (gameState === 'PLAYING') { _uiDirty = true; return; }
+    updateUINow();
+}
+function flushUI() { if (_uiDirty) { _uiDirty = false; updateUINow(); } }
+// Escribe en el DOM solo si el valor cambió (cada escritura invalida el estilo de la página)
+const _uiCache = {};
+const _uiEl = {};
+function uiEl(id) { return _uiEl[id] || (_uiEl[id] = document.getElementById(id)); }
+function setText(id, v) { if (_uiCache[id] !== v) { _uiCache[id] = v; const el = uiEl(id); if (el) el.innerText = v; } }
+function setWidth(id, v) { const k = id + ':w'; if (_uiCache[k] !== v) { _uiCache[k] = v; const el = uiEl(id); if (el) el.style.width = v; } }
+function updateUINow() {
+    setText('hp-text', `${Math.max(0, Math.ceil(player.hp))}/${player.maxHp}`);
+    setWidth('hp-bar', `${Math.max(0, (player.hp / player.maxHp) * 100).toFixed(1)}%`);
     // VS: estados de vida por porcentaje — verde sano, ambar media, roja al limite
     const hpPct = Math.max(0, player.hp / player.maxHp);
-    const hpBar = document.getElementById('hp-bar');
-    hpBar.classList.toggle('hp-mid', hpPct <= 0.6 && hpPct > 0.3);
-    hpBar.classList.toggle('hp-low', hpPct <= 0.3);
-    const hpText = document.getElementById('hp-text');
-    hpText.classList.toggle('warn', hpPct <= 0.6 && hpPct > 0.3);
-    hpText.classList.toggle('danger', hpPct <= 0.3);
-    document.getElementById('xp-bar').style.width = `${Math.min(100, (player.xp / player.nextXp) * 100)}%`;
-    document.getElementById('level-txt').innerText = player.level;
-    document.getElementById('score-txt').innerText = fmtBeli(scoreBeli);
+    const hpState = hpPct <= 0.3 ? 2 : (hpPct <= 0.6 ? 1 : 0);
+    if (_uiCache.hpState !== hpState) {
+        _uiCache.hpState = hpState;
+        const hpBar = uiEl('hp-bar');
+        hpBar.classList.toggle('hp-mid', hpState === 1);
+        hpBar.classList.toggle('hp-low', hpState === 2);
+        const hpText = uiEl('hp-text');
+        hpText.classList.toggle('warn', hpState === 1);
+        hpText.classList.toggle('danger', hpState === 2);
+    }
+    setWidth('xp-bar', `${Math.min(100, (player.xp / player.nextXp) * 100).toFixed(1)}%`);
+    setText('level-txt', String(player.level));
+    setText('score-txt', fmtBeli(scoreBeli));
 
-    document.getElementById('stat-power').innerText = `+${player.powerPct}%`;
-    document.getElementById('stat-crit').innerText = `${Math.round(player.critChance * 100)}%`;
-    document.getElementById('stat-cd').innerText = `-${player.cdReduction}%`;
+    setText('stat-power', `+${player.powerPct}%`);
+    setText('stat-crit', `${Math.round(player.critChance * 100)}%`);
+    setText('stat-cd', `-${player.cdReduction}%`);
     // armor display if element exists
-    const armorEl = document.getElementById('stat-armor');
-    if (armorEl) armorEl.innerText = `${player.armor}%`;
+    setText('stat-armor', `${player.armor}%`);
     updateWeaponsHUD();
 }
 
@@ -1934,6 +1955,11 @@ function updateWeaponsHUD() {
         { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' },
         { id: 'kabuto', icon: ICONS.kabuto, name: 'Kabuto' }, { id: 'roseo', icon: ICONS.roseo, name: 'Roseo Mirror' }, { id: 'clutch', icon: ICONS.clutch, name: 'Clutch' }, { id: 'climatact', icon: ICONS.climatact, name: 'Clima-Tact' }, { id: 'dial', icon: ICONS.dial, name: 'Dial de Impacto' }
     );
+    // solo se reconstruye si cambian las armas, sus niveles o evoluciones
+    let sig = '';
+    for (const w of weapons) { const sk = skills[w.id]; if (sk && sk.level > 0) sig += w.id + sk.level + (sk.evolved ? '*' : '') + ','; }
+    if (el._sig === sig && el.childElementCount) return;
+    el._sig = sig;
     el.innerHTML = '';
     weapons.forEach(w => {
         const sk = skills[w.id];

@@ -1402,14 +1402,14 @@ function showUpgradeScreen(count, isChest) {
         { id: 'poundho', type: 'weapon', chars: ['zoro'], title: '108 Pound Ho', icon: ICONS.poundho, desc: 'Cañonazo de viento que PERFORA a todos en linea recta.' },
         { id: 'concasse', type: 'weapon', chars: ['sanji'], title: 'Concassé', icon: ICONS.concasse, desc: 'Patada aérea demoledora que aplasta a un enemigo y a sus vecinos.' },
         { id: 'partycourse', type: 'weapon', chars: ['sanji'], title: 'Party Table Kick Course', icon: ICONS.partycourse, desc: 'Tanda de patadas giratorias en 360 grados: limpieza masiva.' },
-        { id: 'cuchillo', type: 'weapon', chars: 'all', title: 'Cuchillo de Marina', icon: ICONS.pistol, desc: 'Arma compartida: disparo rápido a un enemigo.' },
-        { id: 'granada', type: 'weapon', chars: 'all', title: 'Granada de Mano', icon: ICONS.bazooka, desc: 'Arma compartida: explosión en área.' },
-        { id: 'rifle', type: 'weapon', chars: 'all', title: 'Rifle de la Marina', icon: ICONS.pistol, desc: 'Arma compartida: disparo preciso a largo alcance.' },
-        { id: 'ballesta', type: 'weapon', chars: 'all', title: 'Ballesta', icon: ICONS.poundho, desc: 'Arma compartida: virote que perfora en línea recta.' },
-        { id: 'lanza', type: 'weapon', chars: 'all', title: 'Lanza de Abordaje', icon: ICONS.collier, desc: 'Arma compartida: estocada rápida a corta distancia.' },
-        { id: 'hacha', type: 'weapon', chars: 'all', title: 'Hacha Pirata', icon: ICONS.concasse, desc: 'Arma compartida: tajo pesado en área cercana.' },
-        { id: 'shuriken', type: 'weapon', chars: 'all', title: 'Shuriken', icon: ICONS.flyingslash, desc: 'Arma compartida: proyectil arrojadizo veloz.' },
-        { id: 'hakiPulse', type: 'weapon', chars: 'all', title: 'Pulso de Haoshoku', icon: ICONS.tatsumaki, desc: 'Arma compartida: onda de Haki que daña a los cercanos.' },
+        { id: 'cuchillo', type: 'weapon', chars: 'all', title: 'Cuchillo de Marina', icon: ICONS.cuchillo, desc: 'Arma compartida: disparo rápido a un enemigo.' },
+        { id: 'granada', type: 'weapon', chars: 'all', title: 'Granada de Mano', icon: ICONS.granada, desc: 'Arma compartida: explosión en área.' },
+        { id: 'rifle', type: 'weapon', chars: 'all', title: 'Rifle de la Marina', icon: ICONS.rifle, desc: 'Arma compartida: disparo preciso a largo alcance.' },
+        { id: 'ballesta', type: 'weapon', chars: 'all', title: 'Ballesta', icon: ICONS.ballesta, desc: 'Arma compartida: virote que perfora en línea recta.' },
+        { id: 'lanza', type: 'weapon', chars: 'all', title: 'Lanza de Abordaje', icon: ICONS.lanza, desc: 'Arma compartida: estocada rápida a corta distancia.' },
+        { id: 'hacha', type: 'weapon', chars: 'all', title: 'Hacha Pirata', icon: ICONS.hacha, desc: 'Arma compartida: tajo pesado en área cercana.' },
+        { id: 'shuriken', type: 'weapon', chars: 'all', title: 'Shuriken', icon: ICONS.shuriken, desc: 'Arma compartida: proyectil arrojadizo veloz.' },
+        { id: 'hakiPulse', type: 'weapon', chars: 'all', title: 'Pulso de Haoshoku', icon: ICONS.hakiPulse, desc: 'Arma compartida: onda de Haki que daña a los cercanos.' },
         { id: 'haki_buso', type: 'passive', chars: 'all', title: 'Busoshoku Haki', icon: ICONS.haki_buso, desc: 'Aumenta daño y armadura.' },
         { id: 'haki_ken', type: 'passive', chars: 'all', title: 'Kenbunshoku Haki', icon: ICONS.haki_ken, desc: 'Aumenta crit y evasión.' },
         { id: 'haki_hao', type: 'passive', chars: 'all', title: 'Haoshoku Haki', icon: ICONS.haki_hao, desc: 'Pulso cada 6s que aturde 1.5s a los enemigos cercanos (no bosses).' },
@@ -1418,12 +1418,12 @@ function showUpgradeScreen(count, isChest) {
         { id: 'pickup', type: 'passive', chars: 'all', title: 'Recogida', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida de drops.' },
         { id: 'growth', type: 'passive', chars: 'all', title: 'Crecimiento', icon: ICONS.growth, desc: 'Aumenta la XP ganada +8%.' },
         { id: 'luck', type: 'passive', chars: 'all', title: 'Suerte', icon: ICONS.luck, desc: 'Mejora la calidad de los cofres y los Berries; +5% crítico.' },
-        { id: 'maxhp', type: 'passive', chars: 'all', title: 'Vitalidad', icon: ICONS.armor, desc: 'Aumenta la vida máxima +20 y la regeneración.' },
-        { id: 'regen', type: 'passive', chars: 'all', title: 'Regeneración', icon: ICONS.power, desc: 'Recupera +2 HP por segundo.' },
-        { id: 'evasion', type: 'passive', chars: 'all', title: 'Esquiva', icon: ICONS.speed, desc: 'Reduce el daño recibido un +6% (acumulable).' },
+        { id: 'maxhp', type: 'passive', chars: 'all', title: 'Vitalidad', icon: ICONS.heart, desc: 'Aumenta la vida máxima +20 y la regeneración.' },
+        { id: 'regen', type: 'passive', chars: 'all', title: 'Regeneración', icon: ICONS.meat, desc: 'Recupera +2 HP por segundo.' },
+        { id: 'evasion', type: 'passive', chars: 'all', title: 'Esquiva', icon: ICONS.dodge, desc: 'Reduce el daño recibido un +6% (acumulable).' },
         { id: 'magnet', type: 'passive', chars: 'all', title: 'Imán', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida +20%.' },
-        { id: 'greed', type: 'passive', chars: 'all', title: 'Avaricia', icon: ICONS.luck, desc: 'Aumenta los Berries ganados +12%.' },
-        { id: 'vamp', type: 'passive', chars: 'all', title: 'Vampirismo', icon: ICONS.crit, desc: 'Sana 2 HP al derrotar a un enemigo (probabilidad).' },
+        { id: 'greed', type: 'passive', chars: 'all', title: 'Avaricia', icon: ICONS.coin, desc: 'Aumenta los Berries ganados +12%.' },
+        { id: 'vamp', type: 'passive', chars: 'all', title: 'Vampirismo', icon: ICONS.drop, desc: 'Sana 2 HP al derrotar a un enemigo (probabilidad).' },
     ];
     // snapshot del pool completo (titulo + icono) — la Ficha de Singladura lo usa
     window.UPGRADE_POOL_MAP = window.UPGRADE_POOL_MAP || {};
@@ -1815,10 +1815,10 @@ function updateWeaponsHUD() {
     ];
     // armas compartidas (disponibles para todos)
     weapons.push(
-        { id: 'cuchillo', icon: ICONS.pistol, name: 'Cuchillo' }, { id: 'granada', icon: ICONS.bazooka, name: 'Granada' },
-        { id: 'rifle', icon: ICONS.pistol, name: 'Rifle' }, { id: 'ballesta', icon: ICONS.poundho, name: 'Ballesta' },
-        { id: 'lanza', icon: ICONS.collier, name: 'Lanza' }, { id: 'hacha', icon: ICONS.concasse, name: 'Hacha' },
-        { id: 'shuriken', icon: ICONS.flyingslash, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.tatsumaki, name: 'Haoshoku' }
+        { id: 'cuchillo', icon: ICONS.cuchillo, name: 'Cuchillo' }, { id: 'granada', icon: ICONS.granada, name: 'Granada' },
+        { id: 'rifle', icon: ICONS.rifle, name: 'Rifle' }, { id: 'ballesta', icon: ICONS.ballesta, name: 'Ballesta' },
+        { id: 'lanza', icon: ICONS.lanza, name: 'Lanza' }, { id: 'hacha', icon: ICONS.hacha, name: 'Hacha' },
+        { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' }
     );
     el.innerHTML = '';
     weapons.forEach(w => {

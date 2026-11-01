@@ -246,7 +246,7 @@ function render() {
     if (boss) {
         ctx.save();
         ctx.setTransform(RS, 0, 0, RS, 0, 0);
-        const bw = 420, bh = 14;
+        const bw = Math.min(420, VIEW_W - 40), bh = 14;
         const bx = VIEW_W / 2 - bw / 2, by = 100;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
         ctx.fillRect(bx - 6, by - 6, bw + 12, bh + 16);
@@ -319,6 +319,13 @@ function render() {
         ctx.drawImage(Sprites.luffy, player.animFrame * 32, 0, 32, 32, -16, -16, 32, 32);
     }
     ctx.restore();
+    // Móvil (como VS): la barra de vida va bajo el personaje en vez de en el cartel del HUD
+    if (compactHUD()) {
+        const hw = 34, hy = player.y + 22 * SPRITE_ZOOM, f = Math.max(0, Math.min(1, player.hp / player.maxHp));
+        ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(player.x - hw / 2 - 1, hy - 1, hw + 2, 6);
+        ctx.fillStyle = f > 0.5 ? '#22c55e' : f > 0.25 ? '#f59e0b' : '#ef4444';
+        ctx.fillRect(player.x - hw / 2, hy, hw * f, 4);
+    }
     gearDrawWorld(ctx);
 
     // Partículas (js/vfx.js)

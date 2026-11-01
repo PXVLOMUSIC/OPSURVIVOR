@@ -44,7 +44,7 @@ window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; }
 const joystickZone = document.getElementById('joystick-zone');
 const joystickKnob = document.getElementById('joystick-knob');
 // Joystick flotante estilo VS mobile: aparece donde toques la pantalla (no en UI)
-const JOY_HALF = 65; // mitad del tamaño de la zona (130px)
+let JOY_HALF = 65; // mitad del tamaño de la zona (130px en PC, 100px en móvil)
 function isUITouch(el) {
     return el.closest && el.closest('button, #upgrade-screen, #arcana-screen, #start-screen, #shop-screen, #pause-menu, #gameover-screen, #victory-screen, #hud, .hud');
 }
@@ -60,6 +60,7 @@ window.addEventListener('touchstart', e => {
     if (gameState !== 'PLAYING') return;
     if (joystick.active) return; // un solo stick: ignorar segundas manos
     if (isUITouch(e.target)) return;
+    JOY_HALF = compactHUD() ? 50 : 65;
     e.preventDefault();
     const touch = e.changedTouches[0];
     const cx = touch.clientX, cy = touch.clientY;

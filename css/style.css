@@ -1138,3 +1138,85 @@ body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-
     #char-select { gap: 8px !important; }
     #char-select .char-card, #char-select .char-card.crew { width: min(86px, 21vw); }
 }
+
+/* ============================================================
+   MÓVIL: HUD compacto estilo VS (misma consulta que COMPACT_MQ en js/core.js)
+   Barra de XP a lo ancho arriba con el nivel, tiempo centrado debajo,
+   armas pequeñas arriba a la izquierda, berries y pausa arriba a la derecha.
+   La vida se dibuja bajo el personaje (js/render.js). En PC no cambia nada.
+   ============================================================ */
+@media (max-width: 900px), (max-height: 500px) {
+    #ui-layer .hud-top { margin: 0; }
+    #ui-layer .player-status { background: none; border: none; box-shadow: none; padding: 0; width: auto; flex: 0 0 auto; }
+    #ui-layer .avatar-box, #ui-layer .poster-wanted, #ui-layer .poster-name,
+    #ui-layer .player-status .bar-label, #ui-layer .player-status .bar-outer:not(.bar-xp) { display: none; }
+    #ui-layer .bars-container { width: auto; }
+    #ui-layer .player-status .bar-outer.bar-xp {
+        position: fixed; z-index: 6; margin: 0;
+        top: env(safe-area-inset-top); left: env(safe-area-inset-left); right: env(safe-area-inset-right);
+        width: auto; height: 12px; border: none; border-bottom: 1px solid var(--ink); border-radius: 0;
+        background: rgba(10,6,2,0.8);
+    }
+    #ui-layer .poster-lv {
+        position: fixed; z-index: 7; top: env(safe-area-inset-top); right: calc(6px + env(safe-area-inset-right));
+        font-size: 11px; line-height: 12px; padding: 0 6px; transform: none; background: none; color: #fff;
+        text-shadow: 0 0 2px #000, 0 1px 2px #000;
+    }
+    #ui-layer .poster-bounty {
+        position: fixed; z-index: 6; top: calc(18px + env(safe-area-inset-top)); right: calc(48px + env(safe-area-inset-right));
+        margin: 0; font-size: 17px; color: var(--gold); text-shadow: 0 0 2px #000, 0 1px 2px #000, 1px 1px 0 #000;
+    }
+    #ui-layer .poster-bounty .beli { font-size: 14px; }
+    #pause-btn {
+        position: fixed; z-index: 7; top: calc(17px + env(safe-area-inset-top)); right: calc(6px + env(safe-area-inset-right));
+        width: 36px; height: 36px; min-height: 36px !important; padding: 0; font-size: 0; letter-spacing: 0;
+        display: flex; align-items: center; justify-content: center; opacity: 0.85;
+    }
+    #pause-btn svg.op-ico, #pause-btn .op-slot { width: 18px; height: 18px; font-size: 18px; }
+    #time-top {
+        top: calc(13px + env(safe-area-inset-top)); padding: 0; font-size: 19px; letter-spacing: 1px;
+        background: none; border: none; box-shadow: none; text-shadow: 0 0 3px #000, 0 1px 2px #000, 1px 1px 0 #000;
+    }
+    #time-top svg.op-ico, #time-top .op-slot { display: none; }
+    #weapons-hud {
+        top: calc(17px + env(safe-area-inset-top)); left: calc(6px + env(safe-area-inset-left)); bottom: auto;
+        transform: none; margin: 0; gap: 3px; justify-content: flex-start; max-width: calc(50vw - 52px);
+    }
+    .wslot { width: 26px; padding: 3px 0 0; border-width: 1px; border-radius: 3px; box-shadow: 0 1px 0 rgba(0,0,0,0.45); }
+    .wslot::before { height: 2px; }
+    .wslot .hud-ico svg.op-ico { width: 15px; height: 15px; }
+    .wslot-lv { font-size: 9px; letter-spacing: 0; line-height: 1.1; }
+    #joystick-zone { width: 100px; height: 100px; border-radius: 50px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); }
+    #joystick-knob { top: 30px; left: 30px; width: 40px; height: 40px; border-radius: 20px; opacity: 0.75; }
+    #gear-btn { width: 50px; height: 50px; font-size: 18px; border-width: 2px;
+        right: calc(12px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); }
+
+    /* Pausa compacta: opciones en dos columnas, sin subtítulos */
+    #pause-screen .wanted-board { padding: 10px 12px; }
+    #pause-screen .wanted-subtitle { margin-bottom: 8px; }
+    #pause-screen .upgrade-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    #pause-screen .upgrade-card { padding: 6px 8px; gap: 8px; min-height: 44px; }
+    #pause-screen .upgrade-icon { width: 30px; height: 30px; }
+    #pause-screen .upgrade-icon svg.op-ico { width: 18px; height: 18px; }
+    #pause-screen .upgrade-info { min-width: 0; flex: 1; }
+    #pause-screen .upgrade-info h4 { font-size: 14px; margin: 0; }
+    #pause-screen .upgrade-info p { display: none; }
+    #pause-info-panel { padding: 8px 10px !important; }
+    #pause-info-panel h3 { font-size: 11px !important; margin-bottom: 4px !important; }
+    #pause-info-panel .stats-panel { font-size: 12px; padding: 6px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; }
+}
+/* Móvil en vertical: cartas de nivel y Voluntades compactas (caben las 3-4 sin scroll) */
+@media (max-width: 600px) and (min-height: 501px) {
+    #upgrade-screen .wanted-board, #arcana-screen .wanted-board { width: 96vw; max-width: 96vw !important; padding: 10px 10px 12px; border-width: 6px; }
+    #upgrade-screen .wanted-title, #arcana-screen .wanted-title { font-size: 26px !important; letter-spacing: 4px !important; line-height: 1.1; margin: 0 !important; }
+    #upgrade-screen .wanted-subtitle, #arcana-screen .wanted-subtitle { font-size: 12px; padding: 4px 10px; margin: 4px 0 8px !important; }
+    #upgrade-options, #arcana-options { gap: 8px; }
+    #upgrade-options .upgrade-card, #arcana-options .upgrade-card { padding: 8px 8px 8px 14px; gap: 8px; box-shadow: 3px 3px 0 var(--ink); }
+    #upgrade-options .upgrade-icon, #arcana-options .upgrade-icon { width: 36px; height: 36px; min-width: 36px; }
+    #upgrade-options .upgrade-icon svg.op-ico, #arcana-options .upgrade-icon svg.op-ico { width: 22px; height: 22px; }
+    #upgrade-options .upgrade-info h4, #arcana-options .upgrade-info h4 { font-size: 15px; padding-right: 0; }
+    #upgrade-options .upgrade-info p, #arcana-options .upgrade-info p { font-size: 12px; line-height: 1.3; }
+    #upgrade-options .upgrade-card::after { display: none; }
+    #arcana-options .upgrade-card::after { font-size: 22px; top: 2px; right: 6px; }
+    .upgrade-toolbar { margin-top: 8px; }
+}

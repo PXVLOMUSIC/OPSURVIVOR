@@ -453,8 +453,9 @@ function gearDrawHUD(ctx) {
         ctx.fillRect(0, 0, VIEW_W, VIEW_H);
         window._gearFlash -= 1 / 60;
     }
-    const w = Math.min(240, VIEW_W - 40), h = 12;
-    const x = (VIEW_W - w) / 2, y = VIEW_H - 96;
+    const cmp = compactHUD();
+    const w = cmp ? Math.min(160, VIEW_W - 150) : Math.min(240, VIEW_W - 40), h = cmp ? 8 : 12;
+    const x = (VIEW_W - w) / 2, y = cmp ? VIEW_H - 26 : VIEW_H - 96;
     const g = gearState.active;
     let frac, col, label;
     if (g) { const inf = gearInfo(g); frac = gearState.remain / inf.dur; col = inf.color; label = inf.name; }
@@ -470,7 +471,7 @@ function gearDrawHUD(ctx) {
     ctx.fillRect(x, y, w * Math.max(0, Math.min(1, frac)), h);
     ctx.strokeStyle = '#b45309'; ctx.lineWidth = 2;
     ctx.strokeRect(x - 2, y - 2, w + 4, h + 4);
-    ctx.font = '13px Bangers, Arial, sans-serif';
+    ctx.font = (cmp ? '11px' : '13px') + ' Bangers, Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.9)';
     ctx.strokeText(label, VIEW_W / 2, y - 6);

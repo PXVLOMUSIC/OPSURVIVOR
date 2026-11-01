@@ -2,6 +2,9 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
 
 let VIEW_W = 800, VIEW_H = 600;
+// Móvil (pantalla estrecha o tumbada): HUD compacto estilo VS, igual que en css/style.css
+const COMPACT_MQ = window.matchMedia('(max-width: 900px), (max-height: 500px)');
+function compactHUD() { return COMPACT_MQ.matches; }
 // === Rendimiento: escala de render (resolución interna del canvas) ===
 // El mundo se dibuja en píxeles CSS (VIEW_W x VIEW_H) y el canvas interno mide VIEW * RS.
 // RS < 1 dibuja menos píxeles y el navegador lo amplía sin suavizado (el arte es pixel art).

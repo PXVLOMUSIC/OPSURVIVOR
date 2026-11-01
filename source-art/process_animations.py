@@ -1,7 +1,7 @@
 import os, json, shutil
 from PIL import Image
 
-base='C:/Users/origi/Desktop/OPSURVIVOR/sprites limpios'
+base=os.path.join(os.path.dirname(os.path.abspath(__file__)),'sprites-limpios')
 
 def load_mapping(path):
     with open(path) as fh:

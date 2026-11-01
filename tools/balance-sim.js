@@ -108,13 +108,13 @@ async function runOne(browser, ch, map, meta) {
             if (player.hp < lastHp) dmgTaken += lastHp - player.hp;
             lastHp = player.hp;
             if (player.hp < minHp) minHp = player.hp;
-            if (window.runStats) kills = Math.max(kills, runStats.kills);
+            if (window.runStats) kills = Math.max(kills, window.runStats.kills);
             if (bossSpawned && bossT === null) bossT = gameTime;
             const on = enemies.filter(e => Math.abs(e.x - player.x) < VIEW_W / 2 && Math.abs(e.y - player.y) < VIEW_H / 2).length;
             if (on > maxOn) maxOn = on;
             if (gameTime - lastSample >= 60) {
                 lastSample = gameTime;
-                samples.push({ m: Math.round(gameTime / 60), on, alive: enemies.length, kills: runStats ? runStats.kills : 0, lvl: player.level, hp: Math.round(player.hp), maxHp: player.maxHp, power: player.powerPct });
+                samples.push({ m: Math.round(gameTime / 60), on, alive: enemies.length, kills: window.runStats ? window.runStats.kills : 0, lvl: player.level, hp: Math.round(player.hp), maxHp: player.maxHp, power: player.powerPct });
             }
             if (gameTime > 720) break; // 12 min de tope: si no mata al boss, cuenta como derrota
             if (performance.now() - t0 > 240000) break;

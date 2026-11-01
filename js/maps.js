@@ -87,11 +87,173 @@ const PALACE_ARENA_POLY = [
   [-1125.7,-195.5],
   [-1155.0,-78.2],
 ];
+// Enies Lobby: contorno de la línea roja que dibujó Pablo sobre su mapa (mismo origen que la plaza de palacio).
+const ENIES_LOBBY_POLY = [
+  [-367.4,-356.8],
+  [-349.1,-353.1],
+  [-349.1,-342.1],
+  [-330.8,-323.8],
+  [-110.9,-316.5],
+  [83.3,-316.5],
+  [152.9,-327.5],
+  [292.1,-323.8],
+  [321.4,-327.5],
+  [347.1,-349.5],
+  [380.1,-349.5],
+  [416.7,-334.8],
+  [446.0,-246.8],
+  [482.7,-206.5],
+  [581.6,-191.8],
+  [647.5,-191.8],
+  [647.5,-158.8],
+  [662.2,-144.2],
+  [761.1,-147.8],
+  [790.4,-140.5],
+  [827.1,-114.8],
+  [871.0,-37.9],
+  [944.3,149.1],
+  [973.6,251.8],
+  [973.6,284.7],
+  [1017.6,372.7],
+  [1024.9,409.4],
+  [618.2,413.1],
+  [577.9,405.7],
+  [347.1,405.7],
+  [-23.0,398.4],
+  [-114.6,409.4],
+  [-305.1,413.1],
+  [-327.1,420.4],
+  [-843.7,420.4],
+  [-862.1,413.1],
+  [-1045.3,420.4],
+  [-1048.9,413.1],
+  [-1008.6,325.1],
+  [-1001.3,270.1],
+  [-983.0,222.4],
+  [-935.3,130.8],
+  [-876.7,-26.9],
+  [-825.4,-133.2],
+  [-814.4,-136.8],
+  [-799.8,-118.5],
+  [-689.8,-118.5],
+  [-656.9,-147.8],
+  [-627.6,-199.2],
+  [-473.7,-217.5],
+  [-437.0,-265.1],
+  [-429.7,-327.5],
+  [-418.7,-349.5]
+];
+// Marineford: elipse ajustada a la cara superior de la plataforma central (sin el canto de piedra).
+// Imagen: centro (705, 456), semiejes 472 x 198 px.
+const MARINEFORD_POLY = [
+  [946.0,20.0],
+  [937.9,71.7],
+  [913.8,122.5],
+  [874.1,171.5],
+  [819.5,218.0],
+  [750.9,261.1],
+  [669.5,300.0],
+  [576.7,334.2],
+  [474.0,362.9],
+  [363.3,385.9],
+  [246.3,402.5],
+  [125.2,412.6],
+  [2.0,416.0],
+  [-121.2,412.6],
+  [-242.3,402.5],
+  [-359.3,385.9],
+  [-470.0,362.9],
+  [-572.7,334.2],
+  [-665.5,300.0],
+  [-746.9,261.1],
+  [-815.5,218.0],
+  [-870.1,171.5],
+  [-909.8,122.5],
+  [-933.9,71.7],
+  [-942.0,20.0],
+  [-933.9,-31.7],
+  [-909.8,-82.5],
+  [-870.1,-131.5],
+  [-815.5,-178.0],
+  [-746.9,-221.1],
+  [-665.5,-260.0],
+  [-572.7,-294.2],
+  [-470.0,-322.9],
+  [-359.3,-345.9],
+  [-242.3,-362.5],
+  [-121.2,-372.6],
+  [2.0,-376.0],
+  [125.2,-372.6],
+  [246.3,-362.5],
+  [363.3,-345.9],
+  [474.0,-322.9],
+  [576.7,-294.2],
+  [669.5,-260.0],
+  [750.9,-221.1],
+  [819.5,-178.0],
+  [874.1,-131.5],
+  [913.8,-82.5],
+  [937.9,-31.7]
+];
+// Water 7: contorno de la línea roja que dibujó Pablo sobre la plaza del muelle.
+const WATER7_POLY = [
+  [726.0,-180.3],
+  [739.8,-180.3],
+  [778.2,-147.4],
+  [935.0,20.3],
+  [1023.0,99.9],
+  [1067.0,130.2],
+  [1122.0,201.6],
+  [1168.8,242.8],
+  [1188.0,273.1],
+  [1309.0,399.4],
+  [1309.0,418.7],
+  [1331.0,432.4],
+  [1122.0,432.4],
+  [1116.5,437.9],
+  [1003.8,446.2],
+  [734.2,446.2],
+  [651.8,432.4],
+  [352.0,432.4],
+  [346.5,437.9],
+  [231.0,437.9],
+  [220.0,443.4],
+  [-33.0,440.7],
+  [-74.2,432.4],
+  [-715.0,440.7],
+  [-1309.0,440.7],
+  [-1322.8,421.4],
+  [-1317.2,399.4],
+  [-1259.5,352.7],
+  [-1053.2,143.9],
+  [-1009.2,83.5],
+  [-918.5,-7.2],
+  [-838.8,-103.4],
+  [-808.5,-133.6],
+  [-764.5,-163.8],
+  [-497.8,-144.6],
+  [-247.5,-144.6],
+  [-118.2,-158.3],
+  [272.2,-152.9],
+  [280.5,-158.3],
+  [409.8,-158.3],
+  [519.8,-169.3],
+  [693.0,-169.3]
+];
+// Whole Cake (futuro, aún sin roster ni botón): línea verde que dibujó Pablo sobre la cubierta.
+const WHOLECAKE_POLY = [
+  [-880,-82], [884,-82], [1168,296], [1236,380], [1224,406],
+  [-1228,406], [-1248,390], [-1178,264], [-934,-34]
+];
 const WALK_POLYS = {
   baratie: WALK_POLY,
   alabasta: PALACE_ARENA_POLY,
   skypiea: PALACE_ARENA_POLY,
-  thrillerbark: PALACE_ARENA_POLY
+  thrillerbark: PALACE_ARENA_POLY,
+  enieslobby: ENIES_LOBBY_POLY,
+  marineford: MARINEFORD_POLY,
+  water7: WATER7_POLY,
+  wholecake: WHOLECAKE_POLY
 };
 function walkPoly() {
   return WALK_POLYS[selectedMap] || WALK_POLY;
@@ -123,7 +285,10 @@ const MAP_OBSTACLES = {
   baratie: [],
   alabasta: [],
   skypiea: [],
-  thrillerbark: []
+  thrillerbark: [],
+  enieslobby: [],
+  marineford: [],
+  water7: []
 };
 function mapObstacles() { return MAP_OBSTACLES[selectedMap] || []; }
 // Distancia al cuadrado de (x,y) al segmento del obstáculo, y punto más cercano
@@ -194,7 +359,7 @@ const player = {
 };
 
 const skills = {
-    pistol: { level: 1, baseDamage: 25, cooldown: 1.1, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
+    pistol: { level: 1, baseDamage: 28, cooldown: 1.1, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
     gatling: { level: 0, baseDamage: 10, cooldown: 3.8, timer: 0, radius: 85, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
     bazooka: { level: 0, baseDamage: 45, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
     gear2: { level: 0, cooldown: 12.0, timer: 0, duration: 6.0, speedBonus: 0.3, active: false, remain: 0, evolved: false },
@@ -204,13 +369,13 @@ const skills = {
     // Luffy: latigazo frontal (abanico) y patada hacha alla gear 3
     muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Jet Whip' },
     ono: { level: 0, baseDamage: 70, cooldown: 5.0, timer: 0, radius: 65, evolved: false },
-    santoryu: { level: 1, baseDamage: 34, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
+    santoryu: { level: 1, baseDamage: 33, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
     onigiri: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, dash: 160, evolved: false },
     flyingslash: { level: 0, baseDamage: 20, cooldown: 2.2, timer: 0, range: 300, speed: 600, evolved: false },
     // Zoro: tornado orbitante y cañón de viento perforante
     tatsumaki: { level: 0, baseDamage: 10, cooldown: 3.6, timer: 0, radius: 95, duration: 1.0, evolved: false },
     poundho: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, range: 420, speed: 700, evolved: false },
-    diablejambe: { level: 1, baseDamage: 18, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
+    diablejambe: { level: 1, baseDamage: 22, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
     collier: { level: 0, baseDamage: 10, cooldown: 0.6, timer: 0, range: 70, evolved: false },
     joueshot: { level: 0, baseDamage: 26, cooldown: 2.8, timer: 0, range: 240, speed: 560, evolved: false },
     // Sanji: patada aérea demoledora y tanda giratoria 360
@@ -224,7 +389,14 @@ const skills = {
     lanza: { level: 0, baseDamage: 14, cooldown: 0.7, timer: 0, range: 90, evolved: false },
     hacha: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, radius: 70, evolved: false },
     shuriken: { level: 0, baseDamage: 16, cooldown: 1.8, timer: 0, range: 280, speed: 560, evolved: false },
-    hakiPulse: { level: 0, baseDamage: 12, cooldown: 4.0, timer: 0, radius: 80, duration: 1.0, evolved: false }
+    hakiPulse: { level: 0, baseDamage: 12, cooldown: 4.0, timer: 0, radius: 80, duration: 1.0, evolved: false },
+    // Objetos del mundo de One Piece (js/arsenal.js)
+    kabuto: { level: 0, baseDamage: 18, cooldown: 2.4, timer: 0, life: 2.6, speed: 430, evolved: false },
+    climatact: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, strikes: 2, evolved: false },
+    dial: { level: 0, baseDamage: 22, cooldown: 4.4, timer: 0, radius: 95, push: 70, evolved: false },
+    // Técnicas propias de Chopper y Robin
+    roseo: { level: 0, baseDamage: 40, cooldown: 1.6, timer: 0, radius: 55, evolved: false },
+    clutch: { level: 0, baseDamage: 34, cooldown: 2.2, timer: 0, targets: 2, evolved: false }
 };
 
 let enemies = [];

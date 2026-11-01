@@ -1,17 +1,136 @@
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false });
 
 let VIEW_W = 800, VIEW_H = 600;
-
+// === Rendimiento: escala de render (resolución interna del canvas) ===
+// El mundo se dibuja en píxeles CSS (VIEW_W x VIEW_H) y el canvas interno mide VIEW * RS.
+// RS < 1 dibuja menos píxeles y el navegador lo amplía sin suavizado (el arte es pixel art).
+// Calidad: 'auto' (baja sola si caen los FPS), 'high' (1), 'medium' (0.75), 'low' (0.5).
+const RS_LEVELS = [1, 0.75, 0.5];
+let RS = 1;
+let _rsAuto = 0; // nivel elegido por la calidad automática
+function qualityMode() { return (typeof windowOpts !== 'undefined' && windowOpts && windowOpts.quality) || 'auto'; }
+function targetRS() {
+    const q = qualityMode();
+    if (q === 'high') return 1;
+    if (q === 'medium') return 0.75;
+    if (q === 'low') return 0.5;
+    return RS_LEVELS[_rsAuto];
+}
+// Efectos baratos (sin sombras ni brillos de suelo) en calidad baja
+function lowFx() { return RS <= 0.5; }
 function resizeCanvas() {
     VIEW_W = window.innerWidth;
     VIEW_H = window.innerHeight;
-    canvas.width = VIEW_W;
-    canvas.height = VIEW_H;
+    RS = targetRS();
+    canvas.width = Math.max(1, Math.round(VIEW_W * RS));
+    canvas.height = Math.max(1, Math.round(VIEW_H * RS));
+    canvas.style.width = VIEW_W + 'px';
+    canvas.style.height = VIEW_H + 'px';
+    ctx.setTransform(RS, 0, 0, RS, 0, 0);
     ctx.imageSmoothingEnabled = false;
+    _needsRedraw = true; // cambiar el tamaño borra el canvas
+    document.body && document.body.classList.toggle('q-low', RS <= 0.5);
 }
+let _needsRedraw = true;
 window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
 resizeCanvas();
+function applyQuality() { if (targetRS() !== RS) resizeCanvas(); }
+
+// Calidad automática: mide el intervalo real entre frames durante la partida.
+// Si va por debajo de ~45 FPS durante 2 s baja un nivel; si va sobrado 8 s sube uno.
+const _perf = { last: 0, acc: 0, n: 0, slow: 0, fast: 0 };
+function perfTick(now) {
+    if (gameState !== 'PLAYING' || document.hidden) { _perf.last = 0; return; }
+    if (_perf.last) {
+        const d = now - _perf.last;
+        if (d < 250) { _perf.acc += d; _perf.n++; }
+    }
+    _perf.last = now;
+    if (_perf.acc < 2000) return;
+    const avg = _perf.acc / _perf.n;
+    _perf.acc = 0; _perf.n = 0;
+    if (qualityMode() !== 'auto') return;
+    if (avg > 22) { _perf.fast = 0; if (++_perf.slow >= 1 && _rsAuto < RS_LEVELS.length - 1) { _rsAuto++; _perf.slow = 0; resizeCanvas(); } }
+    else if (avg < 17.5) { _perf.slow = 0; if (++_perf.fast >= 4 && _rsAuto > 0) { _rsAuto--; _perf.fast = 0; resizeCanvas(); } }
+    else { _perf.slow = 0; _perf.fast = 0; }
+}
+
+// === Compatibilidad: filtros de color sin ctx.filter ===
+// ctx.filter es lento por frame y Safari < 18 no lo soporta. Cada sprite filtrado se pinta una vez
+// en un canvas aparte (con ctx.filter si existe, o con una matriz de color equivalente) y se reutiliza.
+const CANVAS_FILTER_OK = (() => { try { const t = document.createElement('canvas').getContext('2d'); t.filter = 'blur(1px)'; return t.filter === 'blur(1px)'; } catch (e) { return false; } })();
+const _filterCache = new WeakMap();
+function _filterMatrix(fn, v) {
+    const c = Math.cos(v), sn = Math.sin(v), k = 1 - v;
+    switch (fn) {
+        case 'brightness': return [v, 0, 0, 0, v, 0, 0, 0, v, 0];
+        case 'contrast': return [v, 0, 0, 0, v, 0, 0, 0, v, (0.5 - 0.5 * v) * 255];
+        case 'saturate': return [0.213 + 0.787 * v, 0.715 - 0.715 * v, 0.072 - 0.072 * v, 0.213 - 0.213 * v, 0.715 + 0.285 * v, 0.072 - 0.072 * v, 0.213 - 0.213 * v, 0.715 - 0.715 * v, 0.072 + 0.928 * v, 0];
+        case 'grayscale': return [0.2126 + 0.7874 * k, 0.7152 - 0.7152 * k, 0.0722 - 0.0722 * k, 0.2126 - 0.2126 * k, 0.7152 + 0.2848 * k, 0.0722 - 0.0722 * k, 0.2126 - 0.2126 * k, 0.7152 - 0.7152 * k, 0.0722 + 0.9278 * k, 0];
+        case 'sepia': return [0.393 + 0.607 * k, 0.769 - 0.769 * k, 0.189 - 0.189 * k, 0.349 - 0.349 * k, 0.686 + 0.314 * k, 0.168 - 0.168 * k, 0.272 - 0.272 * k, 0.534 - 0.534 * k, 0.131 + 0.869 * k, 0];
+        case 'hue-rotate': return [0.213 + c * 0.787 - sn * 0.213, 0.715 - c * 0.715 - sn * 0.715, 0.072 - c * 0.072 + sn * 0.928,
+            0.213 - c * 0.213 + sn * 0.143, 0.715 + c * 0.285 + sn * 0.140, 0.072 - c * 0.072 - sn * 0.283,
+            0.213 - c * 0.213 - sn * 0.787, 0.715 - c * 0.715 + sn * 0.715, 0.072 + c * 0.928 + sn * 0.072, 0];
+    }
+    return null;
+}
+function _applyFilterManually(g, w, h, filter) {
+    const ops = [];
+    filter.replace(/([a-z-]+)\(([-\d.]+)(deg|%)?\)/g, (_, fn, num, unit) => {
+        let v = parseFloat(num);
+        if (unit === '%') v /= 100;
+        if (fn === 'hue-rotate') v = v * Math.PI / 180;
+        if (fn === 'grayscale' || fn === 'sepia') v = Math.min(1, v);
+        const m = _filterMatrix(fn, v);
+        if (m) ops.push(m);
+    });
+    const d = g.getImageData(0, 0, w, h), px = d.data;
+    for (let i = 0; i < px.length; i += 4) {
+        if (!px[i + 3]) continue;
+        let r = px[i], gg = px[i + 1], b = px[i + 2];
+        for (const m of ops) {
+            const nr = m[0] * r + m[1] * gg + m[2] * b + m[9], ng = m[3] * r + m[4] * gg + m[5] * b + m[9], nb = m[6] * r + m[7] * gg + m[8] * b + m[9];
+            r = nr < 0 ? 0 : (nr > 255 ? 255 : nr); gg = ng < 0 ? 0 : (ng > 255 ? 255 : ng); b = nb < 0 ? 0 : (nb > 255 ? 255 : nb);
+        }
+        px[i] = r; px[i + 1] = gg; px[i + 2] = b;
+    }
+    g.putImageData(d, 0, 0);
+}
+// Devuelve el sprite con el filtro CSS aplicado (cacheado). Si aún no ha cargado devuelve el original.
+function filteredSprite(img, filter) {
+    if (!filter || filter === 'none' || !img || !img.width) return img;
+    let m = _filterCache.get(img);
+    if (!m) { m = {}; _filterCache.set(img, m); }
+    if (m[filter]) return m[filter];
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const g = c.getContext('2d');
+    try {
+        if (CANVAS_FILTER_OK) { g.filter = filter; g.drawImage(img, 0, 0); }
+        else { g.drawImage(img, 0, 0); _applyFilterManually(g, c.width, c.height, filter); }
+    } catch (e) { g.filter = 'none'; g.drawImage(img, 0, 0); }
+    return (m[filter] = c);
+}
+// Dibuja con el filtro que haya en ctx.filter (puesto por los Gears) usando la caché
+function takeCtxFilter(c) {
+    const f = c.filter;
+    if (f && f !== 'none') c.filter = 'none';
+    return (f && f !== 'none') ? f : null;
+}
+
+// === Carga de imágenes bajo demanda ===
+// Cada ruta se descarga y decodifica una sola vez (varios frames y enemigos comparten archivos).
+const IMG_CACHE = {};
+function loadImg(path) {
+    let img = IMG_CACHE[path];
+    if (img) return img;
+    img = IMG_CACHE[path] = new Image();
+    img.decoding = 'async';
+    img.src = path;
+    return img;
+}
 
 // --- SPRITE IMAGE LOADING ---
 const IMG = {};
@@ -24,10 +143,13 @@ const SPRITE_PATHS = {
     zoro: 'assets/sprites/zoro.png',
     sanji: 'assets/sprites/sanji.png',
     objetos: 'assets/sprites/objetos.png',
-    baratieMap: 'assets/maps/baratie.png',
-    alabastaMap: 'assets/maps/alabasta.png',
-    skypieaMap: 'assets/maps/skypiea.png',
-    thrillerbarkMap: 'assets/maps/thrillerbark.png',
+    baratieMap: 'assets/maps/baratie.jpg',
+    alabastaMap: 'assets/maps/alabasta.jpg',
+    skypieaMap: 'assets/maps/skypiea.jpg',
+    thrillerbarkMap: 'assets/maps/thrillerbark.jpg',
+    enieslobbyMap: 'assets/maps/enieslobby.jpg',
+    marinefordMap: 'assets/maps/marineford.jpg',
+    water7Map: 'assets/maps/water7.jpg',
     saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
     saber_poundho: 'assets/extracted/objetos_gba/sprite_025.png',
     bomb: 'assets/extracted/objetos_gba/sprite_034.png',
@@ -54,17 +176,28 @@ const ENEMY_ANIMS = {
     elite_kuma: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29] },
     boss_krieg: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
     boss_crocodile: { folder: 'crocodile', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10, 11], faces: 1 },
-    boss_enel: { folder: 'enel', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    boss_enel: { folder: 'enel', idle: [0, 1, 2, 1], attack: [4, 5, 6, 7], faces: 1 },
+    // Enies Lobby: CP9 (DS Gigant Battle)
+    boss_lucci: { folder: 'lucci', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
+    kaku: { folder: 'kaku', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    spandam: { folder: 'spandam', idle: [0, 1, 2], attack: [3, 4, 5], faces: 1 },
+    // Water 7: Franky y el CP9 infiltrado en Galley-La (DS Gigant Battle)
+    boss_franky: { folder: 'franky', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
+    lucci_human: { folder: 'lucci_human', idle: [0, 1, 2, 3], attack: [4], faces: 1 },
+    // Marineford: los tres Almirantes (DS Gigant Battle)
+    boss_akainu: { folder: 'akainu', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
+    aokiji: { folder: 'aokiji', idle: [0, 1, 2, 3, 4, 5, 6], attack: [7, 8, 9, 10], faces: 1 },
+    kizaru: { folder: 'kizaru', idle: [0, 1], attack: [2, 3, 4], faces: 1 },
     // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
-    krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: -1 },
+    krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
-    krieg_bomber: { folder: 'krieg_bomber', idle: [0, 1, 2, 3, 4], attack: [5, 6], faces: -1 },
+    krieg_bomber: { folder: 'krieg_bomber', idle: [0, 0, 2, 3, 4], attack: [5, 6], faces: -1 },
     pearl: { folder: 'pearl', idle: [0, 1], attack: [2, 3] },
     gin: { folder: 'gin', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7] },
     dugong: { folder: 'dugong', idle: [0, 1, 2], attack: [3] },
     mr5: { folder: 'mr5', idle: [0, 1, 2, 3], attack: [4, 5] },
     miss_valentine: { folder: 'miss_valentine', idle: [0, 1, 2, 3], attack: [4, 5, 6] },
-    mr4: { folder: 'mr4', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9] },
+    mr4: { folder: 'mr4', idle: [0, 1, 2, 2, 4, 5], attack: [6, 7, 8, 9] },
     miss_merry: { folder: 'miss_merry', idle: [0, 1, 2, 3], attack: [4, 5, 6] },
     miss_doublefinger: { folder: 'miss_doublefinger', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7] },
     mr1: { folder: 'mr1', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
@@ -76,27 +209,40 @@ const ENEMY_ANIMS = {
     gedatsu: { folder: 'gedatsu', idle: [0, 1], attack: [2, 3], faces: 1 },
     ohm: { folder: 'ohm', idle: [0, 1], attack: [2, 3] },
     wiper: { folder: 'wiper', idle: [0, 1, 2, 3], attack: [4] },
-    boss_moria: { folder: 'moria', idle: [0,1,2,3], attack: [4,5,6,7] },
+    boss_moria: { folder: 'moria', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
     kuma: { folder: 'kuma', idle: [0,1,2,3], attack: [4,5,6,7] },
-    moria: { folder: 'moria', idle: [0,1,2,3], attack: [4,5,6,7] },
-    tararan: { folder: 'tararan', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_tararan: { folder: 'tararan', idle: [0,1,2,3], attack: [4,5,6,7] },
-    hogback: { folder: 'hogback', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_hogback: { folder: 'hogback', idle: [0,1,2,3], attack: [4,5,6,7] },
-    cindry: { folder: 'cindry', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_cindry: { folder: 'cindry', idle: [0,1,2,3], attack: [4,5,6,7] },
-    pellona: { folder: 'pellona', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_pellona: { folder: 'pellona', idle: [0,1,2,3], attack: [4,5,6,7] },
-    ryuma: { folder: 'ryuma', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_ryuma: { folder: 'ryuma', idle: [0,1,2,3], attack: [4,5,6,7] },
-    inupen: { folder: 'inupen', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_inupen: { folder: 'inupen', idle: [0,1,2,3], attack: [4,5,6,7] },
-    kumashi: { folder: 'kumashi', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_kumashi: { folder: 'kumashi', idle: [0,1,2,3], attack: [4,5,6,7] },
-    absalom: { folder: 'absalom', idle: [0,1,2,3], attack: [4,5,6,7] },
-    elite_absalom: { folder: 'absalom', idle: [0,1,2,3], attack: [4,5,6,7] }
+    moria: { folder: 'moria', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
+    tararan: { folder: 'tararan', idle: [0, 1, 2, 3], attack: [4, 1, 2, 3] },
+    elite_tararan: { folder: 'tararan', idle: [0, 1, 2, 3], attack: [4, 1, 2, 3] },
+    hogback: { folder: 'hogback', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
+    elite_hogback: { folder: 'hogback', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
+    cindry: { folder: 'cindry', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
+    elite_cindry: { folder: 'cindry', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
+    pellona: { folder: 'pellona', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
+    elite_pellona: { folder: 'pellona', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
+    ryuma: { folder: 'ryuma', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
+    elite_ryuma: { folder: 'ryuma', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
+    inupen: { folder: 'inupen', idle: [0, 1, 0, 3], attack: [4, 5, 4, 5] },
+    elite_inupen: { folder: 'inupen', idle: [0, 1, 0, 3], attack: [4, 5, 4, 5] },
+    kumashi: { folder: 'kumashi', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
+    elite_kumashi: { folder: 'kumashi', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
+    absalom: { folder: 'absalom', idle: [0, 1, 2, 3], attack: [4, 5, 6, 5] },
+    elite_absalom: { folder: 'absalom', idle: [0, 1, 2, 3], attack: [4, 5, 6, 5] },
+    // Ampliación de bestiario (GBA One Piece / WSC Treasure Wars 2)
+    krieg_starved: { folder: 'krieg_starved', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
+    krieg_knife: { folder: 'krieg_knife', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
+    marine_sword: { folder: 'marine_sword', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    jango: { folder: 'jango', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10], faces: 1 },
+    fullbody: { folder: 'fullbody', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: -1 },
+    tashigi: { folder: 'tashigi', idle: [0, 1, 2, 3, 4], attack: [5, 6, 7, 8], faces: 1 }
 };
-const ENEMY_IMG = {};
+const ENEMY_IMG = new Proxy({}, {
+    get(t, type) {
+        if (typeof type !== 'string') return t[type];
+        if (!(type in t)) { const set = (typeof ENEMY_ANIMS !== 'undefined') && buildEnemyImages(type); if (set) t[type] = set; }
+        return t[type];
+    }
+});
 // === Iconos SVG (sin emojis, estilo línea profesional) ===
 const SVG = (inner) => `<svg viewBox="0 0 24 24" class="op-ico" aria-hidden="true">${inner}</svg>`;
 const S = 'stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -202,20 +348,30 @@ const ELITE_INFO = {
     miss_doublefinger: { always: true, name: { all: 'Miss Doublefinger — Toge Toge' } },
     satori:         { always: true, name: { all: 'Satori, Sacerdote del Bosque' } },
     shura:          { always: true, name: { all: 'Shura, Sacerdote del Cielo' } },
-    gedatsu:        { always: true, name: { all: 'Gedatsu, Sacerdote del Pantano' } }
+    gedatsu:        { always: true, name: { all: 'Gedatsu, Sacerdote del Pantano' } },
+    jango:          { always: true, name: { all: 'Jango el Hipnotizador' } },
+    fullbody:       { always: true, name: { all: 'Teniente Fullbody, Puño de Hierro' } },
+    tashigi:        { always: true, name: { all: 'Sargento Mayor Tashigi' } },
+    krieg_knife:    { name: { water7: 'Matón de la Familia Franky', all: 'Malabarista Veterano de Krieg' } },
+    marine_sword:   { name: { baratie: 'Cabo de Fullbody', alabasta: 'Cabo de Smoker', all: 'Cabo de la Marina' } },
+    sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } },
+    spandam:        { always: true, name: { all: 'Spandam y Funkfreed' } }
 };
 function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[selectedMap] || i.name.all || i.name.baratie) : null; }
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
-    pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno' };
-const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai' };
+    pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno',
+    kaku: 'Kaku — CP9, Ushi Ushi no Mi: Jirafa', spandam: 'Spandam — Jefe del CP9',
+    lucci_human: 'Rob Lucci — CP9 infiltrado en Galley-La',
+    aokiji: 'Almirante Aokiji — Hie Hie no Mi', kizaru: 'Almirante Kizaru — Pika Pika no Mi' };
+const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000 };
+const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
     contactMult: 1.0,     // daño por contacto = daño del enemigo x esto (por segundo); antes 0.8
-    hpGrowth: 1.36,       // multiplicador de vida enemiga por minuto (continuo); antes 1.22
+    hpGrowth: 1.31,       // multiplicador de vida enemiga por minuto (continuo); 1.36 antes del PR #8
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
@@ -234,7 +390,21 @@ const ENEMY_STATS = {
     // raso = grunt, tirador = shooter, bruto = pacifista. Los oficiales con nombre van siempre como élite.
     krieg_pirate: [32, 78, 16], krieg_gunner: [48, 62, 22], krieg_bomber: [300, 46, 40],
     dugong: [32, 82, 16], mr5: [110, 52, 24], miss_valentine: [90, 60, 20], mr4: [160, 42, 28], miss_merry: [100, 66, 20], miss_doublefinger: [120, 54, 26],
-    shandia: [32, 78, 16], shandia_gunner: [48, 62, 22], satori: [130, 48, 24], shura: [120, 58, 26], gedatsu: [140, 46, 28]
+    shandia: [32, 78, 16], shandia_gunner: [48, 62, 22], satori: [130, 48, 24], shura: [120, 58, 26], gedatsu: [140, 46, 28],
+    // Bestiario ampliado: cada tipo tiene un papel (enjambre, embestida, bruto, kamikaze, fantasma)
+    krieg_starved: [16, 96, 10], krieg_knife: [40, 70, 18], marine_sword: [44, 70, 18], jango: [140, 56, 22], fullbody: [170, 50, 30],
+    tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3],
+    kaku: [150, 60, 28], spandam: [110, 54, 22], aokiji: [200, 50, 32], kizaru: [180, 70, 30], lucci_human: [190, 62, 32]
+};
+// Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
+//  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
+//  charge   cada pocos segundos embiste en línea recta a x3 de velocidad
+//  explode  al tocarte estalla (daño de golpe) y desaparece sin dar experiencia
+//  hollow   Horo Horo: te deprime (lentitud 40% 2 s) en vez de hacer mucho daño
+//  hypno    Jango: "Uno, dos... ¡Jango!" te duerme a medias (lentitud 60% 1,2 s) cada 7 s
+const ENEMY_BEHAVIOR = {
+    krieg_starved: 'zigzag', negative_hollow: 'hollow', krieg_knife: 'charge', sky_shark: 'charge',
+    tama: 'explode', jango: 'hypno'
 };
 // Tiradores: disparan balas (ver BALANCE.shooterCd / bulletDmg)
 const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner']);
@@ -248,54 +418,95 @@ const FODDER_ELITE = {
 // events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
 const MAP_ENEMIES = {
     baratie: {
-        hpMult: 0.9, // dificultad del mapa (vida enemiga)
+        hpMult: 0.88, // dificultad del mapa (vida enemiga)
         // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
         base: 'krieg_pirate',
-        pool: [ { type: 'krieg_bomber', min: 3, p: 0.12 }, { type: 'krieg_gunner', min: 1, p: 0.25 } ],
+        pool: [
+            { type: 'fullbody', min: 5, p: 0.012 }, { type: 'jango', min: 4, p: 0.024 }, { type: 'krieg_bomber', min: 3, p: 0.12 },
+            { type: 'krieg_knife', min: 2, p: 0.20 }, { type: 'marine_sword', min: 4, p: 0.27 }, { type: 'krieg_gunner', min: 1, p: 0.40 },
+            { type: 'krieg_starved', min: 0, p: 0.55 }
+        ],
         minibosses: [ { type: 'pearl', min: 3, hp: 600, speed: 40, damage: 28 }, { type: 'gin', min: 6, hp: 800, speed: 52, damage: 32 } ],
         boss: 'boss_krieg',
-        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_pirate', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
+        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
     },
     alabasta: {
-        hpMult: 1.0, // dificultad del mapa (vida enemiga)
+        hpMult: 0.97, // dificultad del mapa (vida enemiga)
         // Dugongos kung-fu del desierto, fusileros de la Marina de Smoker y los agentes de Baroque Works
         base: 'dugong',
         pool: [
             { type: 'miss_doublefinger', min: 5, p: 0.03 }, { type: 'mr4', min: 4, p: 0.06 }, { type: 'miss_merry', min: 4, p: 0.09 },
-            { type: 'miss_valentine', min: 2, p: 0.12 }, { type: 'mr5', min: 2, p: 0.15 }, { type: 'shooter', min: 1, p: 0.38 }
+            { type: 'miss_valentine', min: 2, p: 0.12 }, { type: 'mr5', min: 2, p: 0.15 }, { type: 'tashigi', min: 3, p: 0.165 },
+            { type: 'shooter', min: 1, p: 0.38 }, { type: 'marine_sword', min: 2, p: 0.52 }
         ],
         minibosses: [ { type: 'mr2', min: 3, hp: 700, speed: 50, damage: 30 }, { type: 'mr1', min: 5, hp: 850, speed: 46, damage: 34 } ],
         boss: 'boss_crocodile',
-        events: { ring: 'dugong', charge: 'shooter', runners: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
+        events: { ring: 'dugong', charge: 'marine_sword', runners: 'dugong', swarm: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
     },
     skypiea: {
-        hpMult: 1.0, // dificultad del mapa (vida enemiga)
+        hpMult: 0.93, // dificultad del mapa (vida enemiga)
         // Guerreros shandia y los sacerdotes de Enel; Wiper y Ohm como minijefes
         base: 'shandia',
         pool: [
             { type: 'gedatsu', min: 4, p: 0.04 }, { type: 'shura', min: 3, p: 0.08 }, { type: 'satori', min: 2, p: 0.12 },
-            { type: 'shandia_gunner', min: 1, p: 0.38 }
+            { type: 'sky_shark', min: 3, p: 0.17 }, { type: 'shandia_gunner', min: 1, p: 0.38 }, { type: 'tama', min: 2, p: 0.46 }
         ],
         minibosses: [ { type: 'wiper', min: 3, hp: 750, speed: 50, damage: 30 }, { type: 'ohm', min: 5, hp: 900, speed: 44, damage: 34 } ],
         boss: 'boss_enel',
-        events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'shandia', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
+        events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'sky_shark', swarm: 'tama', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
-        hpMult: 1.15, // dificultad del mapa (vida enemiga)
+        hpMult: 1.02, // dificultad del mapa (vida enemiga)
         base: 'inupen',
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
             { type: 'cindry', min: 4, p: 0.30 }, { type: 'hogback', min: 3, p: 0.40 }, { type: 'kumashi', min: 3, p: 0.50 },
-            { type: 'tararan', min: 2, p: 0.65 }
+            { type: 'tararan', min: 2, p: 0.65 }, { type: 'negative_hollow', min: 1, p: 0.71 }
         ],
         minibosses: [ { type: 'absalom', min: 4, hp: 650, speed: 45, damage: 30 }, { type: 'kuma', min: 6, hp: 800, speed: 45, damage: 35 } ],
         boss: 'boss_moria',
-        events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
+        events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
+    },
+    enieslobby: {
+        hpMult: 1.02, // dificultad del mapa (vida enemiga)
+        // Los marines y la guardia de Enies Lobby; Spandam con Funkfreed y Kaku del CP9; Rob Lucci de jefe
+        base: 'grunt',
+        pool: [
+            { type: 'spandam', min: 3, p: 0.02 }, { type: 'tashigi', min: 4, p: 0.04 }, { type: 'fullbody', min: 2, p: 0.06 },
+            { type: 'shooter', min: 1, p: 0.30 }, { type: 'marine_sword', min: 0, p: 0.52 }
+        ],
+        minibosses: [ { type: 'kaku', min: 3, hp: 750, speed: 52, damage: 32 }, { type: 'spandam', min: 6, hp: 650, speed: 50, damage: 26 } ],
+        boss: 'boss_lucci',
+        events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡LA GUARDIA DE ENIES LOBBY TE RODEA!', chargeText: '¡CARGAN LOS 10.000 MARINES!' }
+    },
+    water7: {
+        hpMult: 0.88, // dificultad del mapa (vida enemiga)
+        // Familia Franky (piratas de relleno) en el muelle; Kaku y Lucci se quitan la máscara de Galley-La; Franky de jefe
+        base: 'krieg_pirate',
+        pool: [
+            { type: 'krieg_bomber', min: 3, p: 0.10 }, { type: 'krieg_knife', min: 1, p: 0.20 },
+            { type: 'krieg_gunner', min: 1, p: 0.36 }, { type: 'krieg_starved', min: 0, p: 0.52 }
+        ],
+        minibosses: [ { type: 'kaku', min: 3, hp: 650, speed: 52, damage: 30 }, { type: 'lucci_human', min: 6, hp: 800, speed: 58, damage: 34 } ],
+        boss: 'boss_franky',
+        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
+    },
+    marineford: {
+        hpMult: 0.92, // dificultad del mapa (vida enemiga)
+        // La Guerra en la Cumbre: marines, oficiales de la Marina; Aokiji y Kizaru de minijefes, Akainu de jefe
+        base: 'grunt',
+        pool: [
+            { type: 'tashigi', min: 3, p: 0.04 }, { type: 'fullbody', min: 2, p: 0.08 },
+            { type: 'shooter', min: 1, p: 0.32 }, { type: 'marine_sword', min: 0, p: 0.55 }
+        ],
+        minibosses: [ { type: 'aokiji', min: 3, hp: 800, speed: 46, damage: 32 }, { type: 'kizaru', min: 6, hp: 850, speed: 62, damage: 34 } ],
+        boss: 'boss_akainu',
+        events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡EL CERCO DE LA MARINA SE CIERRA!', chargeText: '¡CARGAN LOS VICEALMIRANTES!' }
     }
 };
 // Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
 // Tararan (207x158 px) se reduce a ~75x57 para quedar a la altura de Hogback/Kumashi (~55-80 px).
-const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36 };
+const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3 };
 function mapEnemies() { return MAP_ENEMIES[selectedMap] || MAP_ENEMIES.baratie; }
 function makeEnemy(type, x, y, hpScale, extra) {
     const st = ENEMY_STATS[type] || ENEMY_STATS.grunt;
@@ -305,25 +516,61 @@ function makeEnemy(type, x, y, hpScale, extra) {
 function enemyPath(folder, idx) {
     return 'assets/extracted/' + folder + '/sprite_' + String(idx).padStart(3,'0') + '.png';
 }
-function preloadEnemySprites() {
-    for (const [type, cfg] of Object.entries(ENEMY_ANIMS)) {
-        ENEMY_IMG[type] = { idle: [], attack: [] };
-        const loadSet = (arr, key) => {
-            arr.forEach((idx, i) => {
-                const img = new Image();
-                img.src = enemyPath(cfg.folder, idx);
-                ENEMY_IMG[type][key][i] = img;
-                assetsToLoad++;
-                img.onload = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-                img.onerror = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-            });
-        };
-        loadSet(cfg.idle, 'idle');
-        loadSet(cfg.attack, 'attack');
-    }
+// Los sprites de cada enemigo se cargan la primera vez que se piden (ENEMY_IMG[tipo]).
+// Así solo se descargan los del mapa que se juega (prefetchRun) y no los ~60 tipos al abrir el juego.
+function buildEnemyImages(type) {
+    const cfg = ENEMY_ANIMS[type];
+    if (!cfg || !cfg.folder) return null;
+    return {
+        idle: (cfg.idle || []).map(idx => loadImg(enemyPath(cfg.folder, idx))),
+        attack: (cfg.attack || []).map(idx => loadImg(enemyPath(cfg.folder, idx)))
+    };
 }
-assetsToLoad += 0;
-preloadEnemySprites();
+
+// === Enemigos dibujados por código (no hay hojas de sprites de ellos) ===
+// Tama de Satori (bola de nube con sorpresa), Tiburón del Cielo del Mar Blanco y Negative Hollow de Perona.
+function procEnemyFrames(w, h, n, draw) {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const g = c.getContext('2d'); g.imageSmoothingEnabled = false; draw(g, i);
+        c.complete = true; out.push(c);
+    }
+    return out;
+}
+function px(g, col, x, y, w, h) { g.fillStyle = col; g.fillRect(x, y, w, h); }
+(function buildProcEnemies() {
+    const tama = (g, i) => {
+        const bob = i % 2;
+        px(g, '#cbd5e1', 6, 9 + bob, 20, 16); px(g, '#f8fafc', 4, 11 + bob, 24, 12); px(g, '#ffffff', 8, 7 + bob, 16, 18);
+        px(g, '#e2e8f0', 9, 21 + bob, 14, 3);
+        // bola ("tama") con la cara de sorpresa de Satori
+        px(g, '#0f172a', 11, 13 + bob, 3, 3); px(g, '#0f172a', 18, 13 + bob, 3, 3);
+        px(g, '#ef4444', 14, 18 + bob, 4, 2);
+        if (i === 2) { px(g, '#f97316', 13, 3, 6, 4); px(g, '#facc15', 15, 1, 2, 3); }
+    };
+    const shark = (g, i) => {
+        const t = i % 2 ? 1 : 0;
+        px(g, '#64748b', 6, 10, 30, 10); px(g, '#94a3b8', 8, 16, 26, 5); px(g, '#e2e8f0', 10, 18, 20, 3);
+        px(g, '#475569', 18, 4, 6, 6); px(g, '#475569', 0, 7 - t, 7, 6); px(g, '#475569', 0, 17 + t, 7, 5);
+        px(g, '#0f172a', 32, 12, 2, 2); px(g, '#ffffff', 30, 19, 6, 2);
+        px(g, '#f8fafc', 4, 24, 34, 4); px(g, '#cbd5e1', 10, 27, 22, 2);
+        if (i === 2) { px(g, '#7f1d1d', 32, 18, 6, 3); }
+    };
+    const hollow = (g, i) => {
+        const w = i % 2;
+        g.globalAlpha = 0.9;
+        px(g, '#f1f5f9', 7, 5, 16, 16); px(g, '#e2e8f0', 5, 9, 20, 10);
+        px(g, '#f8fafc', 7, 21, 4, 4 + w); px(g, '#f8fafc', 13, 21, 4, 5 - w); px(g, '#f8fafc', 19, 21, 4, 4 + w);
+        g.globalAlpha = 1;
+        px(g, '#0f172a', 10, 10, 3, 4); px(g, '#0f172a', 17, 10, 3, 4);
+        px(g, '#1e293b', 12, 16, 6, 2); px(g, '#ec4899', 14, 3, 2, 2);
+    };
+    ENEMY_IMG.tama = { idle: procEnemyFrames(32, 30, 2, tama), attack: procEnemyFrames(32, 30, 3, tama).slice(2) };
+    ENEMY_IMG.sky_shark = { idle: procEnemyFrames(40, 30, 2, shark), attack: procEnemyFrames(40, 30, 3, shark).slice(2) };
+    ENEMY_IMG.negative_hollow = { idle: procEnemyFrames(30, 28, 2, hollow), attack: [] };
+    ENEMY_ANIMS.sky_shark = { faces: 1 }; ENEMY_ANIMS.tama = {}; ENEMY_ANIMS.negative_hollow = {};
+})();
 
 // --- CHARACTER SELECTION & ANIMATION ---
 let selectedCharacter = 'luffy';
@@ -332,7 +579,8 @@ function selectMap(id) {
     if (mapLocked(id)) { playSound('muted'); return; }
     playSound('ui');
     selectedMap = id;
-    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark' };
+    prefetchRun(id, selectedCharacter);
+    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }
@@ -369,6 +617,7 @@ function applyRunCurse() {
     player.runBeliMult = 1 + 0.25 * runCurseRank;
     // Clima 2+: las oleadas sorpresa empiezan antes
     window.nextEventAt = (runCurseRank >= 2) ? 55 : 70;
+    applyRunMode(); // Modo Haki / Inverso (js/modes.js)
 }
 // toggle de solo la musica del menu (batalla sigue con su propio slider en OPCIONES)
 function toggleMenuMusic() {
@@ -386,7 +635,9 @@ function updateMenuMusicBtn() {
 const CHAR_SKILLS = {
     luffy: ['pistol','gatling','bazooka','gear2','muchi','ono'],
     zoro: ['santoryu','onigiri','flyingslash','tatsumaki','poundho','zoroform'],
-    sanji: ['diablejambe','collier','joueshot','concasse','partycourse','sanjiform']
+    sanji: ['diablejambe','collier','joueshot','concasse','partycourse','sanjiform'],
+    // Tripulación desbloqueable (estilo VS: arma inicial propia + bonificación; el resto del arsenal es compartido)
+    nami: ['climatact'], usopp: ['kabuto'], chopper: ['roseo'], robin: ['clutch']
 };
 
 // Animation frame indices within assets/extracted/<char>_gba/
@@ -394,18 +645,24 @@ const CHAR_SKILLS = {
 const CHAR_ANIMS = {
     luffy: { name: 'Luffy', idle: [0,1,2,3,4], walk: [10,11,12], attack: [57,58,59,60], hit: [178,179,180,181], balloon: [278,279,280,281,282,283], death: [178,179,180,181] },
     zoro:  { name: 'Zoro',  idle: [0], walk: [0,1,2,3], attack: [15,16,18,19,21,22], hit: [15] },
-    sanji: { name: 'Sanji', idle: [0], walk: [51,52,53,54], attack: [10], hit: [15] }
+    sanji: { name: 'Sanji', idle: [0], walk: [51,52,53,54], attack: [10], hit: [15] },
+    // WonderSwan Color "Swan Colosseum" (espejados para mirar a la izquierda como los de GBA)
+    nami:    { name: 'Nami',    folder: 'nami_wsc',    idle: [0,1,2,3,4,5], walk: [6,7,8,9,10,11,12,13], attack: [14,15,16,17], hit: [0] },
+    usopp:   { name: 'Usopp',   folder: 'usopp_wsc',   idle: [0], walk: [1,2,3,4,5,6,7], attack: [8,9,10,11], hit: [0] },
+    chopper: { name: 'Chopper', folder: 'chopper_wsc', idle: [0,1,2,3], walk: [4,5,6,7,8,9], attack: [10,11,12,13], hit: [0] },
+    robin:   { name: 'Robin',   folder: 'robin_wsc',   idle: [0,1,2], walk: [3,4,5,6,7,8,9], attack: [10,11,12,13,14], hit: [0] }
 };
 
 function animPath(char, idx) {
-    const folder = char === 'luffy' ? 'luffy_gba' : (char === 'zoro' ? 'zoro_gba' : 'sanji_gba');
+    const folder = (CHAR_ANIMS[char] && CHAR_ANIMS[char].folder) || (char + '_gba');
     return 'assets/extracted/' + folder + '/sprite_' + String(idx).padStart(3, '0') + '.png';
 }
 
 const CHAR_PORTRAIT = {
     luffy: 'assets/wanted/luffy.jpg',
     zoro: 'assets/wanted/zoro.jpg',
-    sanji: 'assets/wanted/sanji.jpg'
+    sanji: 'assets/wanted/sanji.jpg',
+    nami: 'assets/wanted/nami.jpg', usopp: 'assets/wanted/usopp.jpg', chopper: 'assets/wanted/chopper.jpg', robin: 'assets/wanted/robin.jpg'
 };
 function updateHudPortrait() {
     const img = document.getElementById('hud-portrait');
@@ -414,14 +671,17 @@ function updateHudPortrait() {
     if (name) name.innerText = CHAR_FULLNAME[selectedCharacter] || '';
 }
 // Nombre completo como aparece en los carteles de Se Busca
-const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI' };
+const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'GATA LADRONA NAMI', usopp: 'SOGEKING (USOPP)', chopper: 'TONY TONY CHOPPER', robin: 'NICO ROBIN' };
+// Cómo se desbloquea cada personaje (se muestra en la carta bloqueada)
+const CHAR_LOCK_TEXT = { zoro: 'BLOQUEADO — TIENDA', sanji: 'BLOQUEADO — TIENDA', usopp: 'SOBREVIVE 5 MIN', nami: 'CONQUISTA EL BARATIE', chopper: 'DERROTA 1.500 ENEMIGOS', robin: 'CONQUISTA ALABASTA' };
 function selectCharacter(id) {
     if (!meta.unlocked[id]) {
-        alert('Personaje bloqueado. Cómpralo en la tienda.');
+        showAchToast('PERSONAJE BLOQUEADO — ' + (CHAR_LOCK_TEXT[id] || 'TIENDA'));
         return;
     }
     playSound('ui');
     selectedCharacter = id;
+    void CHAR_IMG[id];
     document.getElementById('char-selected').innerText = 'Personaje: ' + CHAR_ANIMS[id].name;
     document.querySelectorAll('#char-select .char-card').forEach(b => b.classList.toggle('selected', b.dataset.char === id));
     updateHudPortrait();
@@ -436,7 +696,7 @@ function refreshCharCards() {
         if (!unlocked && !overlay) {
             overlay = document.createElement('div');
             overlay.className = 'char-locked-overlay';
-            overlay.innerHTML = '<span class="char-locked-banner">BLOQUEADO — TIENDA ฿1000</span>';
+            overlay.innerHTML = '<span class="char-locked-banner">' + (CHAR_LOCK_TEXT[b.dataset.char] || 'BLOQUEADO') + '</span>';
             b.appendChild(overlay);
         } else if (unlocked && overlay) {
             overlay.remove();
@@ -445,28 +705,22 @@ function refreshCharCards() {
 }
 
 // Preload character animation frames
-const CHAR_IMG = {}; // { char: { action: [Image...] } }
-function preloadCharacterSprites() {
-    for (const [key, cfg] of Object.entries(CHAR_ANIMS)) {
-        CHAR_IMG[key] = {};
-        for (const action of ['idle','walk','attack','hit','death','balloon']) {
-            CHAR_IMG[key][action] = [];
-            const idxs = cfg[action] || [0];
-            idxs.forEach((idx, i) => {
-                const img = new Image();
-                img.onload = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-                img.onerror = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-                img.src = animPath(key, idx);
-                CHAR_IMG[key][action][i] = img;
-                assetsToLoad++;
-            });
+// Animaciones de cada personaje: se cargan la primera vez que se piden (al elegirlo en el menú)
+const CHAR_IMG = new Proxy({}, {
+    get(t, key) {
+        if (typeof key !== 'string') return t[key];
+        if (!(key in t) && CHAR_ANIMS[key]) {
+            const cfg = CHAR_ANIMS[key], set = {};
+            for (const action of ['idle','walk','attack','hit','death','balloon']) set[action] = (cfg[action] || [0]).map(idx => loadImg(animPath(key, idx)));
+            t[key] = set;
         }
+        return t[key];
     }
-}
-assetsToLoad += 0;
-preloadCharacterSprites();
+}); // { char: { action: [Image...] } }
 function preloadSprites() {
     for (const [key, path] of Object.entries(SPRITE_PATHS)) {
+        // los mapas pesan mucho: solo se cargan al elegirlos (ensureMapImage)
+        if (/Map$/.test(key)) { IMG[key] = new Image(); continue; }
         const img = new Image();
         img.onload = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
         img.onerror = () => { console.warn('No se pudo cargar', path); assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
@@ -474,4 +728,21 @@ function preloadSprites() {
         IMG[key] = img;
     }
 }
+assetsToLoad = Object.keys(SPRITE_PATHS).filter(k => !/Map$/.test(k)).length;
 preloadSprites();
+function ensureMapImage(id) {
+    const key = id + 'Map', img = IMG[key];
+    if (img && !img.getAttribute('src') && SPRITE_PATHS[key]) { img.decoding = 'async'; img.src = SPRITE_PATHS[key]; }
+    return img;
+}
+// Precarga lo que necesita una partida: mapa, personaje y todos los enemigos que nombra MAP_ENEMIES del mapa
+function prefetchRun(map, ch) {
+    ensureMapImage(map);
+    void CHAR_IMG[ch];
+    const walk = v => {
+        if (typeof v === 'string') { if (ENEMY_ANIMS[v]) void ENEMY_IMG[v]; }
+        else if (Array.isArray(v)) v.forEach(walk);
+        else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+    };
+    walk(MAP_ENEMIES[map]);
+}

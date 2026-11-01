@@ -56,3 +56,8 @@ function unlockAudio() {
     // el clic (no pointerdown) evita que el mismo gesto pulse un boton del menu de debajo
     ps.addEventListener('click', dismiss);
 })();
+
+// Service worker (PWA): juego sin conexión y carga rápida al volver. Si el entorno no lo permite (iframe, file://) se ignora.
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} });
+}

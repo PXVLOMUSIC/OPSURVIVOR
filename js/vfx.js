@@ -9,7 +9,10 @@
 const VFX_MAP = {
     baratie:  { dust: ['#9a6b40', '#b98a5a', '#d6b58e'], debris: ['#6b4423', '#8b5a2b', '#a0703f'], debrisShape: 'chip' },
     alabasta: { dust: ['#e6c487', '#d8ad68', '#f2dcaa'], debris: ['#c99a55', '#e0b874', '#b8863e'], debrisShape: 'grain' },
-    skypiea:  { dust: ['#ffffff', '#eef6ff', '#dbeafe'], debris: ['#ffffff', '#e0f2fe', '#f8fafc'], debrisShape: 'puff' }
+    skypiea:  { dust: ['#ffffff', '#eef6ff', '#dbeafe'], debris: ['#ffffff', '#e0f2fe', '#f8fafc'], debrisShape: 'puff' },
+    enieslobby: { dust: ['#d9c48f', '#c8b27a', '#ece0b8'], debris: ['#b89f68', '#d9c48f', '#9c8456'], debrisShape: 'chip' },
+    marineford: { dust: ['#9aa79d', '#7a8a80', '#c5cec7'], debris: ['#6b7a70', '#8d9b91', '#56645b'], debrisShape: 'chip' },
+    water7: { dust: ['#a3a8ad', '#8a9098', '#c9cdd1'], debris: ['#70767c', '#8a9098', '#5c6166'], debrisShape: 'chip' }
 };
 // Colores de personaje (anime): piel de Luffy, haki, pantalón negro de Sanji
 const SKIN = '#f3c196', SKIN_DARK = '#a8693f', SKIN_G2 = '#f6a5a0';
@@ -422,6 +425,7 @@ function vfxShoulder(ang) { return [player.x + Math.cos(ang) * 6, player.y - 2 +
 
 // ---------- Dibujo de cada ataque ----------
 function drawAttackFX(atk) {
+    if (drawArsenalFX(atk)) return; // armas de js/arsenal.js
     const k = atk.vis || atk.type;
     const evo = vfxEvolved(atk);
     const p = vfxProgress(atk);
@@ -632,7 +636,7 @@ function drawAttackFX(atk) {
                     vfxLine(atk.x, footY - 90, atk.x, footY - 30);
                     if (img && img.complete) {
                         ctx.save(); ctx.globalAlpha = legAlpha * 0.9;
-                        const ph = 44, pw = ph * (img.width / img.height);
+                        const ph = 44 * SPRITE_ZOOM, pw = ph * (img.width / img.height);
                         ctx.drawImage(img, atk.x - pw / 2, footY - 30 - ph / 2, pw, ph);
                         ctx.restore();
                     }
@@ -909,6 +913,8 @@ function playerSpriteFilter() {
 // Dibujo de todas las partículas
 function drawParticles() {
     for (let p of particles) {
+        // culling: fuera de pantalla no se dibuja (los rayos con puntos propios se dibujan siempre)
+        if (!p.pts && !onScreen(p.x, p.y, 60 + (p.size || 0) * 2)) continue;
         const a = Math.max(0, p.life / (p.maxLife || 0.4));
         switch (p.shape) {
             case 'ring':
@@ -937,7 +943,7 @@ function drawParticles() {
                     ctx.globalAlpha = a * 0.45;
                     ctx.save(); ctx.translate(p.x, p.y);
                     if (p.facing === 1) ctx.scale(-1, 1);
-                    const ph = p.size || 48, pw = ph * (p.img.width / p.img.height);
+                    const ph = (p.size || 48) * SPRITE_ZOOM, pw = ph * (p.img.width / p.img.height);
                     ctx.drawImage(p.img, -pw / 2, -ph / 2, pw, ph);
                     ctx.restore();
                 }

@@ -167,6 +167,10 @@
             <button class="char-card" data-char="sanji" onclick="selectCharacter('sanji')">
                 <img src="assets/wanted/sanji.jpg" alt="Sanji" onerror="this.style.display='none'">
             </button>
+            <button class="char-card crew" data-char="usopp" onclick="selectCharacter('usopp')"><img src="assets/wanted/usopp.jpg" alt="Usopp"></button>
+            <button class="char-card crew" data-char="nami" onclick="selectCharacter('nami')"><img src="assets/wanted/nami.jpg" alt="Nami"></button>
+            <button class="char-card crew" data-char="chopper" onclick="selectCharacter('chopper')"><img src="assets/wanted/chopper.jpg" alt="Chopper"></button>
+            <button class="char-card crew" data-char="robin" onclick="selectCharacter('robin')"><img src="assets/wanted/robin.jpg" alt="Robin"></button>
         </div>
         <div id="char-selected" class="menu-name">Personaje: Luffy</div>
         <div class="menu-panel">
@@ -175,7 +179,10 @@
             <button class="map-btn" data-map="baratie" onclick="selectMap('baratie')"><span class="op-slot" data-ico="ship"></span> Baratie</button>
             <button class="map-btn" data-map="alabasta" onclick="selectMap('alabasta')"><span class="op-slot" data-ico="dune"></span> Alabasta</button>
             <button class="map-btn" data-map="skypiea" onclick="selectMap('skypiea')"><span class="op-slot" data-ico="cloud"></span> Skypiea</button>
+            <button class="map-btn" data-map="water7" onclick="selectMap('water7')"><span class="op-slot" data-ico="ship"></span> Water 7</button>
+            <button class="map-btn" data-map="enieslobby" onclick="selectMap('enieslobby')"><span class="op-slot" data-ico="gauge"></span> Enies Lobby</button>
             <button class="map-btn" data-map="thrillerbark" onclick="selectMap('thrillerbark')"><span class="op-slot" data-ico="skull"></span> Thriller Bark</button>
+            <button class="map-btn" data-map="marineford" onclick="selectMap('marineford')"><span class="op-slot" data-ico="hat"></span> Marineford</button>
         </div>
         <div id="map-selected" class="menu-hidden">Mapa: Baratie</div>
         <div id="curse-select" style="display:flex; gap:12px; margin: 4px 0 12px; flex-wrap:wrap; justify-content:center; align-items:center;">
@@ -187,10 +194,18 @@
             <button class="map-btn curse-btn" data-curse="4" onclick="selectCurse(4)">4</button>
             <span id="curse-desc"></span>
         </div>
+        <div id="mode-select" style="display:flex; gap:12px; margin: 0 0 10px; flex-wrap:wrap; justify-content:center; align-items:center;">
+            <span class="menu-label">MODO</span>
+            <button class="map-btn mode-btn selected" data-mode="normal" onclick="selectMode('normal')">Normal</button>
+            <button class="map-btn mode-btn" data-mode="haki" onclick="selectMode('haki')">Haki</button>
+            <button class="map-btn mode-btn" data-mode="inverso" onclick="selectMode('inverso')">Inverso</button>
+            <span id="mode-desc"></span>
+        </div>
         </div>
         <div class="menu-secondary">
             <button class="map-btn" onclick="showAchievements()"><span class="op-slot" data-ico="hat"></span> LOGROS</button>
-            <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="clock"></span> REGISTRO MARINO</button>
+            <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="skull"></span> REGISTRO MARINO</button>
+            <button class="map-btn" onclick="showRecords()"><span class="op-slot" data-ico="clock"></span> RÉCORDS</button>
             <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
             <button class="map-btn" id="btn-menu-music" onclick="toggleMenuMusic()"><span class="op-slot" id="menu-music-ico" data-ico="sound"></span> MÚSICA: <span id="menu-music-label">ON</span></button>
         </div>
@@ -287,6 +302,15 @@
     </div>
 
     <!-- Bestiary Screen -->
+    <div id="records-screen" class="overlay-screen" style="display: none;">
+        <div class="wanted-board" style="max-width: 94vw; max-height: 86vh; overflow-y: auto;">
+            <div class="wanted-title">RÉCORDS</div>
+            <div class="wanted-subtitle">LA MEJOR SINGLADURA DE CADA PIRATA EN CADA ISLA</div>
+            <div id="records-table"></div>
+            <button class="btn-start" style="margin-top:12px;" onclick="closeRecords()">VOLVER</button>
+        </div>
+    </div>
+
     <div id="bestiary-screen" class="overlay-screen" style="display: none;">
         <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
             <div class="wanted-title">REGISTRO MARINO</div>
@@ -309,6 +333,13 @@
                 <label>EFECTOS (SFX): <span id="opt-sfx-val">80</span>%</label>
                 <input type="range" id="opt-sfx" min="0" max="100" value="80" style="width:100%;" oninput="setVolSfx(this.value)">
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-shake" checked> Sacudida de cámara</label>
+                <label style="display:flex; align-items:center; gap:8px; justify-content:space-between;">Calidad gráfica
+                    <select id="opt-quality" style="font:inherit; padding:2px 6px;">
+                        <option value="auto">Automática</option>
+                        <option value="high">Alta</option>
+                        <option value="medium">Media</option>
+                        <option value="low">Baja (móviles lentos)</option>
+                    </select></label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-particles"> Partículas reducidas (dispositivos lentos)</label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-flashes"> Menos destellos (fotosensibilidad)</label>
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-dmgnums" checked> Mostrar números de daño</label>
@@ -326,6 +357,10 @@
 <script src="js/systems.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/game.js"></script>
+<script src="js/arsenal.js"></script>
+<script src="js/waves.js"></script>
+<script src="js/loot.js"></script>
+<script src="js/modes.js"></script>
 <script src="js/vfx.js"></script>
 <script src="js/render.js"></script>
 <script src="js/gears.js"></script>

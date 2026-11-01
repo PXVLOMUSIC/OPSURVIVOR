@@ -147,6 +147,7 @@ function startGame() {
     document.getElementById('start-screen').style.display = 'none';
     // Reinicia la musica de batalla en cada entrada a un nivel
     try { battleMusic.pause(); battleMusic.currentTime = 0; } catch (e) {}
+    prefetchRun(selectedMap, selectedCharacter);
     resetGame();
     updateHudPortrait();
     applyRunCurse();
@@ -267,6 +268,14 @@ const ACHIEVEMENTS = [
     { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 3000 },
     { id: 'win_curse4',   name: 'Rey del Mar Peligroso', desc: 'Conquista una isla con el Clima Peligroso 4.', check: s => (s.winsByCurse[4] || 0) >= 1, reward: 5000 },
     { id: 'endless_30',   name: 'Leyenda del Grand Line', desc: 'Navega el Modo Infinito hasta el minuto 30.', check: s => Math.max(...Object.values(s.maxTime)) >= 1800, reward: 5000 },
+    { id: 'unlock_usopp',   name: 'El Valiente Guerrero del Mar', desc: 'Sobrevive 5 minutos en cualquier isla. Desbloquea a Usopp y su Kabuto.', check: s => Math.max(...Object.values(s.maxTime)) >= 300, reward: 1000, unlock: 'usopp' },
+    { id: 'unlock_nami',    name: 'La Gata Ladrona',      desc: 'Conquista el Baratie. Desbloquea a Nami y su Clima-Tact.',            check: s => (meta.wins.baratie || 0) >= 1, reward: 1500, unlock: 'nami' },
+    { id: 'unlock_chopper', name: 'Doctor del Reino de Drum', desc: 'Derrota 1.500 enemigos en total. Desbloquea a Chopper y la Rumble Ball.', check: s => s.kills >= 1500, reward: 1500, unlock: 'chopper' },
+    { id: 'unlock_robin',   name: 'Miss All Sunday',      desc: 'Conquista Alabasta. Desbloquea a Robin.',             check: s => (meta.wins.alabasta || 0) >= 1, reward: 2000, unlock: 'robin' },
+    { id: 'win_skypiea',    name: 'No Hay Dios en el Cielo', desc: 'Conquista Skypiea. Desbloquea el Dial de Impacto.',  check: s => (meta.wins.skypiea || 0) >= 1, reward: 2000, unlock: 'item_dial', unlockText: 'DIAL DE IMPACTO' },
+    { id: 'win_thriller',   name: 'Recupera tu Sombra',   desc: 'Conquista Thriller Bark. Desbloquea la Bandera Pirata.', check: s => (meta.wins.thrillerbark || 0) >= 1, reward: 2000, unlock: 'item_jolly', unlockText: 'BANDERA PIRATA' },
+    { id: 'mode_haki',      name: 'Haki del Rey',         desc: 'Conquista 2 islas distintas. Desbloquea el Modo Haki.', check: s => Object.values(meta.wins).filter(v => v > 0).length >= 2, reward: 2500, unlock: 'mode_haki', unlockText: 'MODO HAKI' },
+    { id: 'mode_inverso',   name: 'El Mundo al Revés',    desc: 'Conquista una isla con el Clima Peligroso 2 o más. Desbloquea el Modo Inverso.', check: s => [2, 3, 4].some(c => (s.winsByCurse[c] || 0) >= 1), reward: 3000, unlock: 'mode_inverso', unlockText: 'MODO INVERSO' },
     { id: 'dual_shichibukai', name: 'Doble Ejecución', desc: 'Derrota a los 2 Shichibukai en una misma singladura.', check: s => s.moriaThis && s.kumaThis, reward: 2500 }
 ];
 function mergeRunStats() {
@@ -276,9 +285,9 @@ function mergeRunStats() {
     // VS: snapshot de la Ficha de Singladura (resumen estilo WANTED) — ANTES del merge
     const pool = window.UPGRADE_POOL_MAP || {};
     // fallback si todavia paso por ninguna pantalla de mejoras (nivel bajo)
-    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gears', zoroform:'Haki del Rey', sanjiform:'Raid Suit', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', rifle:'Rifle de la Marina', ballesta:'Ballesta', lanza:'Lanza de Abordaje', hacha:'Hacha Pirata', shuriken:'Shuriken', hakiPulse:'Pulso de Haoshoku', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
-    const charNames = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji' };
-    const mapNames = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea' };
+    const FALLBACK_NAMES = { pistol:'Gomu Gomu no Pistol', gatling:'Gomu Gomu no Gatling', bazooka:'Gomu Gomu no Bazooka', gear2:'Gears', zoroform:'Haki del Rey', sanjiform:'Raid Suit', santoryu:'Santoryu', onigiri:'Oni Giri', flyingslash:'Flying Slash', diablejambe:'Diable Jambe', collier:'Collier', joueshot:'Joue Shot', muchi:'Gomu Gomu no Muchi', ono:'Gomu Gomu no Ono', tatsumaki:'Santoryu Ogi: Tatsumaki', poundho:'108 Pound Ho', concasse:'Concassé', partycourse:'Party Table Kick Course', cuchillo:'Cuchillo de Marina', granada:'Granada de Mano', rifle:'Rifle de la Marina', ballesta:'Ballesta', lanza:'Lanza de Abordaje', hacha:'Hacha Pirata', shuriken:'Shuriken', hakiPulse:'Pulso de Haoshoku', kabuto:'Kabuto de Usopp', climatact:'Clima-Tact de Nami', dial:'Dial de Impacto', roseo:'Kokutei Roseo Mirror', clutch:'Seis Fleur: Clutch', rumble:'Rumble Ball', jolly:'Bandera Pirata', power:'Busoshoku Haki', crit:'Gafas de Francotirador', cd:'Sake de Bink', armor:'Armadura de Haki', haki_buso:'Busoshoku Haki', haki_ken:'Kenbunshoku Haki', haki_hao:'Haoshoku Haki', area:'Área de Efecto', speed:'Velocidad', pickup:'Recogida', growth:'Crecimiento', luck:'Suerte', maxhp:'Vitalidad', regen:'Regeneración', evasion:'Esquiva', magnet:'Imán', greed:'Avaricia', vamp:'Vampirismo' };
+    const charNames = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji', nami: 'Nami', usopp: 'Usopp', chopper: 'Chopper', robin: 'Robin' };
+    const mapNames = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7' };
     window.lastRun = {
         time: gameTime,
         endless: !!window.endlessMode,
@@ -367,7 +376,7 @@ function checkAchievements() {
             if (a.unlock) meta.unlocked[a.unlock] = true;
             if (a.gear) gearOnAchievement(a);
             saveMeta();
-            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Berries' + (a.unlock ? '  ◉ Desbloqueado: ' + a.unlock.toUpperCase() : '') + (a.gear ? '  ◉ ' + (a.gearText || 'GEAR ' + a.gear) + ' DESBLOQUEADO' : ''));
+            showAchToast('◉ LOGRO: ' + a.name + '  —  +' + a.reward + ' Berries' + (a.unlock ? '  ◉ Desbloqueado: ' + (a.unlockText || a.unlock.toUpperCase()) : '') + (a.gear ? '  ◉ ' + (a.gearText || 'GEAR ' + a.gear) + ' DESBLOQUEADO' : ''));
         }
     }
 }
@@ -410,7 +419,7 @@ function renderAchievements() {
             <div class="upgrade-icon">${got ? '◉' : '○'}</div>
             <div class="upgrade-info">
                 <h4>${a.name}${got ? ' — ¡SELLADO!' : ''}</h4>
-                <p>${a.desc} · Recompensa: ${a.reward} Berries${a.unlock ? ' · Desbloquea: ' + a.unlock.toUpperCase() : ''}</p>
+                <p>${a.desc} · Recompensa: ${a.reward} Berries${a.unlock ? ' · Desbloquea: ' + (a.unlockText || a.unlock.toUpperCase()) : ''}</p>
             </div>
         `;
         list.appendChild(card);
@@ -418,6 +427,15 @@ function renderAchievements() {
 }
 // === REGISTRO MARINO (bestiary) ===
 const BESTIARY_INFO = {
+    krieg_starved: 'Pirata Hambriento de Krieg — cien días a la deriva',
+    krieg_knife: 'Malabarista de Krieg — cuchillos al vuelo',
+    marine_sword: 'Cabo de la Marina — sable reglamentario',
+    jango: 'Jango — Uno, dos... ¡Jango!',
+    fullbody: 'Fullbody, Puño de Hierro — teniente de la Marina',
+    tashigi: 'Tashigi — espadachina de la G-5',
+    tama: 'Tama de Satori — bola de nube sorpresa',
+    sky_shark: 'Tiburón del Cielo — Mar Blanco',
+    negative_hollow: 'Negative Hollow — "Soy basura..."',
     grunt: 'Pirata Raso — hombre sin recompensa',
     shooter: 'Fusilero de la Armada',
     pacifista: 'Pacifista — arma secreta del Gobierno',
@@ -451,7 +469,10 @@ function bestiaryThumb(type) {
     if (BESTIARY_THUMB[type]) return BESTIARY_THUMB[type];
     const cfg = ENEMY_IMG[type];
     const img = (cfg && cfg.idle && cfg.idle[0]) ? cfg.idle[0] : null;
-    if (!img || !img.width || !img.complete === undefined) return null;
+    if (!img) return null;
+    // sprites de archivo: se usa la ruta directamente (se carga al abrir el bestiario, sin esperar ni copiar a dataURL)
+    if (img instanceof HTMLImageElement) return (BESTIARY_THUMB[type] = img.getAttribute('src'));
+    if (!img.width) return null;
     try {
         const c = document.createElement('canvas');
         c.width = img.width; c.height = img.height;
@@ -473,7 +494,7 @@ function renderBestiary() {
     const grid = document.getElementById('bestiary-list');
     if (!grid) return;
     grid.innerHTML = '';
-    const types = Object.keys(ENEMY_ANIMS);
+    const types = Object.keys(ENEMY_ANIMS).filter(t => !PROP_TYPES.includes(t)); // sin barriles ni faroles
     let found = 0;
     const st = meta.stats.killsByType;
     types.forEach(type => {

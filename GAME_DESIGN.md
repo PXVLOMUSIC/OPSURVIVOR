@@ -13,6 +13,10 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 | `js/systems.js` | Rejilla espacial, controles, Voluntades de D (arcanas), logros y bestiario |
 | `js/ui.js` | Opciones, pausa y menús |
 | `js/game.js` | Bucle principal, update, armas, aparición de enemigos, XP y evoluciones |
+| `js/arsenal.js` | Armas y pasivas compartidas nuevas, sus evoluciones y el arranque de Nami, Usopp, Chopper y Robin |
+| `js/waves.js` | Oleadas con guion por minuto |
+| `js/loot.js` | Ruleta de los cofres, barriles y faroles que se rompen, y objetos que se desbloquean con logros |
+| `js/modes.js` | Modos Haki e Inverso y tabla de récords |
 | `js/vfx.js` | Efectos de habilidades: dibujo de cada ataque, impactos, partículas temáticas y polvo según el mapa |
 | `js/render.js` | Dibujado |
 | `js/main.js` | Arranque, que se ejecuta cuando todo lo demás ya está cargado |
@@ -42,16 +46,22 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - Clima peligroso (Maldición 0 a 4): cada nivel suma un 25% de peligro y un 25% de Berries. A partir del 2 hay más oleadas, desde el 3 aparece un segundo Shichibukai y en el 4 hay dos jefes.
 - Aparición de enemigos: el intervalo baja de 1,0 s a 0,4 s de forma lineal hasta el minuto 4. Después sigue una curva geométrica hasta unos 0,05 s en el minuto 8, con un mínimo de 0,04 s, y se divide por la Maldición. No depende de los FPS.
 - La vida de los enemigos se multiplica por 1,28 cada minuto (`1.28^min × maldición`).
+- Oleadas con guion (`WAVE_SCRIPT`, js/waves.js) hasta el minuto 8: enjambres que cruzan la pantalla, emboscadas en círculo con un hueco, cargas en fila, hordas y el aviso del jefe. Algunas solo salen con Clima 2 o más. En Modo Infinito, pasado el minuto 8, vuelven las oleadas aleatorias.
+- Cofres: al pisarlos se abre una ruleta que revela 1, 3 o 5 objetos (más con Suerte) y los aplica sola, como en VS. Los de plata y oro además evolucionan las armas que cumplan los requisitos.
+- Objetos del suelo: cada pocos segundos aparecen barriles (vasijas en Alabasta, faroles en Thriller Bark) que se rompen a golpes y sueltan carne, Berries, el Imán, la Campana de Skypiea o el Den Den Mushi dorado. Los enemigos sueltan menos carne que antes (4%).
+- Modos (`RUN_MODES`): Haki, todo un 30% más rápido y +50% Berries (se desbloquea conquistando 2 islas). Inverso, +60% de peligro, +100% Berries y +20% Suerte, con los colores del mundo invertidos (se desbloquea ganando con Clima 2 o más). Se combinan con el Clima.
+- Récords: la mejor partida de cada personaje en cada isla (gana una victoria, después el clima, el tiempo y las bajas) y los récords generales de bajas, nivel y Berries. Se guardan en `meta.records`.
 
 ## Personajes
 - Luffy: ataques a distancia (Pistol, Gatling, Bazooka, Gear 2, Muchi y Ono).
 - Zoro: cuerpo a cuerpo con espadas (Santoryu, Oni Giri, Flying Slash, Tatsumaki, 108 Pound Ho y Haki del Rey).
 - Sanji: cuerpo a cuerpo con patadas (Diable Jambe, Collier, Joue Shot, Concassé, Party Table y Raid Suit).
+- Nami, Usopp, Chopper y Robin, al estilo de VS: empiezan con su arma (Clima-Tact, Kabuto, Kokutei Roseo Mirror, Seis Fleur: Clutch) y un bonus propio, y el resto lo sacan del arsenal compartido. Se desbloquean con logros: Usopp sobreviviendo 5 minutos, Nami conquistando el Baratie, Chopper con 1.500 bajas y Robin conquistando Alabasta.
 - Las habilidades tienen que ser fieles al manga y al anime.
 
 ## Mapas
 - Tienen que ser lugares reconocibles de One Piece. Todas las imágenes miden 1408x768 y se dibujan con `MAP_SCALE` 2, sin suavizado.
-- Estilo GBA: los mapas de `assets/maps/` se generan desde los originales HD (`source-art/maps/hd/`) con `source-art/pixelar_mapas.py` (mitad de resolución, color de 15 bits). Si cambias un mapa, guarda el HD ahí y vuelve a pasar el script.
+- Mapas en HD (decisión de Pablo, 2026-11-01: sin pixelado, para que el fondo no tenga menos definición que los sprites): `assets/maps/<mapa>.jpg` se genera desde el original (`source-art/maps/hd/`, 1408x768) con `source-art/escalar_mapas.py` (x2 Lanczos + enfoque suave, JPEG q85, ~0,9 MB). El código usa el tamaño lógico `MAP_PX_W`x`MAP_PX_H` (1408x768) y dibuja el mapa con suavizado; nunca uses `mapImg.width` para coordenadas. `pixelar_mapas.py` queda solo como referencia.
 - Solo hay colisiones en el borde de la arena, sin obstáculos en el interior (decisión de Pablo del 31-10-2026). Las cápsulas de obstáculos detectadas están en el commit `a863eaa`, y `MAP_OBSTACLES` sigue disponible pero vacío.
 - **Baratie**: borde detectado por color (madera frente a agua). Jefe Don Krieg (9000 PV) y minijefe el Capitán Morgan (min 3).
 - **Alabasta**, **Skypiea** y **Thriller Bark** comparten el trazado de plaza de palacio (`PALACE_ARENA_POLY`, sacado de la línea verde de Alabasta).
@@ -62,7 +72,8 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - El origen vertical de cada imagen está en `MAP_ORIGIN_Y` (`js/render.js`). La cámara no deja ver nada fuera de la imagen. `mapLocked()` (`js/core.js`) permite bloquear un mapa.
 
 ## Progreso permanente
-Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, 12 logros y 15 evoluciones de armas. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).
+Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, logros (`ACHIEVEMENTS`) y evoluciones de armas (`EVOLUTIONS`). Algunos logros desbloquean contenido: personajes, los modos Haki e Inverso y objetos del arsenal (`ITEM_LOCK` en js/loot.js: Kabuto, Clima-Tact, Rumble Ball, Dial de Impacto y Bandera Pirata).
+- Orden de `possibleUpgrades` (js/game.js): el reparto de cartas usa un sort aleatorio que favorece a los primeros de la lista, y el balance está medido así. Los objetos nuevos van siempre al final. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).
 
 ## Sprites
 Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frames de cada acción se eligen en `CHAR_ANIMS` y `ENEMY_ANIMS` (`js/core.js`). Las fuentes están en `SPRITES_SOURCES.md`.
@@ -87,3 +98,12 @@ Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frame
 - Desbloqueo (`meta.gear.forms`): el nivel 2 con una victoria del personaje y el nivel 3 con una victoria en Clima 2 o más.
 - Balance con bot, todo desbloqueado (gear max 5): Luffy 83%, Sanji 78%, Zoro 73% (dentro de ±10). Para ello, Diable Jambe sube su daño base de 16 a 18.
 - Renombrados para no repetir nombres: la evolución de Santoryu pasa a "Rokudo no Tsuji" y la de Concassé a "Bien Cuit: Grill Shot".
+
+## Rendimiento y compatibilidad
+- Medir con `tools/perf-bench.js` (servir el repo y `node tools/perf-bench.js http://localhost:8765/index.html luffy thrillerbark 6 4 300 high`; el 4 simula una CPU 4 veces más lenta). Es determinista: si cambia `level` o `ent`, ha cambiado la simulación y por tanto el balance.
+- `updateUI()` durante la partida solo marca la interfaz como pendiente; `gameLoop` la vuelca una vez por frame. No escribir en el DOM del HUD cada frame.
+- Lo que se dibuja en el mundo debe respetar el culling: `onScreen(x, y, margen)` con `VIEW_RECT` (js/render.js).
+- No usar `ctx.filter` al dibujar cada frame: lento y sin soporte en Safari < 18. Usar `filteredSprite(img, 'filtro css')` (js/core.js), que lo cachea y tiene alternativa por matriz de color.
+- Resolución interna: `RS` (1, 0.75 o 0.5) según la opción Calidad gráfica; la automática baja si el juego va por debajo de ~45 FPS. Para dibujar en coordenadas de pantalla usar `ctx.setTransform(RS, 0, 0, RS, 0, 0)`, nunca `(1, 0, 0, 1, 0, 0)`. `lowFx()` indica calidad baja (sin sombras).
+- Imágenes bajo demanda: `ENEMY_IMG[tipo]` y `CHAR_IMG[personaje]` cargan sus frames la primera vez que se piden, y `loadImg(ruta)` descarga cada archivo una sola vez. `prefetchRun(mapa, personaje)` precarga el mapa y todo lo que nombra `MAP_ENEMIES[mapa]`.
+- `sw.js`: imágenes y sonidos primero desde la caché; HTML, JS y CSS primero desde la red. Sube `CACHE_VER` si cambias un asset sin cambiarle el nombre.

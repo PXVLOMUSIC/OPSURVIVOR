@@ -1,16 +1,20 @@
+let _renderedState = null;
 function gameLoop(now) {
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
 
-    if (gameState === 'PLAYING') update(dt);
-    render();
+    if (gameState === 'PLAYING') update(dt * modeTimeScale()); // Modo Haki: todo va más rápido (js/modes.js)
+    flushUI();
+    // en pausa, mejoras, cofres o Voluntades la escena está quieta: se dibuja una vez y no se repinta cada frame
+    if (gameState === 'PLAYING' || _renderedState !== gameState || _needsRedraw) { render(); _renderedState = gameState; _needsRedraw = false; }
+    perfTick(now);
 
-    const _pb = document.getElementById('pause-btn');
-    if (_pb) _pb.style.display = (gameState === 'PLAYING') ? 'block' : 'none';
+    const _pbShow = gameState === 'PLAYING' ? 'block' : 'none';
+    if (_pbShow !== _uiCache.pauseBtn) { _uiCache.pauseBtn = _pbShow; const _pb = uiEl('pause-btn'); if (_pb) _pb.style.display = _pbShow; }
     // música: solo al cambiar de estado (evita .play() cada frame)
     if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); gearUpdateButton(); }
 
-    if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA') {
+    if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA' || gameState === 'CHEST') {
         requestAnimationFrame(gameLoop);
     }
 }
@@ -78,11 +82,10 @@ function update(dt) {
         }
         // fin de la cutscene: las mejoras de un cofre abierto durante la evolucion quedaron pendientes
         window._evolveCut = null;
-        if (player._pendingUpgrade && player._pendingUpgrade > 0) {
-            const c = player._pendingUpgrade;
-            player._pendingUpgrade = 0;
-            gameState = 'UPGRADE';
-            showUpgradeScreen(c, true);
+        if (player._pendingChest) {
+            const c = player._pendingChest;
+            player._pendingChest = null;
+            openChestRoulette(c.count, c.tier, c.beli, c.evo);
             return;
         }
     }
@@ -104,7 +107,7 @@ function update(dt) {
 
     const len = Math.hypot(moveX, moveY);
     if (len > 0) {
-        const speedMult = gearSpeedMult();
+        const speedMult = gearSpeedMult() * (gameTime < (player._slowUntil || 0) ? player._slowMult : 1);
         const stepX = (moveX / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const stepY = (moveY / (len > 1 ? len : 1)) * player.speed * speedMult * dt;
         const newX = player.x + stepX;
@@ -139,9 +142,11 @@ function update(dt) {
     handleAttacks(dt);
     handleSpawning(dt);
     updateEvents(dt);
+    updateProps(dt);
 
     for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
+        if (e.isProp) continue; // barriles y faroles: no se mueven ni hacen daño
         const edx = player.x - e.x, edy = player.y - e.y, edist = Math.hypot(edx, edy);
         // Campana de Skypiea (VS Orologion): los enemigos quedan congelados 10s
         if (window.freezeTimer > 0) {
@@ -155,9 +160,25 @@ function update(dt) {
             continue;
         }
 
-        if (edist > 0) {
-            e.x += (edx / edist) * e.speed * gearEnemySpeedMult() * dt;
-            e.y += (edy / edist) * e.speed * gearEnemySpeedMult() * dt;
+        // Enjambre de VS (murciélagos): cruzan en línea recta sin perseguirte y se van
+        if (e.fixedDir) {
+            e.x += e.fixedDir[0] * e.speed * gearEnemySpeedMult() * dt; e.y += e.fixedDir[1] * e.speed * gearEnemySpeedMult() * dt;
+            e.ttl -= dt;
+            if (e.ttl <= 0) { enemies.splice(i, 1); continue; }
+        }
+        const beh = e.fixedDir ? null : ENEMY_BEHAVIOR[e.type];
+        if (beh && enemyBehavior(e, beh, edx, edy, edist, dt)) { enemies.splice(i, 1); continue; }
+        if (edist > 0 && !e.fixedDir) {
+            let vx = edx / edist, vy = edy / edist, sp = e.speed;
+            if (beh === 'zigzag' || beh === 'hollow') {
+                // ondulación perpendicular a la dirección (murciélagos de VS)
+                e._zz = (e._zz || Math.random() * 6) + dt * 5;
+                const w = Math.sin(e._zz) * 0.9;
+                vx -= (edy / edist) * w; vy += (edx / edist) * w;
+            }
+            if (e._dashT > 0) { vx = e._dashVx; vy = e._dashVy; sp *= 3; }
+            e.x += vx * sp * gearEnemySpeedMult() * dt;
+            e.y += vy * sp * gearEnemySpeedMult() * dt;
             // Los enemigos normales rodean rejas y barandillas; jefes y minijefes las atraviesan
             if (hasObstacles && !e.isBoss && !e.isMiniboss) [e.x, e.y] = pushOutOfObstacles(e.x, e.y, 10);
         }
@@ -171,6 +192,17 @@ function update(dt) {
             e.animTimer = 0;
         }
 
+        if (edist < 22 && beh === 'hollow') {
+            // Horo Horo no Mi: el fantasma atraviesa y te hunde ("Soy una babosa...") y desaparece
+            player._slowUntil = gameTime + 1.5; player._slowMult = 0.75;
+            player.hp -= e.damage * ((1 - (player.armor / 100)) * gearDamageTakenMult());
+            fxRing(e.x, e.y, '#ec4899', 14, 0.3);
+            if (!window._hollowTxt || gameTime > window._hollowTxt) { window._hollowTxt = gameTime + 4; spawnDamageText(player.x, player.y - 30, { amount: 'NEGATIVE...', isCrit: false, isOvercrit: false }); }
+            enemies.splice(i, 1);
+            if (player.hp <= 0) { triggerGameOver(); return; }
+            updateUI();
+            continue;
+        }
         if (edist < 22) {
             const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
             player.hp -= e.damage * BALANCE.contactMult * dt * dmgMult;
@@ -213,6 +245,7 @@ function update(dt) {
     for (let i = activeAttacks.length - 1; i >= 0; i--) {
         const atk = activeAttacks[i];
         atk.life -= dt;
+        if (ARSENAL_TYPES.has(atk.type)) { if (updateArsenalAttack(atk, dt)) activeAttacks.splice(i, 1); continue; }
 
         if (atk.type === 'pistol') {
             // El brazo de goma sale del hombro de Luffy: sigue al jugador y, al llegar al máximo, vuelve
@@ -394,16 +427,18 @@ function update(dt) {
                 d.openTimer -= dt;
                 if (d.openTimer <= 0) {
                     // recompensa al terminar la animacion de apertura
-                    const luck = player.luckBonus;
-                    const roll = Math.random();
-                    const count = roll < 0.05 * luck ? 4 : (roll < 0.20 * luck ? 2 : 1);
+                    // VS: la ruleta del cofre revela 1, 3 o 5 objetos (js/loot.js)
+                    const count = chestItemCount();
                     const tierBase = d.tier === 2 ? 350 : (d.tier === 1 ? 200 : 60);
                     const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus * (player.runBeliMult || 1));
                     scoreBeli += beliVal;
+                    const evoBefore = Object.keys(skills).filter(k => skills[k].evolved);
                     if (d.canEvolve) checkEvolutions();
-                    // VS: si la cutscene de evolucion sigue viva, la pantalla de mejoras espera
-                    if (window._evolveCut && window._evolveCut.life > 0) player._pendingUpgrade = count;
-                    else { gameState = 'UPGRADE'; showUpgradeScreen(count, true); }
+                    const evoNames = Object.keys(skills).filter(k => skills[k].evolved && !evoBefore.includes(k)).map(k => EVOLUTIONS[k].name);
+                    const chest = { count, tier: d.tier, beli: beliVal, evo: evoNames };
+                    // VS: si la cutscene de evolucion sigue viva, la ruleta espera
+                    if (window._evolveCut && window._evolveCut.life > 0) player._pendingChest = chest;
+                    else openChestRoulette(chest.count, chest.tier, chest.beli, chest.evo);
                     updateUI();
                     drops.splice(i, 1);
                 }
@@ -507,9 +542,11 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('pistol');
-            activeAttacks.push({ vis: 'knife',
+            // Evolución (Shakushi de Kuro): abanico de 5 hojas
+            const fan = skills.cuchillo.evolved ? [-0.5, -0.25, 0, 0.25, 0.5] : [0];
+            for (const off of fan) activeAttacks.push({ vis: 'knife',
                 type: 'pistol', startX: player.x, startY: player.y,
-                angle: angle, speed: 820, currentRange: 0,
+                angle: angle + off, speed: 820, currentRange: 0,
                 maxRange: skills.cuchillo.range * player.areaBonus,
                 baseDamage: skills.cuchillo.baseDamage,
                 hitEnemies: new Set()
@@ -525,7 +562,7 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'gatling', x: player.x, y: player.y,
                 radius: skills.gatling.radius * player.areaBonus,
-                life: skills.gatling.duration, maxLife: skills.gatling.duration,
+                life: skills.gatling.duration * (player.durationBonus || 1), maxLife: skills.gatling.duration * (player.durationBonus || 1),
                 baseDamage: skills.gatling.baseDamage
             });
         }
@@ -559,8 +596,11 @@ function handleAttacks(dt) {
             let bx = target ? target.x : player.x;
             let by = target ? target.y : player.y;
             playSound('boom');
-            activeAttacks.push({ vis: 'grenade',
-                type: 'bazooka', x: bx, y: by,
+            // Evolución (Nose Fancy Cannon de Mr. 5): dos bombas más sobre otros enemigos
+            const spots = [[bx, by]];
+            if (skills.granada.evolved) for (let k = 0; k < 2 && enemies.length; k++) { const e2 = enemies[Math.floor(Math.random() * enemies.length)]; if (Math.hypot(e2.x - player.x, e2.y - player.y) < 520) spots.push([e2.x, e2.y]); }
+            for (const [gx, gy] of spots) activeAttacks.push({ vis: 'grenade',
+                type: 'bazooka', x: gx, y: gy,
                 radius: skills.granada.radius * player.areaBonus,
                 life: 0.55, maxLife: 0.55, hitDelay: 0.19,
                 baseDamage: skills.granada.baseDamage,
@@ -580,8 +620,9 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('pistol');
+            // Evolución (Sogeking): la bala perfora en línea recta
             activeAttacks.push({ vis: 'rifle',
-                type: 'pistol', startX: player.x, startY: player.y,
+                type: skills.rifle.evolved ? 'poundho' : 'pistol', startX: player.x, startY: player.y,
                 angle: angle, speed: 900, currentRange: 0,
                 maxRange: skills.rifle.range * player.areaBonus,
                 baseDamage: skills.rifle.baseDamage,
@@ -620,9 +661,10 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('slash');
-            activeAttacks.push({ vis: 'spear',
+            // Evolución (Bisento de Barbablanca): barrido en tres direcciones
+            for (const off of (skills.lanza.evolved ? [0, 2.094, -2.094] : [0])) activeAttacks.push({ vis: 'spear',
                 type: 'collier', startX: player.x, startY: player.y,
-                angle: angle, speed: 700, currentRange: 0,
+                angle: angle + off, speed: 700, currentRange: 0,
                 maxRange: skills.lanza.range * player.areaBonus,
                 baseDamage: skills.lanza.baseDamage,
                 hitEnemies: new Set()
@@ -660,9 +702,10 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('slash');
-            activeAttacks.push({ vis: 'shuriken',
+            // Evolución (Ninpo de Raizo): cuatro shuriken en cruz además del dirigido
+            for (const off of (skills.shuriken.evolved ? [0, Math.PI / 4, 3 * Math.PI / 4, -Math.PI / 4, -3 * Math.PI / 4] : [0])) activeAttacks.push({ vis: 'shuriken',
                 type: 'flyingslash', startX: player.x, startY: player.y,
-                angle: angle, speed: skills.shuriken.speed, currentRange: 0,
+                angle: angle + off, speed: skills.shuriken.speed, currentRange: 0,
                 maxRange: skills.shuriken.range * player.areaBonus,
                 baseDamage: skills.shuriken.baseDamage,
                 hitEnemies: new Set()
@@ -679,13 +722,18 @@ function handleAttacks(dt) {
             activeAttacks.push({ vis: 'haki',
                 type: 'tatsumaki', x: player.x, y: player.y,
                 radius: skills.hakiPulse.radius * player.areaBonus,
-                duration: skills.hakiPulse.duration, life: skills.hakiPulse.duration,
+                duration: skills.hakiPulse.duration * (player.durationBonus || 1), life: skills.hakiPulse.duration * (player.durationBonus || 1),
                 baseDamage: skills.hakiPulse.baseDamage,
                 hitEnemies: new Set()
             });
+            // Evolución (Rey de los Conquistadores): el pulso aturde 1 s a los enemigos normales
+            if (skills.hakiPulse.evolved) forEnemiesNear(player.x, player.y, skills.hakiPulse.radius * player.areaBonus, e => { if (!e.isBoss && !e.isMiniboss) e._stun = Math.max(e._stun || 0, 1); });
             player.attackTimer = 0.2;
         }
     }
+
+    // Armas compartidas nuevas: Kabuto, Clima-Tact y Dial de Impacto (js/arsenal.js)
+    handleArsenal(dt, cdMult);
 
     // Gears: medidor + activacion manual (js/gears.js)
 
@@ -861,7 +909,7 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'tatsumaki', x: player.x, y: player.y,
                 radius: skills.tatsumaki.radius * player.areaBonus,
-                life: skills.tatsumaki.duration, maxLife: skills.tatsumaki.duration,
+                life: skills.tatsumaki.duration * (player.durationBonus || 1), maxLife: skills.tatsumaki.duration * (player.durationBonus || 1),
                 baseDamage: skills.tatsumaki.baseDamage,
                 spin: 0
             });
@@ -1055,7 +1103,12 @@ function spawnBoss() {
 
 // === VS: eventos periodicos de oleada (cada ~90s sorpresa) ===
 function updateEvents(dt) {
-    if (!window.nextEventAt) window.nextEventAt = BALANCE.firstEventAt;
+    // Partida normal: oleadas con guion por minuto (js/waves.js). Modo Infinito: sorpresas al azar.
+    if (gameTime < 480 && !window.endlessMode) return updateWaveScript();
+    updateEventsRandom(dt);
+}
+function updateEventsRandom(dt) {
+    if (!window.nextEventAt || window.nextEventAt < gameTime - 5) window.nextEventAt = gameTime + 20;
     if (gameTime < window.nextEventAt) return;
     window.nextEventAt = gameTime + (runCurseRank >= 2 ? 60 + Math.random() * 18 : 85 + Math.random() * 25);
     const minutes = Math.floor(gameTime / 60);
@@ -1075,7 +1128,7 @@ function updateEvents(dt) {
             if (off < Math.PI / 5) continue;
             let ex = player.x + Math.cos(ang) * 560, ey = player.y + Math.sin(ang) * 560;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push(makeEnemy(ev.ring, ex, ey, hpScale, { speed: 110 + minutes * 10, isEvent: true, name: 'X' }));
+            enemies.push(makeEnemy(ev.ring, ex, ey, hpScale, { speed: 110 + minutes * 10, isEvent: true }));
         }
     } else {
         // Carga de la Armada: filas cruzando el mapa desde un costado
@@ -1087,14 +1140,44 @@ function updateEvents(dt) {
         for (let k = 0; k < n; k++) {
             let ex = player.x + side * 640, ey = player.y - 360 + k * 34;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push(makeEnemy(ev.charge, ex, ey, hpScale, { speed: 70, damage: 16, isEvent: true, name: 'X' }));
+            enemies.push(makeEnemy(ev.charge, ex, ey, hpScale, { speed: 70, damage: 16, isEvent: true }));
         }
         for (let k = 0; k < 10; k++) {
             let ex = player.x + side * 640, ey = player.y - 200 + k * 40;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push(makeEnemy(ev.runners, ex, ey, hpScale, { speed: 130, isEvent: true, name: 'X' }));
+            enemies.push(makeEnemy(ev.runners, ex, ey, hpScale, { speed: 130, isEvent: true }));
         }
     }
+}
+
+// Comportamientos especiales (ENEMY_BEHAVIOR en core.js). Devuelve true si el enemigo desaparece.
+function enemyBehavior(e, beh, edx, edy, edist, dt) {
+    if (beh === 'charge') {
+        if (e._dashT > 0) { e._dashT -= dt; return false; }
+        e._dashCd = (e._dashCd === undefined ? 1 + Math.random() * 2 : e._dashCd) - dt;
+        if (e._dashCd <= 0 && edist < 280 && edist > 40) {
+            e._dashCd = 3.2; e._dashT = 0.45; e._dashVx = edx / edist; e._dashVy = edy / edist; e.attackTimer = 0.45;
+        }
+    } else if (beh === 'explode') {
+        if (edist < 26) {
+            const dmgMult = (1 - (player.armor / 100)) * (1 - player.evasion) * gearDamageTakenMult();
+            player.hp -= e.damage * dmgMult; player.hitTimer = 0.12; player._hurtFlash = 0.35;
+            cameraShake = Math.max(cameraShake, 2.2); playSound('hurt');
+            activeAttacks.push({ type: 'bazooka', x: e.x, y: e.y, radius: 50, life: 0.3, maxLife: 0.3, baseDamage: 0, hitEnemies: new Set() });
+            if (player.hp <= 0) triggerGameOver();
+            updateUI();
+            return true;
+        }
+        if (edist < 70) e.attackTimer = 0.2; // a punto de estallar
+    } else if (beh === 'hypno') {
+        e._hyp = (e._hyp === undefined ? 3 : e._hyp) - dt;
+        if (e._hyp <= 0 && edist < 300) {
+            e._hyp = 7; e.attackTimer = 0.8;
+            player._slowUntil = gameTime + 1.2; player._slowMult = 0.4;
+            window.spawnBanner = { text: 'UNO, DOS... ¡JANGO!', life: 1.2, color: '#c084fc' };
+        }
+    }
+    return false;
 }
 
 function killEnemy(e) {
@@ -1102,6 +1185,7 @@ function killEnemy(e) {
     // sobre el mismo enemigo antes del filtro de muertos -> drops/beli/victoria duplicados
     if (e._dead) return;
     e._dead = true;
+    if (e.isProp) { propBreak(e); return; }
     gearOnKill(e);
     // estadisticas de run para logros y bestiario
     if (window.runStats) {
@@ -1169,7 +1253,8 @@ function killEnemy(e) {
         playSound('beli_rush');
         fxStars(e.x, e.y, (windowOpts && windowOpts.fewerFlashes) ? 6 : 18);
     }
-    if (Math.random() < 0.08) drops.push({ x: e.x, y: e.y, type: 'meat' });
+    // la mayor parte de la carne sale ahora de barriles y faroles (js/loot.js)
+    if (Math.random() < 0.04) drops.push({ x: e.x, y: e.y, type: 'meat' });
     // Boss derrotado = victoria (estilo Vampire Survivors) — salvo Modo Infinito
     if (e.isBoss) {
         if (window.endlessMode) {
@@ -1265,6 +1350,7 @@ function fxGhost(x, y, facing) {
 function getNearestEnemy() {
     let nearest = null, minD = Infinity;
     for (let e of enemies) {
+        if (e.isProp) continue;
         const d = Math.hypot(e.x - player.x, e.y - player.y);
         if (d < minD) { minD = d; nearest = e; }
     }
@@ -1341,6 +1427,7 @@ function evolveWeapon(id) {
     else if (id === 'poundho') { sk.baseDamage *= 2.0; sk.range += 120; }
     else if (id === 'concasse') { sk.baseDamage *= 1.8; sk.radius += 25; }
     else if (id === 'partycourse') { sk.baseDamage *= 1.9; sk.radius += 35; sk.duration += 0.4; }
+    else if (SHARED_EVO_FX[id]) SHARED_EVO_FX[id](sk);
     // VS: cutscene de evolución — el mundo se congela, lluvia de confetti y cartel
     window._evolveCut = { life: 1.3 };
     window.spawnBanner = { text: '◆ ¡' + EVOLUTIONS[id].name.toUpperCase() + ' ◆', life: 1.3, color: '#c084fc' };
@@ -1382,8 +1469,8 @@ function showUpgradeScreen(count, isChest) {
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','zoroform','sanjiform'];
-    const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform'];
+    const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp','rumble','jolly'];
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
         { id: 'gatling', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Gatling', icon: ICONS.gatling, desc: 'Desbloquea o mejora la ráfaga continua en área.' },
@@ -1429,6 +1516,13 @@ function showUpgradeScreen(count, isChest) {
         { id: 'magnet', type: 'passive', chars: 'all', title: 'Imán', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida +20%.' },
         { id: 'greed', type: 'passive', chars: 'all', title: 'Avaricia', icon: ICONS.coin, desc: 'Aumenta los Berries ganados +12%.' },
         { id: 'vamp', type: 'passive', chars: 'all', title: 'Vampirismo', icon: ICONS.drop, desc: 'Sana 2 HP al derrotar a un enemigo (probabilidad).' },
+        { id: 'kabuto', type: 'weapon', chars: 'all', title: 'Kabuto de Usopp', icon: ICONS.kabuto, desc: 'Arma compartida: tirachinas cuya bola rebota por la arena.' },
+        { id: 'climatact', type: 'weapon', chars: 'all', title: 'Clima-Tact de Nami', icon: ICONS.climatact, desc: 'Arma compartida: Thunderbolt Tempo, rayos sobre enemigos al azar.' },
+        { id: 'dial', type: 'weapon', chars: 'all', title: 'Dial de Impacto', icon: ICONS.dial, desc: 'Arma compartida: concha de Skypiea que suelta una onda y empuja a los cercanos.' },
+        { id: 'rumble', type: 'passive', chars: 'all', title: 'Rumble Ball', icon: ICONS.rumble, desc: 'La píldora de Chopper: +15% duración de Gatling, Tatsumaki, Haoshoku y Clima-Tact.' },
+        { id: 'roseo', type: 'weapon', chars: ['chopper'], title: 'Kokutei Roseo Mirror', icon: ICONS.roseo, desc: 'Chopper (Heavy Point): pezuñazo que estalla en flor de cerezo sobre el enemigo más cercano.' },
+        { id: 'clutch', type: 'weapon', chars: ['robin'], title: 'Seis Fleur: Clutch', icon: ICONS.clutch, desc: 'Robin: brotan brazos en los enemigos cercanos, los dañan y los inmovilizan.' },
+        { id: 'jolly', type: 'passive', chars: 'all', title: 'Bandera Pirata', icon: ICONS.jolly, desc: 'Izas tu Jolly Roger: +10% enemigos y peligro, +10% XP y Berries.' },
     ];
     // snapshot del pool completo (titulo + icono) — la Ficha de Singladura lo usa
     window.UPGRADE_POOL_MAP = window.UPGRADE_POOL_MAP || {};
@@ -1436,6 +1530,7 @@ function showUpgradeScreen(count, isChest) {
     const possible = possibleUpgrades.filter(u => {
         if (u.chars !== 'all' && !u.chars.includes(selectedCharacter)) return false;
         if (player.banished && player.banished[u.id]) return false; // VS: Banish retira el ítem de la partida
+        if (itemLocked(u.id)) return false; // se desbloquea con un logro (js/loot.js)
         const sk = skills[u.id];
         const isNew = !sk || sk.level <= 0;
         if (u.type === 'weapon' && sk && sk.level >= 5) {
@@ -1454,6 +1549,9 @@ function showUpgradeScreen(count, isChest) {
         return true;
     });
 
+    // Nota: este sort con comparador aleatorio NO baraja de forma uniforme: favorece a los primeros de la lista
+    // (técnicas de Luffy y Poder/Crítico/Cooldown/Armadura). El balance está medido con este sesgo,
+    // por eso los objetos nuevos van al final de possibleUpgrades.
     possible.sort(() => 0.5 - Math.random()).slice(0, count).forEach(up => {
         let desc = up.desc;
         // Destello de color por personaje para armas especiales (rojo Luffy, verde Zoro, amarillo Sanji);
@@ -1473,10 +1571,15 @@ function showUpgradeScreen(count, isChest) {
         card.className = 'upgrade-card' + (cardEvo ? ' evo' : '');
         card.dataset.char = cardChar;
         card.dataset.kind = up.type;
+        card.dataset.id = up.id;
+        // Nivel actual → siguiente (armas hasta Nv 5; las pasivas cuentan sus mejoras)
+        const curLv = up.type === 'weapon' ? ((sk && sk.level) || 0) : ((player.passives && player.passives[up.id]) || 0);
+        const lvTag = curLv <= 0 ? `<span class="lvl-tag new">NUEVO</span>`
+            : `<span class="lvl-tag">Nv ${curLv} → ${curLv + 1}${up.type === 'weapon' ? '<small>/5</small>' : ''}</span>`;
         card.innerHTML = `
             <div class="upgrade-icon">${up.icon}</div>
             <div class="upgrade-info">
-                <h4>${up.title}</h4>
+                <h4>${up.title} ${lvTag}</h4>
                 <p>${desc}</p>
             </div>
         `;
@@ -1685,6 +1788,7 @@ function selectUpgrade(id) {
         skills.hakiPulse.level = Math.min(5, skills.hakiPulse.level + 1);
         skills.hakiPulse.baseDamage += 6; skills.hakiPulse.radius += 8;
     }
+    else if (ARSENAL_UPGRADE[id]) { ARSENAL_UPGRADE[id](); }
     else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
     else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }
     else if (id === 'haki_hao') { /* stun area: handled in render/update */ player.passives.haki_hao = (player.passives.haki_hao || 0) + 1; }
@@ -1700,6 +1804,7 @@ function selectUpgrade(id) {
     else if (id === 'greed') { player.greedBonus += 0.12; player.passives.greed = (player.passives.greed || 0) + 1; }
     else if (id === 'vamp') { player.vampirism += 0.15; player.passives.vamp = (player.passives.vamp || 0) + 1; }
 
+    if (window._applyOnly) return; // la ruleta del cofre aplica varios objetos seguidos
     playSound('select');
     document.getElementById('upgrade-screen').style.display = 'none';
     // VS: las Arcanas otorgadas a mitad de partida encadenan tras cerrar la subida
@@ -1719,6 +1824,7 @@ function triggerGameOver() {
     gameState = 'GAMEOVER';
     const endKills = window.runStats ? window.runStats.kills : 0;
     mergeRunStats();
+    const newRecord = recordRun(false);
     playSound('death');
     playSound('gameover');
     checkAchievements();
@@ -1728,7 +1834,7 @@ function triggerGameOver() {
     const st = meta.stats;
     document.getElementById('gameover-stats').innerText =
         'Tiempo: ' + formatTime(gameTime) + ' · Enemigos derrotados esta singladura: ' + endKills +
-        ' · Berries conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0);
+        ' · Berries conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0) + (newRecord ? ' · ¡NUEVO RÉCORD!' : '');
     renderRunSummary('gameover-summary');
     document.getElementById('gameover-screen').style.display = 'flex';
 }
@@ -1739,6 +1845,7 @@ function triggerVictory() {
     playSound('victory');
     const prevBest = meta.stats.maxTime[selectedMap] || 0;
     mergeRunStats();
+    recordRun(true);
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
     meta.stats.winsByCurse[runCurseRank] = (meta.stats.winsByCurse[runCurseRank] || 0) + 1;
@@ -1776,27 +1883,44 @@ function startEndless() {
 // formato con separador de miles (el simbolo ฿ va en el markup)
 function fmtBeli(n) { return Math.floor(n).toLocaleString('en-US'); }
 
+// Rendimiento: updateUI() se llama desde muchos sitios (a veces varias veces por frame, una por enemigo
+// que toca al jugador). Durante la partida solo marca la interfaz como pendiente y gameLoop la vuelca una vez.
+let _uiDirty = false;
 function updateUI() {
-    document.getElementById('hp-text').innerText = `${Math.max(0, Math.ceil(player.hp))}/${player.maxHp}`;
-    document.getElementById('hp-bar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
+    if (gameState === 'PLAYING') { _uiDirty = true; return; }
+    updateUINow();
+}
+function flushUI() { if (_uiDirty) { _uiDirty = false; updateUINow(); } }
+// Escribe en el DOM solo si el valor cambió (cada escritura invalida el estilo de la página)
+const _uiCache = {};
+const _uiEl = {};
+function uiEl(id) { return _uiEl[id] || (_uiEl[id] = document.getElementById(id)); }
+function setText(id, v) { if (_uiCache[id] !== v) { _uiCache[id] = v; const el = uiEl(id); if (el) el.innerText = v; } }
+function setWidth(id, v) { const k = id + ':w'; if (_uiCache[k] !== v) { _uiCache[k] = v; const el = uiEl(id); if (el) el.style.width = v; } }
+function updateUINow() {
+    setText('hp-text', `${Math.max(0, Math.ceil(player.hp))}/${player.maxHp}`);
+    setWidth('hp-bar', `${Math.max(0, (player.hp / player.maxHp) * 100).toFixed(1)}%`);
     // VS: estados de vida por porcentaje — verde sano, ambar media, roja al limite
     const hpPct = Math.max(0, player.hp / player.maxHp);
-    const hpBar = document.getElementById('hp-bar');
-    hpBar.classList.toggle('hp-mid', hpPct <= 0.6 && hpPct > 0.3);
-    hpBar.classList.toggle('hp-low', hpPct <= 0.3);
-    const hpText = document.getElementById('hp-text');
-    hpText.classList.toggle('warn', hpPct <= 0.6 && hpPct > 0.3);
-    hpText.classList.toggle('danger', hpPct <= 0.3);
-    document.getElementById('xp-bar').style.width = `${Math.min(100, (player.xp / player.nextXp) * 100)}%`;
-    document.getElementById('level-txt').innerText = player.level;
-    document.getElementById('score-txt').innerText = fmtBeli(scoreBeli);
+    const hpState = hpPct <= 0.3 ? 2 : (hpPct <= 0.6 ? 1 : 0);
+    if (_uiCache.hpState !== hpState) {
+        _uiCache.hpState = hpState;
+        const hpBar = uiEl('hp-bar');
+        hpBar.classList.toggle('hp-mid', hpState === 1);
+        hpBar.classList.toggle('hp-low', hpState === 2);
+        const hpText = uiEl('hp-text');
+        hpText.classList.toggle('warn', hpState === 1);
+        hpText.classList.toggle('danger', hpState === 2);
+    }
+    setWidth('xp-bar', `${Math.min(100, (player.xp / player.nextXp) * 100).toFixed(1)}%`);
+    setText('level-txt', String(player.level));
+    setText('score-txt', fmtBeli(scoreBeli));
 
-    document.getElementById('stat-power').innerText = `+${player.powerPct}%`;
-    document.getElementById('stat-crit').innerText = `${Math.round(player.critChance * 100)}%`;
-    document.getElementById('stat-cd').innerText = `-${player.cdReduction}%`;
+    setText('stat-power', `+${player.powerPct}%`);
+    setText('stat-crit', `${Math.round(player.critChance * 100)}%`);
+    setText('stat-cd', `-${player.cdReduction}%`);
     // armor display if element exists
-    const armorEl = document.getElementById('stat-armor');
-    if (armorEl) armorEl.innerText = `${player.armor}%`;
+    setText('stat-armor', `${player.armor}%`);
     updateWeaponsHUD();
 }
 
@@ -1828,8 +1952,14 @@ function updateWeaponsHUD() {
         { id: 'cuchillo', icon: ICONS.cuchillo, name: 'Cuchillo' }, { id: 'granada', icon: ICONS.granada, name: 'Granada' },
         { id: 'rifle', icon: ICONS.rifle, name: 'Rifle' }, { id: 'ballesta', icon: ICONS.ballesta, name: 'Ballesta' },
         { id: 'lanza', icon: ICONS.lanza, name: 'Lanza' }, { id: 'hacha', icon: ICONS.hacha, name: 'Hacha' },
-        { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' }
+        { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' },
+        { id: 'kabuto', icon: ICONS.kabuto, name: 'Kabuto' }, { id: 'roseo', icon: ICONS.roseo, name: 'Roseo Mirror' }, { id: 'clutch', icon: ICONS.clutch, name: 'Clutch' }, { id: 'climatact', icon: ICONS.climatact, name: 'Clima-Tact' }, { id: 'dial', icon: ICONS.dial, name: 'Dial de Impacto' }
     );
+    // solo se reconstruye si cambian las armas, sus niveles o evoluciones
+    let sig = '';
+    for (const w of weapons) { const sk = skills[w.id]; if (sk && sk.level > 0) sig += w.id + sk.level + (sk.evolved ? '*' : '') + ','; }
+    if (el._sig === sig && el.childElementCount) return;
+    el._sig = sig;
     el.innerHTML = '';
     weapons.forEach(w => {
         const sk = skills[w.id];

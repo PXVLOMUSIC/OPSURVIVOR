@@ -1,5 +1,5 @@
 // === OPCIONES (persistente, VS-style sliders) ===
-let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, fewerFlashes: false, showDamageNumbers: true, autoPause: true, menuMusicMuted: false, master: 0.8 };
+let windowOpts = { music: 0.8, sfx: 0.8, shake: true, fewerParticles: false, fewerFlashes: false, showDamageNumbers: true, autoPause: true, menuMusicMuted: false, master: 0.8, quality: 'auto' };
 function loadOpts() {
     try {
         const raw = JSON.parse(localStorage.getItem('op_survivor_opts'));
@@ -19,6 +19,9 @@ function applyOpts() {
     if (sliderS) { sliderS.value = Math.round(windowOpts.sfx * 100); document.getElementById('opt-sfx-val').innerText = Math.round(windowOpts.sfx * 100); }
     if (checkSh) checkSh.checked = windowOpts.shake;
     if (checkP) checkP.checked = windowOpts.fewerParticles;
+    const selQ = document.getElementById('opt-quality');
+    if (selQ) selQ.value = windowOpts.quality || 'auto';
+    if (typeof applyQuality === 'function') applyQuality();
     if (checkF) checkF.checked = windowOpts.fewerFlashes;
     if (checkD) checkD.checked = windowOpts.showDamageNumbers;
     if (checkA) checkA.checked = windowOpts.autoPause;
@@ -34,6 +37,8 @@ function closeOptions() {
     if (sliderS) windowOpts.sfx = sliderS.value / 100;
     if (checkSh) windowOpts.shake = checkSh.checked;
     if (checkP) windowOpts.fewerParticles = checkP.checked;
+    const selQ = document.getElementById('opt-quality');
+    if (selQ) windowOpts.quality = selQ.value;
     const checkF = document.getElementById('opt-flashes'), checkD = document.getElementById('opt-dmgnums'), checkA = document.getElementById('opt-autopause');
     if (checkF) windowOpts.fewerFlashes = checkF.checked;
     if (checkD) windowOpts.showDamageNumbers = checkD.checked;
@@ -49,6 +54,7 @@ function updateMetaUI() {
     const el = document.getElementById('meta-beli');
     if (el) el.innerText = fmtBeli(meta.beli);
     if (typeof refreshCharCards === 'function') refreshCharCards();
+    if (typeof refreshModeButtons === 'function') refreshModeButtons();
     // marca los mapas bloqueados
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('locked', mapLocked(b.dataset.map)));
     // marcas de Clima Peligroso bloqueado (se desbloquea venciendo el rango anterior)
@@ -96,7 +102,7 @@ function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
     if (!wEl || !pEl) return;
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','zoroform','sanjiform'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
     const icons = ICONS;
     wEl.innerHTML = '';
@@ -185,7 +191,7 @@ function resetGame() {
     player.walkFrame = 0; player.isMoving = false;
     player.animState = 'idle'; player.animIndex = 0; player.attackTimer = 0; player.hitTimer = 0; player._hurtFlash = 0; player._hurtShakeCd = 0;
     player.level = 1; player.xp = 0; player.nextXp = 6;
-    player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0;
+    player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0; player.durationBonus = 1;
     player.passives = {};
     player.revives = 0; // antes no se reiniciaba y los "Revivir" sin usar se acumulaban entre partidas
     player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};
@@ -237,7 +243,8 @@ function resetGame() {
 
     enemies = []; enemyBullets = []; drops = []; particles = []; damageTexts = []; activeAttacks = [];
     gameTime = 0; scoreBeli = 0; bossSpawned = false;
-    window.minibossesSpawned = {}; window.mirrorMinibossSpawned = false;
+    window.minibossesSpawned = {}; window.mirrorMinibossSpawned = false; window.waveIdx = 0;
     window.spawnBanner = null;
+    applyCrewStart(); // arma inicial y bonus de Nami, Usopp, Chopper y Robin (js/arsenal.js)
     updateUI();
 }

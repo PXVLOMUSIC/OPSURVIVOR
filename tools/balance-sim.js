@@ -20,7 +20,7 @@ async function runOne(browser, ch, map, meta) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     await page.addInitScript(({ meta, gear }) => {
-        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true }, gear: { unlocked: gear, forms: { zoro: Math.min(gear, 4), sanji: Math.min(gear, 4) }, up: { meter: 0, charge: 0, recover: 0 } } };
+        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, item_dial: true, item_jolly: true }, gear: { unlocked: gear, forms: { zoro: Math.min(gear, 4), sanji: Math.min(gear, 4) }, up: { meter: 0, charge: 0, recover: 0 } } };
         // mejoras: se fijan tras cargar el juego a partir de META_UPGRADES (ver abajo)
         // (meta 1 = todas al máximo; meta 2 = la mitad, redondeando arriba y sin Revivir; la Maldición siempre a 0)
         localStorage.setItem('op_survivor_meta', JSON.stringify(m));
@@ -65,12 +65,14 @@ async function runOne(browser, ch, map, meta) {
         const src = {}; let wTime = 0, kills = 0, bossT = null, bossDead = null;
         while (true) {
             if (gameState === 'ARCANA') { pickCard('#arcana-options'); continue; }
+            if (gameState === 'CHEST') { closeChestRoulette(); continue; }
             if (gameState === 'UPGRADE') { if (!pickCard('#upgrade-options')) { skipUpgrade(); } continue; }
             if (gameState !== 'PLAYING') break;
             // bot de movimiento: mantiene la distancia de su arma principal (melee cerca, Luffy a media distancia)
-            const R = ch === 'luffy' ? 120 : (ch === 'zoro' ? 55 : 45);
+            const R = ch === 'zoro' ? 55 : (ch === 'sanji' || ch === 'chopper' ? 45 : 120);
             let fx = 0, fy = 0, close = 999, nearest = null;
             for (const e of enemies) {
+                if (e.isProp) continue;
                 const dx = player.x - e.x, dy = player.y - e.y, d = Math.hypot(dx, dy) || 1;
                 if (d < close) { close = d; nearest = e; }
                 const danger = (e.isBoss || e.isMiniboss) ? R + 60 : R;

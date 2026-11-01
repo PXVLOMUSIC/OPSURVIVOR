@@ -374,13 +374,13 @@ const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew
     drake: 'X Drake — Tobiroppo, Ryu Ryu no Mi: Alosaurio', hawkins: 'Basil Hawkins — Headliner, Wara Wara no Mi' };
 const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky', boss_kaido: 'Kaido de las Bestias — Yonko' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_kaido: 16000 };
+const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_kaido: 20000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
     contactMult: 1.0,     // daño por contacto = daño del enemigo x esto (por segundo); antes 0.8
-    hpGrowth: 1.31,       // multiplicador de vida enemiga por minuto (continuo); 1.36 antes del PR #8
+    hpGrowth: 1.32,        // multiplicador de vida enemiga por minuto (continuo); 1.36 antes del PR #8
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
@@ -404,7 +404,7 @@ const ENEMY_STATS = {
     krieg_starved: [16, 96, 10], krieg_knife: [40, 70, 18], marine_sword: [44, 70, 18], jango: [140, 56, 22], fullbody: [170, 50, 30],
     tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3],
     kaku: [150, 60, 28], spandam: [110, 54, 22], aokiji: [200, 50, 32], kizaru: [180, 70, 30], lucci_human: [190, 62, 32],
-    kanjuro: [120, 58, 24], ink_bird: [18, 100, 12], drake: [210, 56, 34], hawkins: [190, 52, 32]
+    kanjuro: [120, 58, 24], ink_bird: [26, 100, 14], drake: [210, 56, 34], hawkins: [190, 52, 32]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
 //  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
@@ -428,7 +428,7 @@ const FODDER_ELITE = {
 // events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
 const MAP_ENEMIES = {
     baratie: {
-        hpMult: 0.78, // dificultad del mapa (vida enemiga)
+        hpMult: 0.72, // dificultad del mapa (vida enemiga)
         // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
         base: 'krieg_pirate',
         pool: [
@@ -441,7 +441,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
     },
     alabasta: {
-        hpMult: 0.76, // dificultad del mapa (vida enemiga)
+        hpMult: 0.74, // dificultad del mapa (vida enemiga)
         // Dugongos kung-fu del desierto, fusileros de la Marina de Smoker y los agentes de Baroque Works
         base: 'dugong',
         pool: [
@@ -454,7 +454,7 @@ const MAP_ENEMIES = {
         events: { ring: 'dugong', charge: 'marine_sword', runners: 'dugong', swarm: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
     },
     skypiea: {
-        hpMult: 0.80, // dificultad del mapa (vida enemiga)
+        hpMult: 0.73, // dificultad del mapa (vida enemiga)
         // Guerreros shandia y los sacerdotes de Enel; Wiper y Ohm como minijefes
         base: 'shandia',
         pool: [
@@ -466,7 +466,7 @@ const MAP_ENEMIES = {
         events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'sky_shark', swarm: 'tama', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
-        hpMult: 1.02, // dificultad del mapa (vida enemiga)
+        hpMult: 0.90, // dificultad del mapa (vida enemiga)
         base: 'inupen',
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
@@ -478,7 +478,7 @@ const MAP_ENEMIES = {
         events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
     },
     enieslobby: {
-        hpMult: 0.90, // dificultad del mapa (vida enemiga)
+        hpMult: 1.00, // dificultad del mapa (vida enemiga)
         // Los marines y la guardia de Enies Lobby; Spandam con Funkfreed y Kaku del CP9; Rob Lucci de jefe
         base: 'grunt',
         pool: [
@@ -490,7 +490,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡LA GUARDIA DE ENIES LOBBY TE RODEA!', chargeText: '¡CARGAN LOS 10.000 MARINES!' }
     },
     water7: {
-        hpMult: 0.98, // dificultad del mapa (vida enemiga)
+        hpMult: 0.94, // dificultad del mapa (vida enemiga)
         // Familia Franky (piratas de relleno) en el muelle; Kaku y Lucci se quitan la máscara de Galley-La; Franky de jefe
         base: 'krieg_pirate',
         pool: [
@@ -502,7 +502,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
     },
     marineford: {
-        hpMult: 1.04, // dificultad del mapa (vida enemiga)
+        hpMult: 1.00, // dificultad del mapa (vida enemiga)
         // La Guerra en la Cumbre: marines, oficiales de la Marina; Aokiji y Kizaru de minijefes, Akainu de jefe
         base: 'grunt',
         pool: [
@@ -514,7 +514,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡EL CERCO DE LA MARINA SE CIERRA!', chargeText: '¡CARGAN LOS VICEALMIRANTES!' }
     },
     wano: {
-        hpMult: 1.10, // dificultad del mapa (vida enemiga): el más difícil
+        hpMult: 1.45, // dificultad del mapa (vida enemiga): el más difícil
         // Asalto a Onigashima: piratas de las Bestias y los dibujos de tinta del traidor Kanjuro;
         // X Drake y Basil Hawkins de minijefes, Kaido de jefe
         base: 'krieg_pirate',

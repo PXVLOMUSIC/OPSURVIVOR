@@ -411,8 +411,8 @@ const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
-    contactMult: 0.57,    // daño por contacto = daño del enemigo x esto (por segundo); 1.0 hasta bajar la velocidad del jugador a 92
-    hpGrowth: 1.26,        // multiplicador de vida enemiga por minuto (continuo); 1.32 con la velocidad antigua (185)
+    contactMult: 0.55,    // daño por contacto = daño del enemigo x esto (por segundo); 1.0 hasta bajar la velocidad del jugador a 92
+    hpGrowth: 1.24,        // multiplicador de vida enemiga por minuto (continuo); 1.32 con la velocidad antigua (185)
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega

@@ -18,7 +18,7 @@ const FORMS = {
         3: { name: 'GEAR THIRD',  short: 'G3', color: '#fb923c', dur: 9,  sound: 'boom',     dmg: 1.45,  cd: 1.0, spd: 1,   taken: 1,   area: 1.6, atk: 'elephant', atkCd: 1.6, pen: ['chibi', 4], penText: '¡LUFFY ENCOGIDO!' },
         4: { name: 'GEAR FOURTH: BOUNDMAN', short: 'G4', color: '#dc2626', dur: 12, sound: 'haoshoku', dmg: 1.85, cd: 0.7, spd: 1.2, taken: 0.6, atk: 'kong', atkCd: 1.3, pen: ['exhausted', 8], penText: '¡SIN HAKI! AGOTADO' },
         // canon: el coste de Nika es el agotamiento (Luffy arrugado y sin fuerzas), no perder vida
-        5: { name: 'GEAR FIFTH: NIKA', short: 'G5', color: '#f8fafc', dur: 15, sound: 'haoshoku', dmg: 2.2, cd: 0.6, spd: 1.3, taken: 0, enemySpd: 0.5, atk: 'dawn', atkCd: 1.2, pen: ['exhausted', 12], penText: 'NIKA SE APAGA... AGOTADO' }
+        5: { name: 'GEAR FIFTH: NIKA', short: 'G5', color: '#f8fafc', dur: 15, sound: 'haoshoku', dmg: 2.1, cd: 0.6, spd: 1.3, taken: 0, enemySpd: 0.5, atk: 'dawn', atkCd: 1.2, pen: ['exhausted', 12], penText: 'NIKA SE APAGA... AGOTADO' }
     },
     zoro: {
         // Ryuo (Wano): Haki que fluye por las espadas sin tocar → corta mas y mas rapido
@@ -26,7 +26,7 @@ const FORMS = {
         // Kyutoryu Asura: tres cabezas y nueve brazos, Ashura Ichibugin. Le deja sin fuerzas (Enies Lobby)
         3: { name: 'KYUTORYU: ASURA', short: 'AS', color: '#9333ea', dur: 9, sound: 'haoshoku', dmg: 1.6, cd: 0.8, spd: 1, taken: 0.8, area: 1.3, atk: 'asura', atkCd: 1.4, pen: ['exhausted', 4], penText: 'ASURA SE DESVANECE... AGOTADO' },
         // Rey del Infierno (Onigashima): Haoshoku en las espadas. Enma le chupa el Haki al terminar
-        4: { name: 'REY DEL INFIERNO: ENMA', short: 'EN', color: '#b91c1c', dur: 12, sound: 'haoshoku', dmg: 1.9, cd: 0.7, spd: 1.2, taken: 0.6, atk: 'hell', atkCd: 1.3, pen: ['exhausted', 8], penText: 'ENMA DEVORA SU HAKI... AGOTADO' }
+        4: { name: 'REY DEL INFIERNO: ENMA', short: 'EN', color: '#b91c1c', dur: 12, sound: 'haoshoku', dmg: 2.0, cd: 0.7, spd: 1.2, taken: 0.6, atk: 'hell', atkCd: 1.3, pen: ['exhausted', 8], penText: 'ENMA DEVORA SU HAKI... AGOTADO' }
     },
     sanji: {
         // Sky Walk: camina por el aire → mucha velocidad y dificil de alcanzar

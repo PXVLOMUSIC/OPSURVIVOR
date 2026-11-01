@@ -191,10 +191,18 @@
             <button class="map-btn curse-btn" data-curse="4" onclick="selectCurse(4)">4</button>
             <span id="curse-desc"></span>
         </div>
+        <div id="mode-select" style="display:flex; gap:12px; margin: 0 0 10px; flex-wrap:wrap; justify-content:center; align-items:center;">
+            <span class="menu-label">MODO</span>
+            <button class="map-btn mode-btn selected" data-mode="normal" onclick="selectMode('normal')">Normal</button>
+            <button class="map-btn mode-btn" data-mode="haki" onclick="selectMode('haki')">Haki</button>
+            <button class="map-btn mode-btn" data-mode="inverso" onclick="selectMode('inverso')">Inverso</button>
+            <span id="mode-desc"></span>
+        </div>
         </div>
         <div class="menu-secondary">
             <button class="map-btn" onclick="showAchievements()"><span class="op-slot" data-ico="hat"></span> LOGROS</button>
-            <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="clock"></span> REGISTRO MARINO</button>
+            <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="skull"></span> REGISTRO MARINO</button>
+            <button class="map-btn" onclick="showRecords()"><span class="op-slot" data-ico="clock"></span> RÉCORDS</button>
             <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
             <button class="map-btn" id="btn-menu-music" onclick="toggleMenuMusic()"><span class="op-slot" id="menu-music-ico" data-ico="sound"></span> MÚSICA: <span id="menu-music-label">ON</span></button>
         </div>
@@ -291,6 +299,15 @@
     </div>
 
     <!-- Bestiary Screen -->
+    <div id="records-screen" class="overlay-screen" style="display: none;">
+        <div class="wanted-board" style="max-width: 94vw; max-height: 86vh; overflow-y: auto;">
+            <div class="wanted-title">RÉCORDS</div>
+            <div class="wanted-subtitle">LA MEJOR SINGLADURA DE CADA PIRATA EN CADA ISLA</div>
+            <div id="records-table"></div>
+            <button class="btn-start" style="margin-top:12px;" onclick="closeRecords()">VOLVER</button>
+        </div>
+    </div>
+
     <div id="bestiary-screen" class="overlay-screen" style="display: none;">
         <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
             <div class="wanted-title">REGISTRO MARINO</div>
@@ -333,6 +350,7 @@
 <script src="js/arsenal.js"></script>
 <script src="js/waves.js"></script>
 <script src="js/loot.js"></script>
+<script src="js/modes.js"></script>
 <script src="js/vfx.js"></script>
 <script src="js/render.js"></script>
 <script src="js/gears.js"></script>

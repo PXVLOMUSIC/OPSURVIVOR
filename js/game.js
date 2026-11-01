@@ -2,7 +2,7 @@ function gameLoop(now) {
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
 
-    if (gameState === 'PLAYING') update(dt);
+    if (gameState === 'PLAYING') update(dt * modeTimeScale()); // Modo Haki: todo va más rápido (js/modes.js)
     render();
 
     const _pb = document.getElementById('pause-btn');
@@ -1816,6 +1816,7 @@ function triggerGameOver() {
     gameState = 'GAMEOVER';
     const endKills = window.runStats ? window.runStats.kills : 0;
     mergeRunStats();
+    const newRecord = recordRun(false);
     playSound('death');
     playSound('gameover');
     checkAchievements();
@@ -1825,7 +1826,7 @@ function triggerGameOver() {
     const st = meta.stats;
     document.getElementById('gameover-stats').innerText =
         'Tiempo: ' + formatTime(gameTime) + ' · Enemigos derrotados esta singladura: ' + endKills +
-        ' · Berries conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0);
+        ' · Berries conseguido: ' + fmtBeli(scoreBeli) + ' · Récord ' + selectedMap.toUpperCase() + ': ' + formatTime(st.maxTime[selectedMap] || 0) + (newRecord ? ' · ¡NUEVO RÉCORD!' : '');
     renderRunSummary('gameover-summary');
     document.getElementById('gameover-screen').style.display = 'flex';
 }
@@ -1836,6 +1837,7 @@ function triggerVictory() {
     playSound('victory');
     const prevBest = meta.stats.maxTime[selectedMap] || 0;
     mergeRunStats();
+    recordRun(true);
     meta.wins[selectedMap] = (meta.wins[selectedMap] || 0) + 1;
     meta.stats.winsByChar[selectedCharacter] = (meta.stats.winsByChar[selectedCharacter] || 0) + 1;
     meta.stats.winsByCurse[runCurseRank] = (meta.stats.winsByCurse[runCurseRank] || 0) + 1;

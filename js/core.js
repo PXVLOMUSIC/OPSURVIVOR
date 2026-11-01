@@ -445,6 +445,7 @@ function applyRunCurse() {
     player.runBeliMult = 1 + 0.25 * runCurseRank;
     // Clima 2+: las oleadas sorpresa empiezan antes
     window.nextEventAt = (runCurseRank >= 2) ? 55 : 70;
+    applyRunMode(); // Modo Haki / Inverso (js/modes.js)
 }
 // toggle de solo la musica del menu (batalla sigue con su propio slider en OPCIONES)
 function toggleMenuMusic() {

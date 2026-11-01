@@ -13,6 +13,10 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 | `js/systems.js` | Rejilla espacial, controles, Voluntades de D (arcanas), logros y bestiario |
 | `js/ui.js` | Opciones, pausa y menús |
 | `js/game.js` | Bucle principal, update, armas, aparición de enemigos, XP y evoluciones |
+| `js/arsenal.js` | Armas y pasivas compartidas nuevas, sus evoluciones y el arranque de Nami, Usopp, Chopper y Robin |
+| `js/waves.js` | Oleadas con guion por minuto |
+| `js/loot.js` | Ruleta de los cofres, barriles y faroles que se rompen, y objetos que se desbloquean con logros |
+| `js/modes.js` | Modos Haki e Inverso y tabla de récords |
 | `js/vfx.js` | Efectos de habilidades: dibujo de cada ataque, impactos, partículas temáticas y polvo según el mapa |
 | `js/render.js` | Dibujado |
 | `js/main.js` | Arranque, que se ejecuta cuando todo lo demás ya está cargado |
@@ -42,11 +46,17 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - Clima peligroso (Maldición 0 a 4): cada nivel suma un 25% de peligro y un 25% de Berries. A partir del 2 hay más oleadas, desde el 3 aparece un segundo Shichibukai y en el 4 hay dos jefes.
 - Aparición de enemigos: el intervalo baja de 1,0 s a 0,4 s de forma lineal hasta el minuto 4. Después sigue una curva geométrica hasta unos 0,05 s en el minuto 8, con un mínimo de 0,04 s, y se divide por la Maldición. No depende de los FPS.
 - La vida de los enemigos se multiplica por 1,28 cada minuto (`1.28^min × maldición`).
+- Oleadas con guion (`WAVE_SCRIPT`, js/waves.js) hasta el minuto 8: enjambres que cruzan la pantalla, emboscadas en círculo con un hueco, cargas en fila, hordas y el aviso del jefe. Algunas solo salen con Clima 2 o más. En Modo Infinito, pasado el minuto 8, vuelven las oleadas aleatorias.
+- Cofres: al pisarlos se abre una ruleta que revela 1, 3 o 5 objetos (más con Suerte) y los aplica sola, como en VS. Los de plata y oro además evolucionan las armas que cumplan los requisitos.
+- Objetos del suelo: cada pocos segundos aparecen barriles (vasijas en Alabasta, faroles en Thriller Bark) que se rompen a golpes y sueltan carne, Berries, el Imán, la Campana de Skypiea o el Den Den Mushi dorado. Los enemigos sueltan menos carne que antes (4%).
+- Modos (`RUN_MODES`): Haki, todo un 30% más rápido y +50% Berries (se desbloquea conquistando 2 islas). Inverso, +60% de peligro, +100% Berries y +20% Suerte, con los colores del mundo invertidos (se desbloquea ganando con Clima 2 o más). Se combinan con el Clima.
+- Récords: la mejor partida de cada personaje en cada isla (gana una victoria, después el clima, el tiempo y las bajas) y los récords generales de bajas, nivel y Berries. Se guardan en `meta.records`.
 
 ## Personajes
 - Luffy: ataques a distancia (Pistol, Gatling, Bazooka, Gear 2, Muchi y Ono).
 - Zoro: cuerpo a cuerpo con espadas (Santoryu, Oni Giri, Flying Slash, Tatsumaki, 108 Pound Ho y Haki del Rey).
 - Sanji: cuerpo a cuerpo con patadas (Diable Jambe, Collier, Joue Shot, Concassé, Party Table y Raid Suit).
+- Nami, Usopp, Chopper y Robin, al estilo de VS: empiezan con su arma (Clima-Tact, Kabuto, Kokutei Roseo Mirror, Seis Fleur: Clutch) y un bonus propio, y el resto lo sacan del arsenal compartido. Se desbloquean con logros: Usopp sobreviviendo 5 minutos, Nami conquistando el Baratie, Chopper con 1.500 bajas y Robin conquistando Alabasta.
 - Las habilidades tienen que ser fieles al manga y al anime.
 
 ## Mapas
@@ -62,7 +72,8 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - El origen vertical de cada imagen está en `MAP_ORIGIN_Y` (`js/render.js`). La cámara no deja ver nada fuera de la imagen. `mapLocked()` (`js/core.js`) permite bloquear un mapa.
 
 ## Progreso permanente
-Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, 12 logros y 15 evoluciones de armas. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).
+Tienda con 15 mejoras (`META_UPGRADES`), 10 Voluntades de D, logros (`ACHIEVEMENTS`) y evoluciones de armas (`EVOLUTIONS`). Algunos logros desbloquean contenido: personajes, los modos Haki e Inverso y objetos del arsenal (`ITEM_LOCK` en js/loot.js: Kabuto, Clima-Tact, Rumble Ball, Dial de Impacto y Bandera Pirata).
+- Orden de `possibleUpgrades` (js/game.js): el reparto de cartas usa un sort aleatorio que favorece a los primeros de la lista, y el balance está medido así. Los objetos nuevos van siempre al final. Se guarda en localStorage (`op_survivor_meta` y `op_survivor_opts`).
 
 ## Sprites
 Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frames de cada acción se eligen en `CHAR_ANIMS` y `ENEMY_ANIMS` (`js/core.js`). Las fuentes están en `SPRITES_SOURCES.md`.

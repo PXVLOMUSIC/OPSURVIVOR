@@ -49,6 +49,7 @@ function updateMetaUI() {
     const el = document.getElementById('meta-beli');
     if (el) el.innerText = fmtBeli(meta.beli);
     if (typeof refreshCharCards === 'function') refreshCharCards();
+    if (typeof refreshModeButtons === 'function') refreshModeButtons();
     // marca los mapas bloqueados
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('locked', mapLocked(b.dataset.map)));
     // marcas de Clima Peligroso bloqueado (se desbloquea venciendo el rango anterior)

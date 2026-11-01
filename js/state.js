@@ -129,6 +129,7 @@ function loadMeta() {
             else meta.wins.baratie = 1; // guardado antiguo: Baratie ya conquistado
             if (parsed.achievements) meta.achievements = parsed.achievements;
             if (parsed.gear) meta.gear = parsed.gear;
+            if (parsed.records) meta.records = parsed.records;
             meta.curseUnlocked = parsed.curseUnlocked || 0;
             if (parsed.stats) meta.stats = { ...meta.stats, ...parsed.stats,
                 maxTime: { ...meta.stats.maxTime, ...(parsed.stats.maxTime || {}) },
@@ -139,7 +140,7 @@ function loadMeta() {
     } catch (e) {}
 }
 function saveMeta() {
-    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats, curseUnlocked: meta.curseUnlocked, gear: meta.gear })); } catch (e) {}
+    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats, curseUnlocked: meta.curseUnlocked, gear: meta.gear, records: meta.records || {} })); } catch (e) {}
 }
 loadMeta();
 let gameTime = 0, lastTime = performance.now();

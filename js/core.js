@@ -694,7 +694,7 @@ function updateHudPortrait() {
     if (name) name.innerText = CHAR_FULLNAME[selectedCharacter] || '';
 }
 // Nombre completo como aparece en los carteles de Se Busca
-const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'GATA LADRONA NAMI', usopp: 'SOGEKING (USOPP)', chopper: 'TONY TONY CHOPPER', robin: 'NICO ROBIN' };
+const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'NAMI', usopp: 'GOD USOPP', chopper: 'CHOPPER', robin: 'NICO ROBIN' };
 // Cómo se desbloquea cada personaje (se muestra en la carta bloqueada)
 const CHAR_LOCK_TEXT = { zoro: 'BLOQUEADO — TIENDA', sanji: 'BLOQUEADO — TIENDA', usopp: 'SOBREVIVE 5 MIN', nami: 'CONQUISTA EL BARATIE', chopper: 'DERROTA 1.500 ENEMIGOS', robin: 'CONQUISTA ALABASTA' };
 function selectCharacter(id) {

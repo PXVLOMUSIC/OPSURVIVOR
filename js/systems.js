@@ -81,7 +81,7 @@ window.addEventListener('touchmove', e => {
     }
 }, { passive: false });
 
-window.addEventListener('touchend', e => {
+function joystickRelease(e) {
     for (let touch of e.changedTouches) {
         if (touch.identifier === joystick.touchId) {
             joystick.active = false; joystick.dx = 0; joystick.dy = 0;
@@ -89,7 +89,10 @@ window.addEventListener('touchend', e => {
             joystickKnob.style.transform = `translate(0px, 0px)`;
         }
     }
-});
+}
+window.addEventListener('touchend', joystickRelease);
+// iOS/Android cancelan el toque con avisos, gestos del sistema o al rotar: sin esto el stick se quedaba pegado
+window.addEventListener('touchcancel', joystickRelease);
 
 // === Voluntades de D: modificadores de partida estilo Arcanas de VS ===
 // 1 al empezar la run (arriba) + 1 al vencer cada miniboss (Moria / Kuma)

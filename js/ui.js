@@ -161,13 +161,26 @@ playSound = function(type) {
     if (window.soundMuted) return;
     _origPlaySound(type);
 };
-function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-        document.exitFullscreen().catch(() => {});
-    }
+// Pantalla completa con prefijo de Safari. En iPhone no existe para páginas: allí se juega instalada
+// en la pantalla de inicio (Compartir > Añadir a pantalla de inicio) y la opción se oculta.
+function fullscreenSupported() {
+    const d = document.documentElement;
+    return !!(d.requestFullscreen || d.webkitRequestFullscreen);
 }
+function toggleFullscreen() {
+    const d = document.documentElement;
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    try {
+        if (!fsEl) {
+            const r = d.requestFullscreen ? d.requestFullscreen() : (d.webkitRequestFullscreen && d.webkitRequestFullscreen());
+            if (r && r.catch) r.catch(() => {});
+        } else {
+            const r = document.exitFullscreen ? document.exitFullscreen() : (document.webkitExitFullscreen && document.webkitExitFullscreen());
+            if (r && r.catch) r.catch(() => {});
+        }
+    } catch (e) {}
+}
+(function () { const c = document.getElementById('fs-card'); if (c && !fullscreenSupported()) c.style.display = 'none'; })();
 function showControls() {
     document.getElementById('pause-screen').style.display = 'none';
     document.getElementById('controls-screen').style.display = 'flex';

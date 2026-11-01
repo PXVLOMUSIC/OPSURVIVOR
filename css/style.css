@@ -1045,3 +1045,96 @@ body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-
 /* Tripulación «Próximamente»: cartel visible, sin jugar */
 .char-card.soon { cursor: default; }
 .char-card.soon .char-locked-banner { background: linear-gradient(135deg, #1f2937, #0f172a); color: #facc15; border-color: #facc15; }
+
+/* ============================================================
+   MÓVIL: vertical, horizontal, notch y dedos
+   ============================================================ */
+/* Pantallas superpuestas: centradas si caben y con scroll desde arriba si no
+   (antes, en horizontal, el título y los botones quedaban fuera de la pantalla). */
+.overlay-screen {
+    justify-content: flex-start !important;
+    overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+}
+.overlay-screen::before, .overlay-screen::after { content: ''; flex: 1 0 0; }
+.overlay-screen > * { flex-shrink: 0; }
+/* HUD y botones fuera del notch y de la barra de inicio */
+#ui-layer {
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+#time-top { top: calc(12px + env(safe-area-inset-top)); }
+#weapons-hud { margin-bottom: env(safe-area-inset-bottom); }
+#gear-btn { right: calc(18px + env(safe-area-inset-right)); bottom: calc(70px + env(safe-area-inset-bottom)); }
+/* Pausa: el panel de armas deja de tapar el menú en pantallas estrechas */
+@media (max-width: 1100px) {
+    #pause-info-panel { position: relative !important; top: auto !important; left: auto !important; width: 90%; max-width: 520px !important; margin-bottom: 10px; }
+}
+/* Dedos: objetivos táctiles de al menos 40px */
+@media (pointer: coarse) {
+    .map-btn, .curse-btn, .mode-btn, .menu-secondary .map-btn { min-height: 40px; }
+    .curse-btn { min-width: 40px; }
+    #pause-btn { min-height: 40px; }
+}
+/* Móvil en horizontal (poca altura): menú y carteles compactos */
+@media (max-height: 500px) {
+    #start-screen { zoom: 1; }
+    .title-container { flex-direction: row; gap: 14px; align-items: baseline; margin: 0 0 2px; }
+    .title-container .op-logo-main { font-size: 34px; letter-spacing: 3px; }
+    .title-container .op-logo-sub { font-size: 22px; letter-spacing: 6px !important; margin-top: 0 !important; }
+    .op-tagline { display: none; }
+    #char-select { gap: 8px !important; margin: 2px 0 4px !important; }
+    .char-card { width: min(84px, 12vw); }
+    #char-selected { margin: 0; font-size: 16px; }
+    .menu-panel { padding: 4px 8px 0; }
+    #map-select, #curse-select, #mode-select { margin: 2px 0 4px !important; gap: 6px !important; }
+    .menu-secondary { margin: 2px 0 !important; }
+    .btn-sail { font-size: 20px !important; padding: 8px 26px !important; margin-top: 4px !important; }
+    .wanted-board { padding: 10px 14px !important; }
+    .wanted-title { font-size: 28px !important; margin: 0 !important; }
+    .wanted-subtitle { margin: 2px 0 6px !important; }
+    .overlay-screen h1 { font-size: 34px !important; margin: 0 0 4px; }
+    .ps-jolly svg { width: 70px; height: 64px; }
+    .ps-logo { font-size: 48px !important; }
+    .ps-sub { font-size: 28px !important; }
+    .ps-banner { margin-top: 14px; }
+}
+@media (max-height: 500px) {
+    #char-select .char-card, #char-select .char-card.crew { width: min(76px, 10.5vw); }
+}
+/* Horizontal: las cartas de nivel y Voluntades en columnas, para elegir sin hacer scroll */
+@media (max-height: 500px) and (min-width: 560px) {
+    #upgrade-screen .wanted-board, #arcana-screen .wanted-board { width: 96vw; max-width: 96vw !important; }
+    #upgrade-options, #arcana-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+    #upgrade-options .upgrade-card, #arcana-options .upgrade-card { flex-direction: column; align-items: flex-start; gap: 6px; padding: 8px 10px 8px 16px; margin: 0; }
+    #upgrade-options .upgrade-card::after, #arcana-options .upgrade-card::after { font-size: 16px; right: 6px; }
+    #upgrade-options .upgrade-info h4, #arcana-options .upgrade-info h4 { padding-right: 46px; font-size: 16px; }
+    #upgrade-options .upgrade-info p, #arcana-options .upgrade-info p { font-size: 12px; line-height: 1.3; }
+    #upgrade-options .upgrade-icon, #arcana-options .upgrade-icon { width: 34px; height: 34px; min-width: 34px; }
+    .upgrade-toolbar { margin-top: 8px; }
+}
+@media (max-height: 500px) {
+    #start-screen .map-btn { padding: 4px 10px; font-size: 13px; letter-spacing: 1px; }
+    #char-selected { display: none; }
+    /* ¡ZARPAR! siempre a mano aunque el menú necesite scroll */
+    #start-screen .btn-sail { position: sticky; bottom: 6px; z-index: 5; }
+    #ach-toast { bottom: auto; top: calc(8px + env(safe-area-inset-top)); }
+}
+@media (pointer: coarse) {
+    #start-screen .btn-sail { position: sticky; bottom: calc(6px + env(safe-area-inset-bottom)); z-index: 5; }
+}
+/* Pausa en vertical: primero Reanudar y el menú, debajo las armas y estadísticas */
+@media (max-width: 1100px) and (min-height: 501px) {
+    #pause-info-panel { order: 2; margin: 10px 0 0; }
+}
+/* Pausa en horizontal: panel y menú lado a lado */
+@media (max-height: 500px) and (min-width: 560px) {
+    #pause-screen { flex-direction: row !important; align-items: flex-start !important; gap: 10px; }
+    #pause-screen > #pause-info-panel { width: 38%; margin: 0; max-height: 100%; overflow-y: auto !important; }
+    #pause-screen > .wanted-board { width: 58%; max-height: 100% !important; }
+}
+/* Vertical estrecho: carteles 4 + 3 en vez de 6 + 1 */
+@media (max-width: 600px) and (min-height: 501px) {
+    #char-select { gap: 8px !important; }
+    #char-select .char-card, #char-select .char-card.crew { width: min(86px, 21vw); }
+}

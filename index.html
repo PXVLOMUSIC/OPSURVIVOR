@@ -2,10 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>One Piece: Grand Line Survivor</title>
     <meta name="description" content="Survivor pirata fan-made de One Piece: sobrevive 8 minutos al caos del Grand Line, forja tu build y derrota al boss del mapa.">
     <meta name="theme-color" content="#0b1220">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Compartir en redes: tarjeta con sombrero de paja -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="One Piece: Grand Line Survivor">
@@ -113,7 +116,7 @@
                         <input type="range" min="0" max="100" value="80" id="vol-sfx" oninput="setVolSfx(this.value)" onchange="playSound('ui')" style="width:100%;">
                     </div>
                 </div>
-                <div class="upgrade-card" onclick="toggleFullscreen()">
+                <div class="upgrade-card" id="fs-card" onclick="toggleFullscreen()">
                     <div class="upgrade-icon" data-ico="full"></div>
                     <div class="upgrade-info"><h4>Pantalla completa</h4><p>Activar/desactivar</p></div>
                 </div>

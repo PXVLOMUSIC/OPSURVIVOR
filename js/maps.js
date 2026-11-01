@@ -224,7 +224,11 @@ const skills = {
     lanza: { level: 0, baseDamage: 14, cooldown: 0.7, timer: 0, range: 90, evolved: false },
     hacha: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, radius: 70, evolved: false },
     shuriken: { level: 0, baseDamage: 16, cooldown: 1.8, timer: 0, range: 280, speed: 560, evolved: false },
-    hakiPulse: { level: 0, baseDamage: 12, cooldown: 4.0, timer: 0, radius: 80, duration: 1.0, evolved: false }
+    hakiPulse: { level: 0, baseDamage: 12, cooldown: 4.0, timer: 0, radius: 80, duration: 1.0, evolved: false },
+    // Objetos del mundo de One Piece (js/arsenal.js)
+    kabuto: { level: 0, baseDamage: 18, cooldown: 2.4, timer: 0, life: 2.6, speed: 430, evolved: false },
+    climatact: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, strikes: 2, evolved: false },
+    dial: { level: 0, baseDamage: 22, cooldown: 4.4, timer: 0, radius: 95, push: 70, evolved: false }
 };
 
 let enemies = [];

@@ -422,6 +422,7 @@ function vfxShoulder(ang) { return [player.x + Math.cos(ang) * 6, player.y - 2 +
 
 // ---------- Dibujo de cada ataque ----------
 function drawAttackFX(atk) {
+    if (drawArsenalFX(atk)) return; // armas de js/arsenal.js
     const k = atk.vis || atk.type;
     const evo = vfxEvolved(atk);
     const p = vfxProgress(atk);

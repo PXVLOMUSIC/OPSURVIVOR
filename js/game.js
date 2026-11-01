@@ -234,6 +234,7 @@ function update(dt) {
     for (let i = activeAttacks.length - 1; i >= 0; i--) {
         const atk = activeAttacks[i];
         atk.life -= dt;
+        if (ARSENAL_TYPES.has(atk.type)) { if (updateArsenalAttack(atk, dt)) activeAttacks.splice(i, 1); continue; }
 
         if (atk.type === 'pistol') {
             // El brazo de goma sale del hombro de Luffy: sigue al jugador y, al llegar al máximo, vuelve
@@ -528,9 +529,11 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('pistol');
-            activeAttacks.push({ vis: 'knife',
+            // Evolución (Shakushi de Kuro): abanico de 5 hojas
+            const fan = skills.cuchillo.evolved ? [-0.5, -0.25, 0, 0.25, 0.5] : [0];
+            for (const off of fan) activeAttacks.push({ vis: 'knife',
                 type: 'pistol', startX: player.x, startY: player.y,
-                angle: angle, speed: 820, currentRange: 0,
+                angle: angle + off, speed: 820, currentRange: 0,
                 maxRange: skills.cuchillo.range * player.areaBonus,
                 baseDamage: skills.cuchillo.baseDamage,
                 hitEnemies: new Set()
@@ -546,7 +549,7 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'gatling', x: player.x, y: player.y,
                 radius: skills.gatling.radius * player.areaBonus,
-                life: skills.gatling.duration, maxLife: skills.gatling.duration,
+                life: skills.gatling.duration * (player.durationBonus || 1), maxLife: skills.gatling.duration * (player.durationBonus || 1),
                 baseDamage: skills.gatling.baseDamage
             });
         }
@@ -580,8 +583,11 @@ function handleAttacks(dt) {
             let bx = target ? target.x : player.x;
             let by = target ? target.y : player.y;
             playSound('boom');
-            activeAttacks.push({ vis: 'grenade',
-                type: 'bazooka', x: bx, y: by,
+            // Evolución (Nose Fancy Cannon de Mr. 5): dos bombas más sobre otros enemigos
+            const spots = [[bx, by]];
+            if (skills.granada.evolved) for (let k = 0; k < 2 && enemies.length; k++) { const e2 = enemies[Math.floor(Math.random() * enemies.length)]; if (Math.hypot(e2.x - player.x, e2.y - player.y) < 520) spots.push([e2.x, e2.y]); }
+            for (const [gx, gy] of spots) activeAttacks.push({ vis: 'grenade',
+                type: 'bazooka', x: gx, y: gy,
                 radius: skills.granada.radius * player.areaBonus,
                 life: 0.55, maxLife: 0.55, hitDelay: 0.19,
                 baseDamage: skills.granada.baseDamage,
@@ -601,8 +607,9 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('pistol');
+            // Evolución (Sogeking): la bala perfora en línea recta
             activeAttacks.push({ vis: 'rifle',
-                type: 'pistol', startX: player.x, startY: player.y,
+                type: skills.rifle.evolved ? 'poundho' : 'pistol', startX: player.x, startY: player.y,
                 angle: angle, speed: 900, currentRange: 0,
                 maxRange: skills.rifle.range * player.areaBonus,
                 baseDamage: skills.rifle.baseDamage,
@@ -641,9 +648,10 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('slash');
-            activeAttacks.push({ vis: 'spear',
+            // Evolución (Bisento de Barbablanca): barrido en tres direcciones
+            for (const off of (skills.lanza.evolved ? [0, 2.094, -2.094] : [0])) activeAttacks.push({ vis: 'spear',
                 type: 'collier', startX: player.x, startY: player.y,
-                angle: angle, speed: 700, currentRange: 0,
+                angle: angle + off, speed: 700, currentRange: 0,
                 maxRange: skills.lanza.range * player.areaBonus,
                 baseDamage: skills.lanza.baseDamage,
                 hitEnemies: new Set()
@@ -681,9 +689,10 @@ function handleAttacks(dt) {
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
             playSound('slash');
-            activeAttacks.push({ vis: 'shuriken',
+            // Evolución (Ninpo de Raizo): cuatro shuriken en cruz además del dirigido
+            for (const off of (skills.shuriken.evolved ? [0, Math.PI / 4, 3 * Math.PI / 4, -Math.PI / 4, -3 * Math.PI / 4] : [0])) activeAttacks.push({ vis: 'shuriken',
                 type: 'flyingslash', startX: player.x, startY: player.y,
-                angle: angle, speed: skills.shuriken.speed, currentRange: 0,
+                angle: angle + off, speed: skills.shuriken.speed, currentRange: 0,
                 maxRange: skills.shuriken.range * player.areaBonus,
                 baseDamage: skills.shuriken.baseDamage,
                 hitEnemies: new Set()
@@ -700,13 +709,18 @@ function handleAttacks(dt) {
             activeAttacks.push({ vis: 'haki',
                 type: 'tatsumaki', x: player.x, y: player.y,
                 radius: skills.hakiPulse.radius * player.areaBonus,
-                duration: skills.hakiPulse.duration, life: skills.hakiPulse.duration,
+                duration: skills.hakiPulse.duration * (player.durationBonus || 1), life: skills.hakiPulse.duration * (player.durationBonus || 1),
                 baseDamage: skills.hakiPulse.baseDamage,
                 hitEnemies: new Set()
             });
+            // Evolución (Rey de los Conquistadores): el pulso aturde 1 s a los enemigos normales
+            if (skills.hakiPulse.evolved) forEnemiesNear(player.x, player.y, skills.hakiPulse.radius * player.areaBonus, e => { if (!e.isBoss && !e.isMiniboss) e._stun = Math.max(e._stun || 0, 1); });
             player.attackTimer = 0.2;
         }
     }
+
+    // Armas compartidas nuevas: Kabuto, Clima-Tact y Dial de Impacto (js/arsenal.js)
+    handleArsenal(dt, cdMult);
 
     // Gears: medidor + activacion manual (js/gears.js)
 
@@ -882,7 +896,7 @@ function handleAttacks(dt) {
             activeAttacks.push({
                 type: 'tatsumaki', x: player.x, y: player.y,
                 radius: skills.tatsumaki.radius * player.areaBonus,
-                life: skills.tatsumaki.duration, maxLife: skills.tatsumaki.duration,
+                life: skills.tatsumaki.duration * (player.durationBonus || 1), maxLife: skills.tatsumaki.duration * (player.durationBonus || 1),
                 baseDamage: skills.tatsumaki.baseDamage,
                 spin: 0
             });
@@ -1392,6 +1406,7 @@ function evolveWeapon(id) {
     else if (id === 'poundho') { sk.baseDamage *= 2.0; sk.range += 120; }
     else if (id === 'concasse') { sk.baseDamage *= 1.8; sk.radius += 25; }
     else if (id === 'partycourse') { sk.baseDamage *= 1.9; sk.radius += 35; sk.duration += 0.4; }
+    else if (SHARED_EVO_FX[id]) SHARED_EVO_FX[id](sk);
     // VS: cutscene de evolución — el mundo se congela, lluvia de confetti y cartel
     window._evolveCut = { life: 1.3 };
     window.spawnBanner = { text: '◆ ¡' + EVOLUTIONS[id].name.toUpperCase() + ' ◆', life: 1.3, color: '#c084fc' };
@@ -1433,8 +1448,8 @@ function showUpgradeScreen(count, isChest) {
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','zoroform','sanjiform'];
-    const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','zoroform','sanjiform'];
+    const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp','rumble','jolly'];
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
         { id: 'gatling', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Gatling', icon: ICONS.gatling, desc: 'Desbloquea o mejora la ráfaga continua en área.' },
@@ -1480,6 +1495,11 @@ function showUpgradeScreen(count, isChest) {
         { id: 'magnet', type: 'passive', chars: 'all', title: 'Imán', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida +20%.' },
         { id: 'greed', type: 'passive', chars: 'all', title: 'Avaricia', icon: ICONS.coin, desc: 'Aumenta los Berries ganados +12%.' },
         { id: 'vamp', type: 'passive', chars: 'all', title: 'Vampirismo', icon: ICONS.drop, desc: 'Sana 2 HP al derrotar a un enemigo (probabilidad).' },
+        { id: 'kabuto', type: 'weapon', chars: 'all', title: 'Kabuto de Usopp', icon: ICONS.kabuto, desc: 'Arma compartida: tirachinas cuya bola rebota por la arena.' },
+        { id: 'climatact', type: 'weapon', chars: 'all', title: 'Clima-Tact de Nami', icon: ICONS.climatact, desc: 'Arma compartida: Thunderbolt Tempo, rayos sobre enemigos al azar.' },
+        { id: 'dial', type: 'weapon', chars: 'all', title: 'Dial de Impacto', icon: ICONS.dial, desc: 'Arma compartida: concha de Skypiea que suelta una onda y empuja a los cercanos.' },
+        { id: 'rumble', type: 'passive', chars: 'all', title: 'Rumble Ball', icon: ICONS.rumble, desc: 'La píldora de Chopper: +15% duración de Gatling, Tatsumaki, Haoshoku y Clima-Tact.' },
+        { id: 'jolly', type: 'passive', chars: 'all', title: 'Bandera Pirata', icon: ICONS.jolly, desc: 'Izas tu Jolly Roger: +10% enemigos y peligro, +10% XP y Berries.' },
     ];
     // snapshot del pool completo (titulo + icono) — la Ficha de Singladura lo usa
     window.UPGRADE_POOL_MAP = window.UPGRADE_POOL_MAP || {};
@@ -1505,6 +1525,9 @@ function showUpgradeScreen(count, isChest) {
         return true;
     });
 
+    // Nota: este sort con comparador aleatorio NO baraja de forma uniforme: favorece a los primeros de la lista
+    // (técnicas de Luffy y Poder/Crítico/Cooldown/Armadura). El balance está medido con este sesgo,
+    // por eso los objetos nuevos van al final de possibleUpgrades.
     possible.sort(() => 0.5 - Math.random()).slice(0, count).forEach(up => {
         let desc = up.desc;
         // Destello de color por personaje para armas especiales (rojo Luffy, verde Zoro, amarillo Sanji);
@@ -1736,6 +1759,7 @@ function selectUpgrade(id) {
         skills.hakiPulse.level = Math.min(5, skills.hakiPulse.level + 1);
         skills.hakiPulse.baseDamage += 6; skills.hakiPulse.radius += 8;
     }
+    else if (ARSENAL_UPGRADE[id]) { ARSENAL_UPGRADE[id](); }
     else if (id === 'haki_buso') { player.powerPct += 10; player.armor = Math.min(70, player.armor + 5); player.passives.haki_buso = (player.passives.haki_buso || 0) + 1; }
     else if (id === 'haki_ken') { player.critChance += 0.1; player.passives.haki_ken = (player.passives.haki_ken || 0) + 1; }
     else if (id === 'haki_hao') { /* stun area: handled in render/update */ player.passives.haki_hao = (player.passives.haki_hao || 0) + 1; }
@@ -1879,7 +1903,8 @@ function updateWeaponsHUD() {
         { id: 'cuchillo', icon: ICONS.cuchillo, name: 'Cuchillo' }, { id: 'granada', icon: ICONS.granada, name: 'Granada' },
         { id: 'rifle', icon: ICONS.rifle, name: 'Rifle' }, { id: 'ballesta', icon: ICONS.ballesta, name: 'Ballesta' },
         { id: 'lanza', icon: ICONS.lanza, name: 'Lanza' }, { id: 'hacha', icon: ICONS.hacha, name: 'Hacha' },
-        { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' }
+        { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' },
+        { id: 'kabuto', icon: ICONS.kabuto, name: 'Kabuto' }, { id: 'climatact', icon: ICONS.climatact, name: 'Clima-Tact' }, { id: 'dial', icon: ICONS.dial, name: 'Dial de Impacto' }
     );
     el.innerHTML = '';
     weapons.forEach(w => {

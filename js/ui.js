@@ -96,7 +96,7 @@ function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
     if (!wEl || !pEl) return;
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','zoroform','sanjiform'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','zoroform','sanjiform'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
     const icons = ICONS;
     wEl.innerHTML = '';
@@ -185,7 +185,7 @@ function resetGame() {
     player.walkFrame = 0; player.isMoving = false;
     player.animState = 'idle'; player.animIndex = 0; player.attackTimer = 0; player.hitTimer = 0; player._hurtFlash = 0; player._hurtShakeCd = 0;
     player.level = 1; player.xp = 0; player.nextXp = 6;
-    player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0;
+    player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0; player.durationBonus = 1;
     player.passives = {};
     player.revives = 0; // antes no se reiniciaba y los "Revivir" sin usar se acumulaban entre partidas
     player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};

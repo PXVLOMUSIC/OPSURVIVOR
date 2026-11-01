@@ -1044,5 +1044,4 @@ body.opt-calm .btn-sail { animation: none; }
 body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 /* Tripulación «Próximamente»: cartel visible, sin jugar */
 .char-card.soon { cursor: default; }
-.char-card.soon img { filter: grayscale(0.35) brightness(0.7); }
 .char-card.soon .char-locked-banner { background: linear-gradient(135deg, #1f2937, #0f172a); color: #facc15; border-color: #facc15; }

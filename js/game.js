@@ -10,7 +10,7 @@ function gameLoop(now) {
     // música: solo al cambiar de estado (evita .play() cada frame)
     if (_lastMusicState !== gameState) { _lastMusicState = gameState; updateMusic(); gearUpdateButton(); }
 
-    if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA') {
+    if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'ARCANA' || gameState === 'CHEST') {
         requestAnimationFrame(gameLoop);
     }
 }
@@ -78,11 +78,10 @@ function update(dt) {
         }
         // fin de la cutscene: las mejoras de un cofre abierto durante la evolucion quedaron pendientes
         window._evolveCut = null;
-        if (player._pendingUpgrade && player._pendingUpgrade > 0) {
-            const c = player._pendingUpgrade;
-            player._pendingUpgrade = 0;
-            gameState = 'UPGRADE';
-            showUpgradeScreen(c, true);
+        if (player._pendingChest) {
+            const c = player._pendingChest;
+            player._pendingChest = null;
+            openChestRoulette(c.count, c.tier, c.beli, c.evo);
             return;
         }
     }
@@ -139,9 +138,11 @@ function update(dt) {
     handleAttacks(dt);
     handleSpawning(dt);
     updateEvents(dt);
+    updateProps(dt);
 
     for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
+        if (e.isProp) continue; // barriles y faroles: no se mueven ni hacen daño
         const edx = player.x - e.x, edy = player.y - e.y, edist = Math.hypot(edx, edy);
         // Campana de Skypiea (VS Orologion): los enemigos quedan congelados 10s
         if (window.freezeTimer > 0) {
@@ -422,16 +423,18 @@ function update(dt) {
                 d.openTimer -= dt;
                 if (d.openTimer <= 0) {
                     // recompensa al terminar la animacion de apertura
-                    const luck = player.luckBonus;
-                    const roll = Math.random();
-                    const count = roll < 0.05 * luck ? 4 : (roll < 0.20 * luck ? 2 : 1);
+                    // VS: la ruleta del cofre revela 1, 3 o 5 objetos (js/loot.js)
+                    const count = chestItemCount();
                     const tierBase = d.tier === 2 ? 350 : (d.tier === 1 ? 200 : 60);
                     const beliVal = Math.round((tierBase + Math.random() * tierBase) * player.greedBonus * (player.runBeliMult || 1));
                     scoreBeli += beliVal;
+                    const evoBefore = Object.keys(skills).filter(k => skills[k].evolved);
                     if (d.canEvolve) checkEvolutions();
-                    // VS: si la cutscene de evolucion sigue viva, la pantalla de mejoras espera
-                    if (window._evolveCut && window._evolveCut.life > 0) player._pendingUpgrade = count;
-                    else { gameState = 'UPGRADE'; showUpgradeScreen(count, true); }
+                    const evoNames = Object.keys(skills).filter(k => skills[k].evolved && !evoBefore.includes(k)).map(k => EVOLUTIONS[k].name);
+                    const chest = { count, tier: d.tier, beli: beliVal, evo: evoNames };
+                    // VS: si la cutscene de evolucion sigue viva, la ruleta espera
+                    if (window._evolveCut && window._evolveCut.life > 0) player._pendingChest = chest;
+                    else openChestRoulette(chest.count, chest.tier, chest.beli, chest.evo);
                     updateUI();
                     drops.splice(i, 1);
                 }
@@ -1178,6 +1181,7 @@ function killEnemy(e) {
     // sobre el mismo enemigo antes del filtro de muertos -> drops/beli/victoria duplicados
     if (e._dead) return;
     e._dead = true;
+    if (e.isProp) { propBreak(e); return; }
     gearOnKill(e);
     // estadisticas de run para logros y bestiario
     if (window.runStats) {
@@ -1245,7 +1249,8 @@ function killEnemy(e) {
         playSound('beli_rush');
         fxStars(e.x, e.y, (windowOpts && windowOpts.fewerFlashes) ? 6 : 18);
     }
-    if (Math.random() < 0.08) drops.push({ x: e.x, y: e.y, type: 'meat' });
+    // la mayor parte de la carne sale ahora de barriles y faroles (js/loot.js)
+    if (Math.random() < 0.04) drops.push({ x: e.x, y: e.y, type: 'meat' });
     // Boss derrotado = victoria (estilo Vampire Survivors) — salvo Modo Infinito
     if (e.isBoss) {
         if (window.endlessMode) {
@@ -1341,6 +1346,7 @@ function fxGhost(x, y, facing) {
 function getNearestEnemy() {
     let nearest = null, minD = Infinity;
     for (let e of enemies) {
+        if (e.isProp) continue;
         const d = Math.hypot(e.x - player.x, e.y - player.y);
         if (d < minD) { minD = d; nearest = e; }
     }
@@ -1459,7 +1465,7 @@ function showUpgradeScreen(count, isChest) {
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','zoroform','sanjiform'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp','rumble','jolly'];
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
@@ -1510,6 +1516,8 @@ function showUpgradeScreen(count, isChest) {
         { id: 'climatact', type: 'weapon', chars: 'all', title: 'Clima-Tact de Nami', icon: ICONS.climatact, desc: 'Arma compartida: Thunderbolt Tempo, rayos sobre enemigos al azar.' },
         { id: 'dial', type: 'weapon', chars: 'all', title: 'Dial de Impacto', icon: ICONS.dial, desc: 'Arma compartida: concha de Skypiea que suelta una onda y empuja a los cercanos.' },
         { id: 'rumble', type: 'passive', chars: 'all', title: 'Rumble Ball', icon: ICONS.rumble, desc: 'La píldora de Chopper: +15% duración de Gatling, Tatsumaki, Haoshoku y Clima-Tact.' },
+        { id: 'roseo', type: 'weapon', chars: ['chopper'], title: 'Kokutei Roseo Mirror', icon: ICONS.roseo, desc: 'Chopper (Heavy Point): pezuñazo que estalla en flor de cerezo sobre el enemigo más cercano.' },
+        { id: 'clutch', type: 'weapon', chars: ['robin'], title: 'Seis Fleur: Clutch', icon: ICONS.clutch, desc: 'Robin: brotan brazos en los enemigos cercanos, los dañan y los inmovilizan.' },
         { id: 'jolly', type: 'passive', chars: 'all', title: 'Bandera Pirata', icon: ICONS.jolly, desc: 'Izas tu Jolly Roger: +10% enemigos y peligro, +10% XP y Berries.' },
     ];
     // snapshot del pool completo (titulo + icono) — la Ficha de Singladura lo usa
@@ -1518,6 +1526,7 @@ function showUpgradeScreen(count, isChest) {
     const possible = possibleUpgrades.filter(u => {
         if (u.chars !== 'all' && !u.chars.includes(selectedCharacter)) return false;
         if (player.banished && player.banished[u.id]) return false; // VS: Banish retira el ítem de la partida
+        if (itemLocked(u.id)) return false; // se desbloquea con un logro (js/loot.js)
         const sk = skills[u.id];
         const isNew = !sk || sk.level <= 0;
         if (u.type === 'weapon' && sk && sk.level >= 5) {
@@ -1558,6 +1567,7 @@ function showUpgradeScreen(count, isChest) {
         card.className = 'upgrade-card' + (cardEvo ? ' evo' : '');
         card.dataset.char = cardChar;
         card.dataset.kind = up.type;
+        card.dataset.id = up.id;
         card.innerHTML = `
             <div class="upgrade-icon">${up.icon}</div>
             <div class="upgrade-info">
@@ -1786,6 +1796,7 @@ function selectUpgrade(id) {
     else if (id === 'greed') { player.greedBonus += 0.12; player.passives.greed = (player.passives.greed || 0) + 1; }
     else if (id === 'vamp') { player.vampirism += 0.15; player.passives.vamp = (player.passives.vamp || 0) + 1; }
 
+    if (window._applyOnly) return; // la ruleta del cofre aplica varios objetos seguidos
     playSound('select');
     document.getElementById('upgrade-screen').style.display = 'none';
     // VS: las Arcanas otorgadas a mitad de partida encadenan tras cerrar la subida
@@ -1915,7 +1926,7 @@ function updateWeaponsHUD() {
         { id: 'rifle', icon: ICONS.rifle, name: 'Rifle' }, { id: 'ballesta', icon: ICONS.ballesta, name: 'Ballesta' },
         { id: 'lanza', icon: ICONS.lanza, name: 'Lanza' }, { id: 'hacha', icon: ICONS.hacha, name: 'Hacha' },
         { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' },
-        { id: 'kabuto', icon: ICONS.kabuto, name: 'Kabuto' }, { id: 'climatact', icon: ICONS.climatact, name: 'Clima-Tact' }, { id: 'dial', icon: ICONS.dial, name: 'Dial de Impacto' }
+        { id: 'kabuto', icon: ICONS.kabuto, name: 'Kabuto' }, { id: 'roseo', icon: ICONS.roseo, name: 'Roseo Mirror' }, { id: 'clutch', icon: ICONS.clutch, name: 'Clutch' }, { id: 'climatact', icon: ICONS.climatact, name: 'Clima-Tact' }, { id: 'dial', icon: ICONS.dial, name: 'Dial de Impacto' }
     );
     el.innerHTML = '';
     weapons.forEach(w => {

@@ -228,7 +228,10 @@ const skills = {
     // Objetos del mundo de One Piece (js/arsenal.js)
     kabuto: { level: 0, baseDamage: 18, cooldown: 2.4, timer: 0, life: 2.6, speed: 430, evolved: false },
     climatact: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, strikes: 2, evolved: false },
-    dial: { level: 0, baseDamage: 22, cooldown: 4.4, timer: 0, radius: 95, push: 70, evolved: false }
+    dial: { level: 0, baseDamage: 22, cooldown: 4.4, timer: 0, radius: 95, push: 70, evolved: false },
+    // Técnicas propias de Chopper y Robin
+    roseo: { level: 0, baseDamage: 40, cooldown: 1.6, timer: 0, radius: 55, evolved: false },
+    clutch: { level: 0, baseDamage: 34, cooldown: 2.2, timer: 0, targets: 2, evolved: false }
 };
 
 let enemies = [];

@@ -462,7 +462,9 @@ function updateMenuMusicBtn() {
 const CHAR_SKILLS = {
     luffy: ['pistol','gatling','bazooka','gear2','muchi','ono'],
     zoro: ['santoryu','onigiri','flyingslash','tatsumaki','poundho','zoroform'],
-    sanji: ['diablejambe','collier','joueshot','concasse','partycourse','sanjiform']
+    sanji: ['diablejambe','collier','joueshot','concasse','partycourse','sanjiform'],
+    // Tripulación desbloqueable (estilo VS: arma inicial propia + bonificación; el resto del arsenal es compartido)
+    nami: ['climatact'], usopp: ['kabuto'], chopper: ['roseo'], robin: ['clutch']
 };
 
 // Animation frame indices within assets/extracted/<char>_gba/
@@ -470,18 +472,24 @@ const CHAR_SKILLS = {
 const CHAR_ANIMS = {
     luffy: { name: 'Luffy', idle: [0,1,2,3,4], walk: [10,11,12], attack: [57,58,59,60], hit: [178,179,180,181], balloon: [278,279,280,281,282,283], death: [178,179,180,181] },
     zoro:  { name: 'Zoro',  idle: [0], walk: [0,1,2,3], attack: [15,16,18,19,21,22], hit: [15] },
-    sanji: { name: 'Sanji', idle: [0], walk: [51,52,53,54], attack: [10], hit: [15] }
+    sanji: { name: 'Sanji', idle: [0], walk: [51,52,53,54], attack: [10], hit: [15] },
+    // WonderSwan Color "Swan Colosseum" (espejados para mirar a la izquierda como los de GBA)
+    nami:    { name: 'Nami',    folder: 'nami_wsc',    idle: [0,1,2,3,4,5], walk: [6,7,8,9,10,11,12,13], attack: [14,15,16,17], hit: [0] },
+    usopp:   { name: 'Usopp',   folder: 'usopp_wsc',   idle: [0], walk: [1,2,3,4,5,6,7], attack: [8,9,10,11], hit: [0] },
+    chopper: { name: 'Chopper', folder: 'chopper_wsc', idle: [0,1,2,3], walk: [4,5,6,7,8,9], attack: [10,11,12,13], hit: [0] },
+    robin:   { name: 'Robin',   folder: 'robin_wsc',   idle: [0,1,2], walk: [3,4,5,6,7,8,9], attack: [10,11,12,13,14], hit: [0] }
 };
 
 function animPath(char, idx) {
-    const folder = char === 'luffy' ? 'luffy_gba' : (char === 'zoro' ? 'zoro_gba' : 'sanji_gba');
+    const folder = (CHAR_ANIMS[char] && CHAR_ANIMS[char].folder) || (char + '_gba');
     return 'assets/extracted/' + folder + '/sprite_' + String(idx).padStart(3, '0') + '.png';
 }
 
 const CHAR_PORTRAIT = {
     luffy: 'assets/wanted/luffy.jpg',
     zoro: 'assets/wanted/zoro.jpg',
-    sanji: 'assets/wanted/sanji.jpg'
+    sanji: 'assets/wanted/sanji.jpg',
+    nami: 'assets/wanted/nami.jpg', usopp: 'assets/wanted/usopp.jpg', chopper: 'assets/wanted/chopper.jpg', robin: 'assets/wanted/robin.jpg'
 };
 function updateHudPortrait() {
     const img = document.getElementById('hud-portrait');
@@ -490,10 +498,12 @@ function updateHudPortrait() {
     if (name) name.innerText = CHAR_FULLNAME[selectedCharacter] || '';
 }
 // Nombre completo como aparece en los carteles de Se Busca
-const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI' };
+const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'GATA LADRONA NAMI', usopp: 'SOGEKING (USOPP)', chopper: 'TONY TONY CHOPPER', robin: 'NICO ROBIN' };
+// Cómo se desbloquea cada personaje (se muestra en la carta bloqueada)
+const CHAR_LOCK_TEXT = { zoro: 'BLOQUEADO — TIENDA', sanji: 'BLOQUEADO — TIENDA', usopp: 'SOBREVIVE 5 MIN', nami: 'CONQUISTA EL BARATIE', chopper: 'DERROTA 1.500 ENEMIGOS', robin: 'CONQUISTA ALABASTA' };
 function selectCharacter(id) {
     if (!meta.unlocked[id]) {
-        alert('Personaje bloqueado. Cómpralo en la tienda.');
+        showAchToast('PERSONAJE BLOQUEADO — ' + (CHAR_LOCK_TEXT[id] || 'TIENDA'));
         return;
     }
     playSound('ui');
@@ -512,7 +522,7 @@ function refreshCharCards() {
         if (!unlocked && !overlay) {
             overlay = document.createElement('div');
             overlay.className = 'char-locked-overlay';
-            overlay.innerHTML = '<span class="char-locked-banner">BLOQUEADO — TIENDA ฿1000</span>';
+            overlay.innerHTML = '<span class="char-locked-banner">' + (CHAR_LOCK_TEXT[b.dataset.char] || 'BLOQUEADO') + '</span>';
             b.appendChild(overlay);
         } else if (unlocked && overlay) {
             overlay.remove();

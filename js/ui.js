@@ -96,7 +96,7 @@ function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
     if (!wEl || !pEl) return;
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','zoroform','sanjiform'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
     const icons = ICONS;
     wEl.innerHTML = '';
@@ -239,5 +239,6 @@ function resetGame() {
     gameTime = 0; scoreBeli = 0; bossSpawned = false;
     window.minibossesSpawned = {}; window.mirrorMinibossSpawned = false; window.waveIdx = 0;
     window.spawnBanner = null;
+    applyCrewStart(); // arma inicial y bonus de Nami, Usopp, Chopper y Robin (js/arsenal.js)
     updateUI();
 }

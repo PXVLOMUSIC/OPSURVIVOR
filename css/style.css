@@ -488,6 +488,10 @@ svg.op-ico {
 
 /* --- Cartas WANTED de personajes (pantalla de selección) --- */
 #char-select { align-items: stretch; }
+/* 7 carteles del mismo tamaño en una sola fila */
+#char-select { gap: 12px !important; }
+#char-select .char-card, #char-select .char-card.crew { width: min(122px, 12.4vw); }
+#char-select .char-locked-banner { font-size: 10px; }
         .char-card {
     width: min(220px, 28vw);
     min-height: 0;
@@ -984,3 +988,17 @@ body.opt-calm .btn-sail { animation: none; }
 #gear-btn.ready { color: #1a0f06; background: radial-gradient(circle, #fde68a, #f472b6); border-color: #b45309; box-shadow: 0 0 16px #f472b6; animation: gearPulse 0.9s ease-in-out infinite; }
 @keyframes gearPulse { 50% { transform: scale(1.08); } }
 .gear-shop-head { width: 100%; margin: 14px 0 4px; font-family: 'Bangers', sans-serif; letter-spacing: 1px; color: #b45309; font-size: 16px; text-align: center; }
+
+/* === Ruleta del cofre (js/loot.js) === */
+#chest-screen { z-index: 60; }
+.chest-board { text-align: center; }
+.chest-board.tier1 { box-shadow: 0 0 40px rgba(219,228,240,0.5); }
+.chest-board.tier2 { box-shadow: 0 0 50px rgba(255,215,0,0.6); }
+.chest-reels { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 14px 0; }
+.chest-reel { width: 84px; padding: 8px 3px; border: 3px solid #8b5e3c; border-radius: 8px; background: #fdf3d8; transition: transform .15s; }
+.chest-reel .chest-icon { width: 46px; height: 46px; margin: 0 auto; color: #1a0f06; }
+.chest-reel .chest-icon svg { width: 100%; height: 100%; }
+.chest-reel .chest-name { min-height: 30px; margin-top: 6px; font-size: 11px; line-height: 1.2; color: #3b2410; font-weight: 700; }
+.chest-reel.done { border-color: #b45309; transform: scale(1.06); box-shadow: 0 0 16px rgba(250,204,21,0.6); }
+.chest-evo { margin: 6px auto 0; font-family: 'Bangers', sans-serif; letter-spacing: 1px; font-size: 18px; color: #7c3aed; }
+.chest-take:disabled { opacity: 0.5; cursor: default; }

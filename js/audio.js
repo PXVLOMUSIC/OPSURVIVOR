@@ -18,7 +18,7 @@ function updateMusic() {
         menuMusic.muted = false;
         menuMusic.volume = vol;
         menuMusic.play().catch(() => {});
-    } else if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'GAMEOVER' || gameState === 'VICTORY') {
+    } else if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'CHEST' || gameState === 'GAMEOVER' || gameState === 'VICTORY') {
         menuMusic.pause();
         battleMusic.muted = false;
         battleMusic.volume = vol;

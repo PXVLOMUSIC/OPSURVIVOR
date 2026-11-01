@@ -209,7 +209,7 @@ function resetGame() {
     });
 
     for (const k in SKILL_DEFAULTS) Object.assign(skills[k], JSON.parse(JSON.stringify(SKILL_DEFAULTS[k])));
-    skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 23; skills.pistol.evolved = false;
+    skills.pistol.level = (selectedCharacter === 'luffy') ? 1 : 0; skills.pistol.baseDamage = 25; skills.pistol.evolved = false;
     skills.gatling.level = 0; skills.gatling.baseDamage = 10; skills.gatling.evolved = false;
     skills.bazooka.level = 0; skills.bazooka.baseDamage = 45; skills.bazooka.evolved = false;
     skills.gear2.level = 0; skills.gear2.active = false; skills.gear2.remain = 0; skills.gear2.evolved = false;

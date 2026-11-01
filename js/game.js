@@ -741,7 +741,7 @@ function handleAttacks(dt) {
         }
     }
 
-    // Armas compartidas nuevas: Kabuto, Clima-Tact y Dial de Impacto (js/arsenal.js)
+    // Armas de la tripulación (Kabuto, Clima-Tact, Roseo, Clutch) y Dial de Impacto compartido (js/arsenal.js)
     handleArsenal(dt, cdMult);
 
     // Gears: medidor + activacion manual (js/gears.js)
@@ -1505,10 +1505,10 @@ function showUpgradeScreen(count, isChest) {
         { id: 'lanza', type: 'weapon', chars: 'all', title: 'Lanza de Abordaje', icon: ICONS.lanza, desc: 'Arma compartida: estocada rápida a corta distancia.' },
         { id: 'hacha', type: 'weapon', chars: 'all', title: 'Hacha Pirata', icon: ICONS.hacha, desc: 'Arma compartida: tajo pesado en área cercana.' },
         { id: 'shuriken', type: 'weapon', chars: 'all', title: 'Shuriken', icon: ICONS.shuriken, desc: 'Arma compartida: proyectil arrojadizo veloz.' },
-        { id: 'hakiPulse', type: 'weapon', chars: 'all', title: 'Pulso de Haoshoku', icon: ICONS.hakiPulse, desc: 'Arma compartida: onda de Haki que daña a los cercanos.' },
-        { id: 'haki_buso', type: 'passive', chars: 'all', title: 'Busoshoku Haki', icon: ICONS.haki_buso, desc: 'Aumenta daño y armadura.' },
-        { id: 'haki_ken', type: 'passive', chars: 'all', title: 'Kenbunshoku Haki', icon: ICONS.haki_ken, desc: 'Aumenta crit y evasión.' },
-        { id: 'haki_hao', type: 'passive', chars: 'all', title: 'Haoshoku Haki', icon: ICONS.haki_hao, desc: 'Pulso cada 6s que aturde 1.5s a los enemigos cercanos (no bosses).' },
+        { id: 'hakiPulse', type: 'weapon', chars: ['luffy', 'zoro'], title: 'Pulso de Haoshoku', icon: ICONS.hakiPulse, desc: 'Luffy y Zoro: onda de Haki del Rey que daña a los cercanos.' },
+        { id: 'haki_buso', type: 'passive', chars: ['luffy', 'zoro', 'sanji'], title: 'Busoshoku Haki', icon: ICONS.haki_buso, desc: 'Aumenta daño y armadura.' },
+        { id: 'haki_ken', type: 'passive', chars: ['luffy', 'zoro', 'sanji', 'usopp'], title: 'Kenbunshoku Haki', icon: ICONS.haki_ken, desc: 'Aumenta crit y evasión.' },
+        { id: 'haki_hao', type: 'passive', chars: ['luffy', 'zoro'], title: 'Haoshoku Haki', icon: ICONS.haki_hao, desc: 'Pulso cada 6s que aturde 1.5s a los enemigos cercanos (no bosses).' },
         { id: 'area', type: 'passive', chars: 'all', title: 'Área de Efecto', icon: ICONS.area, desc: 'Aumenta el área de los ataques +10%.' },
         { id: 'speed', type: 'passive', chars: 'all', title: 'Velocidad', icon: ICONS.speed, desc: 'Aumenta la velocidad de movimiento +8%.' },
         { id: 'pickup', type: 'passive', chars: 'all', title: 'Recogida', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida de drops.' },
@@ -1520,19 +1520,24 @@ function showUpgradeScreen(count, isChest) {
         { id: 'magnet', type: 'passive', chars: 'all', title: 'Imán', icon: ICONS.pickup, desc: 'Aumenta el rango de recogida +20%.' },
         { id: 'greed', type: 'passive', chars: 'all', title: 'Avaricia', icon: ICONS.coin, desc: 'Aumenta los Berries ganados +12%.' },
         { id: 'vamp', type: 'passive', chars: 'all', title: 'Vampirismo', icon: ICONS.drop, desc: 'Sana 2 HP al derrotar a un enemigo (probabilidad).' },
-        { id: 'kabuto', type: 'weapon', chars: 'all', title: 'Kabuto de Usopp', icon: ICONS.kabuto, desc: 'Arma compartida: tirachinas cuya bola rebota por la arena.' },
-        { id: 'climatact', type: 'weapon', chars: 'all', title: 'Clima-Tact de Nami', icon: ICONS.climatact, desc: 'Arma compartida: Thunderbolt Tempo, rayos sobre enemigos al azar.' },
+        { id: 'kabuto', type: 'weapon', chars: ['usopp'], title: 'Kabuto de Usopp', icon: ICONS.kabuto, desc: 'Usopp: tirachinas cuya bola rebota por la arena.' },
+        { id: 'climatact', type: 'weapon', chars: ['nami'], title: 'Clima-Tact de Nami', icon: ICONS.climatact, desc: 'Nami: Thunderbolt Tempo, rayos sobre enemigos al azar.' },
         { id: 'dial', type: 'weapon', chars: 'all', title: 'Dial de Impacto', icon: ICONS.dial, desc: 'Arma compartida: concha de Skypiea que suelta una onda y empuja a los cercanos.' },
-        { id: 'rumble', type: 'passive', chars: 'all', title: 'Rumble Ball', icon: ICONS.rumble, desc: 'La píldora de Chopper: +15% duración de Gatling, Tatsumaki, Haoshoku y Clima-Tact.' },
+        { id: 'rumble', type: 'passive', chars: ['chopper'], title: 'Rumble Ball', icon: ICONS.rumble, desc: 'Chopper: +15% duración de sus habilidades.' },
         { id: 'roseo', type: 'weapon', chars: ['chopper'], title: 'Kokutei Roseo Mirror', icon: ICONS.roseo, desc: 'Chopper (Heavy Point): pezuñazo que estalla en flor de cerezo sobre el enemigo más cercano.' },
         { id: 'clutch', type: 'weapon', chars: ['robin'], title: 'Seis Fleur: Clutch', icon: ICONS.clutch, desc: 'Robin: brotan brazos en los enemigos cercanos, los dañan y los inmovilizan.' },
         { id: 'jolly', type: 'passive', chars: 'all', title: 'Bandera Pirata', icon: ICONS.jolly, desc: 'Izas tu Jolly Roger: +10% enemigos y peligro, +10% XP y Berries.' },
     ];
+    // Quien no usa Haki en el canon (Nami, Chopper, Robin) ve Poder y Armadura sin el nombre de Haki
+    if (!itemAllowed('haki_buso', selectedCharacter)) for (const u of possibleUpgrades) {
+        if (u.id === 'power') u.title = 'Entrenamiento (Poder %)';
+        if (u.id === 'armor') u.title = 'Armadura';
+    }
     // snapshot del pool completo (titulo + icono) — la Ficha de Singladura lo usa
     window.UPGRADE_POOL_MAP = window.UPGRADE_POOL_MAP || {};
     for (let _u of possibleUpgrades) window.UPGRADE_POOL_MAP[_u.id] = { title: _u.title, icon: _u.icon };
     const possible = possibleUpgrades.filter(u => {
-        if (u.chars !== 'all' && !u.chars.includes(selectedCharacter)) return false;
+        if (!itemAllowed(u.id, selectedCharacter)) return false; // técnicas exclusivas y Haki solo para quien lo tiene en el canon
         if (player.banished && player.banished[u.id]) return false; // VS: Banish retira el ítem de la partida
         if (itemLocked(u.id)) return false; // se desbloquea con un logro (js/loot.js)
         const sk = skills[u.id];

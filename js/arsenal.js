@@ -1,7 +1,8 @@
 // === Arsenal ampliado (estilo Vampire Survivors: cada arma tiene su evolución con una pasiva) ===
 // - Evoluciones de las 8 armas compartidas, con técnicas del canon.
-// - 3 armas nuevas que son objetos del mundo de One Piece: Kabuto de Usopp, Clima-Tact de Nami y Dial de Impacto.
-// - 2 pasivas nuevas: Rumble Ball (duración) y Bandera Pirata (riesgo/recompensa, como el Skull O'Maniac de VS).
+// - Armas propias de la tripulación (Kabuto de Usopp, Clima-Tact de Nami, Roseo de Chopper, Clutch de Robin): exclusivas.
+// - Dial de Impacto: objeto de Skypiea, compartido.
+// - 2 pasivas nuevas: Rumble Ball (solo Chopper) y Bandera Pirata (riesgo/recompensa, como el Skull O'Maniac de VS).
 // Se carga después de game.js: amplía EVOLUTIONS, ICONS y engancha handleArsenal / updateArsenalAttack.
 
 // ---------- Iconos ----------
@@ -19,9 +20,9 @@ Object.assign(ICONS, {
 Object.assign(EVOLUTIONS, {
     cuchillo:  { passive: 'speed',     name: 'Shakushi: Neko no Te' },
     granada:   { passive: 'area',      name: 'Bomu Bomu: Nose Fancy Cannon' },
-    rifle:     { passive: 'crit',      name: 'Sogeking: Hissatsu Kaen Boshi' },
+    rifle:     { passive: 'crit',      name: 'Senriku: el rifle de Van Augur' },
     ballesta:  { passive: 'magnet',    name: 'Virote de Kairoseki' },
-    lanza:     { passive: 'haki_buso', name: 'Bisento de Barbablanca' },
+    lanza:     { passive: 'power',     name: 'Bisento de Barbablanca' },
     hacha:     { passive: 'maxhp',     name: 'Mano-Hacha de Morgan' },
     shuriken:  { passive: 'cd',        name: 'Ninpo de Raizo: Makibishi' },
     hakiPulse: { passive: 'haki_hao',  name: 'Haoshoku: Rey de los Conquistadores' },

@@ -352,7 +352,7 @@ function getGlow(color, size = 28) {
 
 const player = {
     x: 0, y: 0,
-    speed: 185,
+    speed: BALANCE.playerSpeed,
     hp: 100, maxHp: 100,
     level: 1, xp: 0, nextXp: 5,
     facing: 1, animFrame: 0, animTimer: 0, walkFrame: 0, isMoving: false,
@@ -372,7 +372,7 @@ const skills = {
     // Luffy: latigazo frontal (abanico) y patada hacha alla gear 3
     muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Jet Whip' },
     ono: { level: 0, baseDamage: 70, cooldown: 5.0, timer: 0, radius: 65, evolved: false },
-    santoryu: { level: 1, baseDamage: 33, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
+    santoryu: { level: 1, baseDamage: 38, cooldown: 1.5, timer: 0, radius: 66, evolved: false },
     onigiri: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, dash: 160, evolved: false },
     flyingslash: { level: 0, baseDamage: 20, cooldown: 2.2, timer: 0, range: 300, speed: 600, evolved: false },
     // Zoro: tornado orbitante y cañón de viento perforante

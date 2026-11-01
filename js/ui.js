@@ -127,7 +127,7 @@ function renderPauseWeapons() {
     if (player.cdReduction > 0) passives.push({ name: 'CD', val: '-' + player.cdReduction + '%' });
     if (player.armor > 0) passives.push({ name: 'Armadura', val: player.armor + '%' });
     if (player.areaBonus > 1) passives.push({ name: 'Área', val: '+' + Math.round((player.areaBonus-1)*100) + '%' });
-    if (player.speed > 185) passives.push({ name: 'Velocidad', val: '+' + Math.round((player.speed/185-1)*100) + '%' });
+    if (player.speed > BALANCE.playerSpeed) passives.push({ name: 'Velocidad', val: '+' + Math.round((player.speed/BALANCE.playerSpeed-1)*100) + '%' });
     pEl.innerHTML = '';
     passives.forEach(p => {
         const div = document.createElement('div');
@@ -233,7 +233,7 @@ function resetGame() {
     player.walkFrame = 0; player.isMoving = false;
     player.animState = 'idle'; player.animIndex = 0; player.attackTimer = 0; player.hitTimer = 0; player._hurtFlash = 0; player._hurtShakeCd = 0;
     player.level = 1; player.xp = 0; player.nextXp = 6;
-    player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = 185; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0; player.durationBonus = 1;
+    player.powerPct = 0; player.critChance = 0.05; player.cdReduction = 0; player.areaBonus = 1.0; player.armor = 0; player.speed = BALANCE.playerSpeed; player.pickupBonus = 1; player.growthBonus = 1; player.greedBonus = 1; player.luckBonus = 1; player.curse = 1; player.regenRate = 0; player.evasion = 0; player.vampirism = 0; player.durationBonus = 1;
     player.passives = {};
     player.revives = 0; // antes no se reiniciaba y los "Revivir" sin usar se acumulaban entre partidas
     player.rerollUses = 0; player.skipUses = 0; player.banishUses = 0; player.banished = {};
@@ -262,7 +262,7 @@ function resetGame() {
     skills.gear2.level = 0; skills.gear2.active = false; skills.gear2.remain = 0; skills.gear2.evolved = false;
     skills.muchi.level = 0; skills.muchi.baseDamage = 35; skills.muchi.evolved = false;
     skills.ono.level = 0; skills.ono.baseDamage = 70; skills.ono.evolved = false;
-    skills.santoryu.level = (selectedCharacter === 'zoro') ? 1 : 0; skills.santoryu.baseDamage = 34; skills.santoryu.evolved = false;
+    skills.santoryu.level = (selectedCharacter === 'zoro') ? 1 : 0; skills.santoryu.baseDamage = 38; skills.santoryu.evolved = false;
     skills.onigiri.level = 0; skills.onigiri.baseDamage = 60; skills.onigiri.evolved = false;
     skills.flyingslash.level = 0; skills.flyingslash.baseDamage = 20; skills.flyingslash.evolved = false;
     skills.tatsumaki.level = 0; skills.tatsumaki.baseDamage = 10; skills.tatsumaki.evolved = false;

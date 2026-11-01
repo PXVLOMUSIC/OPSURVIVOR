@@ -1,9 +1,8 @@
 // === Botín: cofres con ruleta, objetos del suelo y contenido que se desbloquea con logros ===
 
 // --- Objetos que se desbloquean con logros (como las armas de VS que aparecen tras un logro) ---
-// Las armas de la tripulación entran en el arsenal compartido al desbloquear al personaje.
+// Las armas de la tripulación son exclusivas de su dueño (CHAR_SKILLS); aquí solo quedan objetos compartidos.
 const ITEM_LOCK = {
-    kabuto: 'usopp', climatact: 'nami', rumble: 'chopper',
     dial: 'item_dial', jolly: 'item_jolly'
 };
 function itemLocked(id) {

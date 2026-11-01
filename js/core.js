@@ -411,8 +411,8 @@ const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
-    contactMult: 1.0,     // daño por contacto = daño del enemigo x esto (por segundo); antes 0.8
-    hpGrowth: 1.27,        // multiplicador de vida enemiga por minuto (continuo); 1.32 antes de las tasas de botín de VS
+    contactMult: 0.57,    // daño por contacto = daño del enemigo x esto (por segundo); 1.0 hasta bajar la velocidad del jugador a 92
+    hpGrowth: 1.26,        // multiplicador de vida enemiga por minuto (continuo); 1.32 con la velocidad antigua (185)
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
@@ -420,7 +420,8 @@ const BALANCE = {
     bulletDmg: 9,         // daño por bala (antes 14)
     meatHeal: 30,         // muslo de carne = Floor Chicken de VS (+30 HP)
     enemyMeat: 0.03,      // probabilidad de muslo al morir un enemigo normal (VS: 0; con 0 el bot cae a 4/9/28)
-    minSpawnDist: 300     // los spawns recolocados dentro de arenas cerradas nunca caen encima del jugador
+    minSpawnDist: 300,    // los spawns recolocados dentro de arenas cerradas nunca caen encima del jugador
+    playerSpeed: 92       // velocidad base: algo por encima de los enemigos rasos (78-82); antes 185
 };
 // === Economía (Berries) — referencia Vampire Survivors ===
 // En VS el oro sale sobre todo de braseros, cofres y la Moneda de oro al tenerlo todo (25);
@@ -733,6 +734,19 @@ const CHAR_SKILLS = {
     // Tripulación desbloqueable (estilo VS: arma inicial propia + bonificación; el resto del arsenal es compartido)
     nami: ['climatact'], usopp: ['kabuto'], chopper: ['roseo'], robin: ['clutch']
 };
+// Objetos que no son técnicas propias, pero que en el canon solo usan algunos personajes.
+const ITEM_CHARS = {
+    rumble: ['chopper'],                          // la Rumble Ball altera la Zoan de Chopper; nadie más la toma
+    hakiPulse: ['luffy', 'zoro'], haki_hao: ['luffy', 'zoro'], // Haoshoku: Luffy y Zoro (Wano); Sanji no lo tiene
+    haki_buso: ['luffy', 'zoro', 'sanji'],
+    haki_ken: ['luffy', 'zoro', 'sanji', 'usopp']
+};
+// ¿Puede el personaje ch recibir el objeto id? Las técnicas de CHAR_SKILLS son exclusivas de su dueño.
+function itemAllowed(id, ch) {
+    if ((CHAR_SKILLS[ch] || []).includes(id)) return true;
+    for (const c in CHAR_SKILLS) if (CHAR_SKILLS[c].includes(id)) return false;
+    return !ITEM_CHARS[id] || ITEM_CHARS[id].includes(ch);
+}
 
 // Animation frame indices within assets/extracted/<char>_gba/
 // Adjust these numbers to change which sprite is used for each action.

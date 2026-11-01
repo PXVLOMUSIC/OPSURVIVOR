@@ -166,8 +166,6 @@ function closeShop() {
     document.getElementById('start-screen').style.display = 'flex';
     updateMetaUI();
 }
-// Precio único para mostrar y cobrar (antes la tienda mostraba cost*1.25^nv y cobraba cost*(nv+1))
-function metaUpgradeCost(u, lvl) { return Math.round(u.cost * Math.pow(1.25, lvl)); }
 function renderShop() {
     const container = document.getElementById('shop-options');
     container.innerHTML = '';

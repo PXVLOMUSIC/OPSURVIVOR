@@ -19,15 +19,16 @@ async function runOne(browser, ch, map, meta) {
     const page = await ctx.newPage();
     await page.addInitScript(({ meta, gear }) => {
         const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true }, gear: { unlocked: gear, up: { meter: 0, charge: 0, recover: 0 } } };
-        if (meta === 2) Object.assign(m.upgrades, { damage: 5, hp: 5, speed: 3, area: 3, cooldown: 5, armor: 5, luck: 3, pickup: 3, growth: 3, revival: 0, reroll: 0, skip: 0, banish: 0 });
-        else if (meta) Object.assign(m.upgrades, { damage: 10, hp: 10, speed: 10, area: 10, cooldown: 10, armor: 10, luck: 10, pickup: 10, growth: 10, revival: 1, greed: 10, curse: 0, reroll: 10, skip: 10, banish: 10 });
+        // mejoras: se fijan tras cargar el juego a partir de META_UPGRADES (ver abajo)
+        // (meta 1 = todas al máximo; meta 2 = la mitad, redondeando arriba y sin Revivir; la Maldición siempre a 0)
         localStorage.setItem('op_survivor_meta', JSON.stringify(m));
         window.requestAnimationFrame = () => 0;
     }, { meta, gear: GEAR });
     page.on('pageerror', e => console.error('ERR', ch, map, e.message));
     await page.goto(URL_);
     await page.waitForFunction(() => typeof startGame === 'function' && assetsLoaded, null, { timeout: 60000 }).catch(() => {});
-    const res = await page.evaluate(async ({ ch, map, forceEvo }) => {
+    const res = await page.evaluate(async ({ ch, map, forceEvo, metaLvl }) => {
+        META_UPGRADES.forEach(u => { meta.upgrades[u.id] = (u.id === 'curse' || (metaLvl === 2 && u.id === 'revival')) ? 0 : (metaLvl === 1 ? u.max : (metaLvl === 2 ? Math.ceil(u.max / 2) : 0)); });
         window.playSound = () => {}; window.updateMusic = () => {};
         selectedCharacter = ch; selectedMap = map; runCurseRank = 0;
         startGame();
@@ -123,7 +124,7 @@ async function runOne(browser, ch, map, meta) {
             gearMax: (typeof meta !== 'undefined' && meta.gear) ? meta.gear.unlocked : null, gearUses: gu,
             weapons: Object.keys(skills).filter(k => skills[k].level > 0).map(k => k + skills[k].level + (skills[k].evolved ? '*' : '')).join(' '),
             samples, realMs: Math.round(performance.now() - t0) };
-    }, { ch, map, forceEvo: FORCE_EVO });
+    }, { ch, map, forceEvo: FORCE_EVO, metaLvl: meta });
     await ctx.close();
     return res;
 }

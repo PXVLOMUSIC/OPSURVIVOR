@@ -86,16 +86,19 @@ generateSprites();
 let gameState = 'START';
 
 // --- META PROGRESSION (Vampire Survivors style) ---
+// Mejoras permanentes: niveles máximos alineados con los PowerUps de Vampire Survivors
+// (Might 5, Armor 3, Max Health 3, Cooldown 2, Area 2, MoveSpeed 2, Magnet 2, Luck 5, Growth 5).
+// Antes casi todo llegaba a nivel 10 y con la mitad ya se ganaba el 100% de las partidas.
 const META_UPGRADES = [
-    { id: 'damage', name: 'Poder', desc: '+5% daño por nivel', cost: 2000, max: 10, icon: ICONS.power, apply: (p, lvl) => { p.powerPct += lvl * 5; } },
-    { id: 'hp', name: 'Salud', desc: '+10 HP max por nivel', cost: 1500, max: 10, icon: ICONS.heart, apply: (p, lvl) => { p.maxHp += lvl * 10; p.hp = p.maxHp; } },
-    { id: 'speed', name: 'Velocidad', desc: '+5% velocidad por nivel', cost: 1800, max: 10, icon: ICONS.speed, apply: (p, lvl) => { p.speed *= (1 + lvl * 0.05); } },
-    { id: 'area', name: 'Área', desc: '+5% área por nivel', cost: 1800, max: 10, icon: ICONS.area, apply: (p, lvl) => { p.areaBonus *= (1 + lvl * 0.05); } },
-    { id: 'cooldown', name: 'Cooldown', desc: '-3% cooldown por nivel', cost: 2000, max: 10, icon: ICONS.cd, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 3); } },
-    { id: 'armor', name: 'Armadura', desc: '+3% armadura por nivel', cost: 2500, max: 10, icon: ICONS.armor, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 3); } },
-    { id: 'luck', name: 'Crítico', desc: '+5% prob. crítica por nivel', cost: 3000, max: 10, icon: ICONS.crit, apply: (p, lvl) => { p.critChance += lvl * 0.05; } },
-    { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 1500, max: 10, icon: ICONS.pickup, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
-    { id: 'growth', name: 'Crecimiento', desc: '+5% XP por nivel', cost: 2000, max: 10, icon: ICONS.growth, apply: (p, lvl) => { p.growthBonus += lvl * 0.05; } },
+    { id: 'damage', name: 'Poder', desc: '+5% daño por nivel', cost: 2000, max: 5, icon: ICONS.power, apply: (p, lvl) => { p.powerPct += lvl * 5; } },
+    { id: 'hp', name: 'Salud', desc: '+10 HP max por nivel', cost: 1500, max: 3, icon: ICONS.heart, apply: (p, lvl) => { p.maxHp += lvl * 10; p.hp = p.maxHp; } },
+    { id: 'speed', name: 'Velocidad', desc: '+5% velocidad por nivel', cost: 1800, max: 2, icon: ICONS.speed, apply: (p, lvl) => { p.speed *= (1 + lvl * 0.05); } },
+    { id: 'area', name: 'Área', desc: '+5% área por nivel', cost: 1800, max: 2, icon: ICONS.area, apply: (p, lvl) => { p.areaBonus *= (1 + lvl * 0.05); } },
+    { id: 'cooldown', name: 'Cooldown', desc: '-3% cooldown por nivel', cost: 2000, max: 2, icon: ICONS.cd, apply: (p, lvl) => { p.cdReduction = Math.min(60, p.cdReduction + lvl * 3); } },
+    { id: 'armor', name: 'Armadura', desc: '+3% armadura por nivel', cost: 2500, max: 3, icon: ICONS.armor, apply: (p, lvl) => { p.armor = Math.min(70, p.armor + lvl * 3); } },
+    { id: 'luck', name: 'Crítico', desc: '+2% prob. crítica por nivel', cost: 3000, max: 5, icon: ICONS.crit, apply: (p, lvl) => { p.critChance += lvl * 0.02; } },
+    { id: 'pickup', name: 'Recogida', desc: '+10% rango de recogida por nivel', cost: 1500, max: 2, icon: ICONS.pickup, apply: (p, lvl) => { p.pickupBonus += lvl * 0.10; } },
+    { id: 'growth', name: 'Crecimiento', desc: '+3% XP por nivel', cost: 2000, max: 5, icon: ICONS.growth, apply: (p, lvl) => { p.growthBonus += lvl * 0.03; } },
     { id: 'revival', name: 'Revivir', desc: 'Revive una vez con 50% HP', cost: 15000, max: 1, icon: ICONS.revive, apply: (p, lvl) => { player.revives = (player.revives || 0) + 1; } },
     { id: 'greed', name: 'Avaricia', desc: '+20% Berries por nivel', cost: 1200, max: 10, icon: ICONS.coin, apply: (p, lvl) => { p.greedBonus += lvl * 0.20; } },
     { id: 'curse', name: 'Maldición', desc: '+10% enemigos/HP/vel (riesgo/recompensa)', cost: 4000, max: 5, icon: ICONS.skull, apply: (p, lvl) => { p.curse += lvl * 0.10; } },
@@ -107,13 +110,20 @@ let meta = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: false, sanji:
     achievements: {},
     stats: { kills: 0, elites: 0, evolves: 0, beliTotal: 0, maxTime: { baratie: 0, alabasta: 0, skypiea: 0 }, winsByChar: { luffy: 0, zoro: 0, sanji: 0 }, winsByCurse: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 }, killsByType: {} } };
 META_UPGRADES.forEach(u => meta.upgrades[u.id] = 0);
+// Precio único para mostrar y cobrar en la tienda
+function metaUpgradeCost(u, lvl) { return Math.round(u.cost * Math.pow(1.25, lvl)); }
 function loadMeta() {
     try {
         const saved = localStorage.getItem('op_survivor_meta');
         if (saved) {
             const parsed = JSON.parse(saved);
             meta.beli = parsed.beli || 0;
-            META_UPGRADES.forEach(u => { meta.upgrades[u.id] = (parsed.upgrades && parsed.upgrades[u.id]) || 0; });
+            META_UPGRADES.forEach(u => {
+                const lv = (parsed.upgrades && parsed.upgrades[u.id]) || 0;
+                meta.upgrades[u.id] = Math.min(lv, u.max);
+                // guardados antiguos con más niveles que el nuevo máximo: se devuelven los Berries de los niveles que sobran
+                for (let l = u.max; l < lv; l++) meta.beli += metaUpgradeCost(u, l);
+            });
             if (parsed.unlocked) meta.unlocked = { ...meta.unlocked, ...parsed.unlocked };
             if (parsed.wins) meta.wins = { ...meta.wins, ...parsed.wins };
             else meta.wins.baratie = 1; // guardado antiguo: Baratie ya conquistado

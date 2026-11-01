@@ -27,7 +27,14 @@ const ELITE_COLORS = {
 };
 const ELITE_DEFAULT = ['rgba(255, 0, 255, 0.8)', '#ff00ff'];
 const FLASH_FILTER = 'brightness(2.4) saturate(0.4)';
-const PICKUP_SPRITE = { beli: 'money', meat: 'food', denden: 'conch', vacuum: 'tornado' };
+// Objetos del suelo: sprite, alto en el mundo (px) y color del halo
+const PICKUP_SPRITE = {
+    meat:   { img: 'pk_meat',   h: 24, glow: '#f87171' },
+    vacuum: { img: 'pk_magnet', h: 22, glow: '#a78bfa' },
+    bell:   { img: 'pk_bell',   h: 22, glow: '#67e8f9' },
+    denden: { img: 'pk_denden', h: 26, glow: '#fde047' },
+    beli:   { img: 'pk_beli',   h: 12, glow: '#facc15' }
+};
 
 function render() {
     ctx.setTransform(RS, 0, 0, RS, 0, 0);
@@ -115,16 +122,14 @@ function render() {
             }
         } else {
             ctx.translate(d.x, d.y + Math.sin(gameTime * 6 + d.x) * 3);
-            // Pickups con sprite del propio lore (GBA): monedas, comida, Den Den, tornado
-            const spriteKey = PICKUP_SPRITE[d.type];
-            if (spriteKey && IMG[spriteKey] && IMG[spriteKey].complete) {
-                const glowCol = d.type === 'beli' ? '#facc15' : (d.type === 'meat' ? '#f87171' : (d.type === 'denden' ? '#fde047' : '#a78bfa'));
-                ctx.globalAlpha = 0.5 + Math.sin(gameTime * 6 + d.x) * 0.15;
-                ctx.drawImage(getGlow(glowCol, 20), -20, -20);
+            // Pickups: muslo de carne, imán, campana de Shandora, Den Den dorado y Berries
+            const pk = PICKUP_SPRITE[d.type], img = pk && IMG[pk.img];
+            if (img && img.complete && img.naturalWidth) {
+                const r = pk.h * 0.9;
+                ctx.globalAlpha = 0.45 + Math.sin(gameTime * 6 + d.x) * 0.15;
+                ctx.drawImage(getGlow(pk.glow, 20), -r, -r, r * 2, r * 2);
                 ctx.globalAlpha = 1;
-                const img = IMG[spriteKey];
-                const s = d.type === 'meat' ? 16 : 14;
-                const iw = s * (img.width / img.height);
+                const s = pk.h * SPRITE_ZOOM, iw = s * (img.width / img.height);
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(img, -iw / 2, -s / 2, iw, s);
                 ctx.imageSmoothingEnabled = true;

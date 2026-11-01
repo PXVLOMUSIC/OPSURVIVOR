@@ -155,11 +155,13 @@ const SPRITE_PATHS = {
     saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
     saber_poundho: 'assets/extracted/objetos_gba/sprite_025.png',
     bomb: 'assets/extracted/objetos_gba/sprite_034.png',
-    money: 'assets/extracted/objetos_gba/sprite_023.png',
-    food: 'assets/extracted/objetos_gba/sprite_012.png',
-    conch: 'assets/extracted/objetos_gba/sprite_021.png',
-    tornado: 'assets/extracted/objetos_gba/sprite_039.png',
     strawhat: 'assets/extracted/objetos_gba/sprite_035.png',
+    // objetos del suelo (source-art/dibujar_objetos_suelo.py)
+    pk_meat: 'assets/sprites/pickups/meat.png',
+    pk_magnet: 'assets/sprites/pickups/magnet.png',
+    pk_bell: 'assets/sprites/pickups/bell.png',
+    pk_denden: 'assets/sprites/pickups/denden.png',
+    pk_beli: 'assets/sprites/pickups/beli.png',
     chest_t0: 'assets/sprites/chests/chest_t0.png',
     chest_t1: 'assets/sprites/chests/chest_t1.png',
     chest_t2: 'assets/sprites/chests/chest_gold_t2.png'

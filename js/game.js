@@ -1445,16 +1445,16 @@ function evolveWeapon(id) {
     }
 }
 function checkEvolutions() {
-    // Se llama SOLO al abrir cofres capaces de evolucionar (VS: cofres de plata)
-    let evolvedAny = false;
+    // Se llama SOLO al abrir cofres capaces de evolucionar (VS: cofres de plata).
+    // VS: como máximo UNA evolución por cofre; las demás esperan al siguiente.
     for (const id in EVOLUTIONS) {
         const sk = skills[id];
         if (sk && sk.level >= 5 && !sk.evolved && (player.passives[EVOLUTIONS[id].passive] || 0) >= 1) {
             evolveWeapon(id);
-            evolvedAny = true;
+            playSound('evolve'); cameraShake = 2;
+            return;
         }
     }
-    if (evolvedAny) { playSound('evolve'); cameraShake = 2; }
 }
 
 let currentUpgradeCount = 3, upgradeIsChest = false, _banishing = false;

@@ -1219,6 +1219,7 @@ body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-
     #upgrade-options .upgrade-card::after { display: none; }
     #arcana-options .upgrade-card::after { font-size: 22px; top: 2px; right: 6px; }
     .upgrade-toolbar { margin-top: 8px; }
+}
 
 /* ============================================================
    TIENDA: cabecera con el monedero siempre visible; solo la lista hace scroll

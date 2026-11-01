@@ -240,6 +240,11 @@ const WATER7_POLY = [
   [519.8,-169.3],
   [693.0,-169.3]
 ];
+// Whole Cake (futuro, aún sin roster ni botón): línea verde que dibujó Pablo sobre la cubierta.
+const WHOLECAKE_POLY = [
+  [-880,-82], [884,-82], [1168,296], [1236,380], [1224,406],
+  [-1228,406], [-1248,390], [-1178,264], [-934,-34]
+];
 const WALK_POLYS = {
   baratie: WALK_POLY,
   alabasta: PALACE_ARENA_POLY,
@@ -247,7 +252,8 @@ const WALK_POLYS = {
   thrillerbark: PALACE_ARENA_POLY,
   enieslobby: ENIES_LOBBY_POLY,
   marineford: MARINEFORD_POLY,
-  water7: WATER7_POLY
+  water7: WATER7_POLY,
+  wholecake: WHOLECAKE_POLY
 };
 function walkPoly() {
   return WALK_POLYS[selectedMap] || WALK_POLY;
@@ -363,13 +369,13 @@ const skills = {
     // Luffy: latigazo frontal (abanico) y patada hacha alla gear 3
     muchi: { level: 0, baseDamage: 35, cooldown: 2.0, timer: 0, radius: 150, evolved: false, evolvedName: 'Jet Whip' },
     ono: { level: 0, baseDamage: 70, cooldown: 5.0, timer: 0, radius: 65, evolved: false },
-    santoryu: { level: 1, baseDamage: 31, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
+    santoryu: { level: 1, baseDamage: 33, cooldown: 1.5, timer: 0, radius: 60, evolved: false },
     onigiri: { level: 0, baseDamage: 60, cooldown: 4.5, timer: 0, dash: 160, evolved: false },
     flyingslash: { level: 0, baseDamage: 20, cooldown: 2.2, timer: 0, range: 300, speed: 600, evolved: false },
     // Zoro: tornado orbitante y cañón de viento perforante
     tatsumaki: { level: 0, baseDamage: 10, cooldown: 3.6, timer: 0, radius: 95, duration: 1.0, evolved: false },
     poundho: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, range: 420, speed: 700, evolved: false },
-    diablejambe: { level: 1, baseDamage: 21, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
+    diablejambe: { level: 1, baseDamage: 22, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
     collier: { level: 0, baseDamage: 10, cooldown: 0.6, timer: 0, range: 70, evolved: false },
     joueshot: { level: 0, baseDamage: 26, cooldown: 2.8, timer: 0, range: 240, speed: 560, evolved: false },
     // Sanji: patada aérea demoledora y tanda giratoria 360

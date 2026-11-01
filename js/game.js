@@ -155,9 +155,15 @@ function update(dt) {
             continue;
         }
 
-        const beh = ENEMY_BEHAVIOR[e.type];
+        // Enjambre de VS (murciélagos): cruzan en línea recta sin perseguirte y se van
+        if (e.fixedDir) {
+            e.x += e.fixedDir[0] * e.speed * gearEnemySpeedMult() * dt; e.y += e.fixedDir[1] * e.speed * gearEnemySpeedMult() * dt;
+            e.ttl -= dt;
+            if (e.ttl <= 0) { enemies.splice(i, 1); continue; }
+        }
+        const beh = e.fixedDir ? null : ENEMY_BEHAVIOR[e.type];
         if (beh && enemyBehavior(e, beh, edx, edy, edist, dt)) { enemies.splice(i, 1); continue; }
-        if (edist > 0) {
+        if (edist > 0 && !e.fixedDir) {
             let vx = edx / edist, vy = edy / edist, sp = e.speed;
             if (beh === 'zigzag' || beh === 'hollow') {
                 // ondulación perpendicular a la dirección (murciélagos de VS)
@@ -1090,7 +1096,12 @@ function spawnBoss() {
 
 // === VS: eventos periodicos de oleada (cada ~90s sorpresa) ===
 function updateEvents(dt) {
-    if (!window.nextEventAt) window.nextEventAt = BALANCE.firstEventAt;
+    // Partida normal: oleadas con guion por minuto (js/waves.js). Modo Infinito: sorpresas al azar.
+    if (gameTime < 480 && !window.endlessMode) return updateWaveScript();
+    updateEventsRandom(dt);
+}
+function updateEventsRandom(dt) {
+    if (!window.nextEventAt || window.nextEventAt < gameTime - 5) window.nextEventAt = gameTime + 20;
     if (gameTime < window.nextEventAt) return;
     window.nextEventAt = gameTime + (runCurseRank >= 2 ? 60 + Math.random() * 18 : 85 + Math.random() * 25);
     const minutes = Math.floor(gameTime / 60);
@@ -1110,7 +1121,7 @@ function updateEvents(dt) {
             if (off < Math.PI / 5) continue;
             let ex = player.x + Math.cos(ang) * 560, ey = player.y + Math.sin(ang) * 560;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push(makeEnemy(ev.ring, ex, ey, hpScale, { speed: 110 + minutes * 10, isEvent: true, name: 'X' }));
+            enemies.push(makeEnemy(ev.ring, ex, ey, hpScale, { speed: 110 + minutes * 10, isEvent: true }));
         }
     } else {
         // Carga de la Armada: filas cruzando el mapa desde un costado
@@ -1122,12 +1133,12 @@ function updateEvents(dt) {
         for (let k = 0; k < n; k++) {
             let ex = player.x + side * 640, ey = player.y - 360 + k * 34;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push(makeEnemy(ev.charge, ex, ey, hpScale, { speed: 70, damage: 16, isEvent: true, name: 'X' }));
+            enemies.push(makeEnemy(ev.charge, ex, ey, hpScale, { speed: 70, damage: 16, isEvent: true }));
         }
         for (let k = 0; k < 10; k++) {
             let ex = player.x + side * 640, ey = player.y - 200 + k * 40;
             if (selectedMap !== 'baratie') [ex, ey] = clampToArena(ex, ey);
-            enemies.push(makeEnemy(ev.runners, ex, ey, hpScale, { speed: 130, isEvent: true, name: 'X' }));
+            enemies.push(makeEnemy(ev.runners, ex, ey, hpScale, { speed: 130, isEvent: true }));
         }
     }
 }

@@ -13,6 +13,8 @@ const PAR = +process.argv[7] || 8;
 const GEAR = +process.argv[8] || 2;
 // [forzar] = 'evo': a partir del minuto 4 la carta de transformación está evolucionada (mide el techo de Gear 4/5, Enma e Ifrit)
 const FORCE_EVO = process.argv[9] === 'evo';
+// BAL='{"hpGrowth":1.3}' sobrescribe valores de BALANCE para probar ajustes sin tocar el código
+const BAL_OVERRIDE = process.env.BAL ? JSON.parse(process.env.BAL) : null;
 
 async function runOne(browser, ch, map, meta) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
@@ -27,7 +29,8 @@ async function runOne(browser, ch, map, meta) {
     page.on('pageerror', e => console.error('ERR', ch, map, e.message));
     await page.goto(URL_);
     await page.waitForFunction(() => typeof startGame === 'function' && assetsLoaded, null, { timeout: 60000 }).catch(() => {});
-    const res = await page.evaluate(async ({ ch, map, forceEvo, metaLvl }) => {
+    const res = await page.evaluate(async ({ ch, map, forceEvo, metaLvl, bal }) => {
+        if (bal) Object.assign(BALANCE, bal);
         META_UPGRADES.forEach(u => { meta.upgrades[u.id] = (u.id === 'curse' || (metaLvl === 2 && u.id === 'revival')) ? 0 : (metaLvl === 1 ? u.max : (metaLvl === 2 ? Math.ceil(u.max / 2) : 0)); });
         window.playSound = () => {}; window.updateMusic = () => {};
         selectedCharacter = ch; selectedMap = map; runCurseRank = 0;
@@ -125,7 +128,7 @@ async function runOne(browser, ch, map, meta) {
             gearMax: (typeof meta !== 'undefined' && meta.gear) ? meta.gear.unlocked : null, gearUses: gu,
             weapons: Object.keys(skills).filter(k => skills[k].level > 0).map(k => k + skills[k].level + (skills[k].evolved ? '*' : '')).join(' '),
             samples, realMs: Math.round(performance.now() - t0) };
-    }, { ch, map, forceEvo: FORCE_EVO, metaLvl: meta });
+    }, { ch, map, forceEvo: FORCE_EVO, metaLvl: meta, bal: BAL_OVERRIDE });
     await ctx.close();
     return res;
 }

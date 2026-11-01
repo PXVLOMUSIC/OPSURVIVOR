@@ -45,8 +45,8 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 
 ## Personajes
 - Luffy: ataques a distancia (Pistol, Gatling, Bazooka, Gear 2, Muchi y Ono).
-- Zoro: cuerpo a cuerpo con espadas (Santoryu, Oni Giri, Flying Slash, Tatsumaki y 108 Pound Ho).
-- Sanji: cuerpo a cuerpo con patadas (Diable Jambe, Collier, Joue Shot, Concassé y Party Table).
+- Zoro: cuerpo a cuerpo con espadas (Santoryu, Oni Giri, Flying Slash, Tatsumaki, 108 Pound Ho y Haki del Rey).
+- Sanji: cuerpo a cuerpo con patadas (Diable Jambe, Collier, Joue Shot, Concassé, Party Table y Raid Suit).
 - Las habilidades tienen que ser fieles al manga y al anime.
 
 ## Mapas
@@ -79,3 +79,11 @@ Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frame
 - Sprites: G4 (Boundman, Great Pirate Colosseum 3DS) y G5 (TheCube513) en assets/sprites/gears; G2 conserva el sprite base con piel rosada y vapor.
 - Balance medido con bot (tools/balance-sim.js, argumentos [gear max] y 'evo'): Luffy 73% solo con G2, 79% con todos los Gears desbloqueados; con la carta evolucionada desde el minuto 4, G2 y G4/G5 quedan parejos (90% y 89%).
 - Persistente (`meta.gear`): G3, G4 y G5 se desbloquean con logros (ganar con Luffy; ganar con Luffy en Clima 2 o más; ganar con Luffy en Clima 4). La tienda vende 3 mejoras menores (medidor inicial, carga y recuperación) que no dan daño.
+
+## Transformaciones de Zoro y Sanji (js/gears.js, tabla `FORMS`)
+- Mismo sistema que los Gears: carta propia (`zoroform` "Haki del Rey", `sanjiform` "Raid Suit"), medidor, ESPACIO o botón, y techo por carta (nv1 → nivel 1, nv3 → nivel 2, evolución → nivel 3).
+- Zoro: Ryuo (daño ×1.3, CD ×0.7, −15% daño recibido) → Kyutoryu Asura (daño ×1.6, área ×1.3, Ashura Ichibugin de nueve cortes; al acabar, agotado 4 s) → Rey del Infierno con Enma (daño ×2.2, −50% daño recibido, tajo de Haoshoku; al acabar, Enma le chupa el Haki y queda agotado 8 s). Evoluciona con Poder.
+- Sanji: Sky Walk (velocidad ×1.45, −20% daño recibido) → Raid Suit Stealth Black (invisible: −55% daño recibido, patadas invisibles) → Ifrit Jambe (daño ×2.2, llamas azules en área; al acabar, agotado 6 s). Evoluciona con Armadura de Haki.
+- Desbloqueo (`meta.gear.forms`): el nivel 2 con una victoria del personaje y el nivel 3 con una victoria en Clima 2 o más.
+- Balance con bot, todo desbloqueado (gear max 5): Luffy 83%, Sanji 78%, Zoro 73% (dentro de ±10). Para ello, Diable Jambe sube su daño base de 16 a 18.
+- Renombrados para no repetir nombres: la evolución de Santoryu pasa a "Rokudo no Tsuji" y la de Concassé a "Bien Cuit: Grill Shot".

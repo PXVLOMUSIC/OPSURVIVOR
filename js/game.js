@@ -1303,9 +1303,11 @@ const EVOLUTIONS = {
     gatling:     { passive: 'cd',     name: 'Jet Gatling' },
     bazooka:     { passive: 'area',   name: 'Jet Bazooka' },
     gear2:       { passive: 'speed',  name: 'Gear 4: Boundman' },
+    zoroform:    { passive: 'power',  name: 'Rey del Infierno (Enma)' },
+    sanjiform:   { passive: 'armor',  name: 'Ifrit Jambe' },
     muchi:       { passive: 'speed',  name: 'Jet Whip' },
     ono:         { passive: 'power',  name: 'Gomu Gomu no Gigant Ono' },
-    santoryu:    { passive: 'crit',   name: 'Asura (Santoryu Ogi)' },
+    santoryu:    { passive: 'crit',   name: 'Santoryu Ogi: Rokudo no Tsuji' },
     onigiri:     { passive: 'power',  name: 'Rengoku Oni Giri' },
     flyingslash: { passive: 'cd',     name: 'Shishi Sonson' },
     tatsumaki:   { passive: 'cd',     name: 'Kokujo: O Tatsumaki' },
@@ -1313,7 +1315,7 @@ const EVOLUTIONS = {
     diablejambe: { passive: 'speed',  name: 'Hell Memories' },
     collier:     { passive: 'area',   name: 'Collier Shoot: Grilled' },
     joueshot:    { passive: 'crit',   name: 'Mouton Shot' },
-    concasse:    { passive: 'speed',  name: 'Ifrit Jambe' },
+    concasse:    { passive: 'speed',  name: 'Bien Cuit: Grill Shot' },
     partycourse: { passive: 'crit',   name: 'Anti-Manner Kick Course' }
 };
 function evolveWeapon(id) {
@@ -1326,6 +1328,7 @@ function evolveWeapon(id) {
     else if (id === 'gatling') { sk.baseDamage *= 1.7; sk.radius += 40; sk.duration += 1.0; }
     else if (id === 'bazooka') { sk.baseDamage *= 1.8; sk.radius += 30; }
     else if (id === 'gear2') { sk.speedBonus += 0.2; sk.duration += 2; }
+    else if (id === 'zoroform' || id === 'sanjiform') { /* desbloquea el tercer nivel de la transformacion */ }
     else if (id === 'santoryu') { sk.baseDamage *= 2.0; sk.radius += 20; }
     else if (id === 'onigiri') { sk.baseDamage *= 1.8; sk.dash += 50; }
     else if (id === 'flyingslash') { sk.baseDamage *= 1.7; sk.range += 100; }
@@ -1379,7 +1382,7 @@ function showUpgradeScreen(count, isChest) {
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','zoroform','sanjiform'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
@@ -1390,6 +1393,8 @@ function showUpgradeScreen(count, isChest) {
         { id: 'armor', type: 'passive', chars: 'all', title: 'Armadura de Haki', icon: ICONS.armor, desc: 'Reduce el daño recibido un +8% (max 60%).' },
         { id: 'bazooka', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Bazooka', icon: ICONS.bazooka, desc: 'Desbloquea un ataque de área explosivo.' },
         { id: 'gear2', type: 'weapon', chars: ['luffy'], title: 'Gears (Luffy)', icon: ICONS.gear2, desc: 'Llena el medidor y pulsa ESPACIO o el botón G. Nv1: Gear 2 · Nv3: Gear 3 · Evolución: Gear 4 · Min 6: Gear 5 (si están desbloqueados).' },
+        { id: 'zoroform', type: 'weapon', chars: ['zoro'], title: 'Haki del Rey (Zoro)', icon: ICONS.zoroform, desc: 'Llena el medidor y pulsa ESPACIO o el botón. Nv1: Ryuo · Nv3: Kyutoryu Asura · Evolución: Rey del Infierno con Enma (si están desbloqueados).' },
+        { id: 'sanjiform', type: 'weapon', chars: ['sanji'], title: 'Raid Suit (Sanji)', icon: ICONS.sanjiform, desc: 'Llena el medidor y pulsa ESPACIO o el botón. Nv1: Sky Walk · Nv3: Raid Suit Stealth Black · Evolución: Ifrit Jambe (si están desbloqueados).' },
         { id: 'santoryu', type: 'weapon', chars: ['zoro'], title: 'Santoryu', icon: ICONS.santoryu, desc: 'Desbloquea corte triple (Zoro).' },
         { id: 'onigiri', type: 'weapon', chars: ['zoro'], title: 'Oni Giri', icon: ICONS.onigiri, desc: 'Desbloquea dash con daño (Zoro).' },
         { id: 'flyingslash', type: 'weapon', chars: ['zoro'], title: 'Flying Slash', icon: ICONS.flyingslash, desc: 'Desbloquea corte a distancia (Zoro).' },
@@ -1597,6 +1602,9 @@ function selectUpgrade(id) {
         skills.gear2.level = Math.min(5, skills.gear2.level + 1);
         skills.gear2.speedBonus += 0.1; skills.gear2.duration += 1;
     }
+    else if (id === 'zoroform' || id === 'sanjiform') {
+        skills[id].level = Math.min(5, skills[id].level + 1);
+    }
     else if (id === 'santoryu') {
         skills.santoryu.level = Math.min(5, skills.santoryu.level + 1);
         skills.santoryu.baseDamage += 12; skills.santoryu.radius += 5;
@@ -1800,6 +1808,8 @@ function updateWeaponsHUD() {
         { id: 'gatling', icon: ICONS.gatling, name: 'Gatling' },
         { id: 'bazooka', icon: ICONS.bazooka, name: 'Bazooka' },
         { id: 'gear2', icon: ICONS.gear2, name: 'Gears' },
+        { id: 'zoroform', icon: ICONS.zoroform, name: 'Haki del Rey' },
+        { id: 'sanjiform', icon: ICONS.sanjiform, name: 'Raid Suit' },
         { id: 'santoryu', icon: ICONS.santoryu, name: 'Santoryu' },
         { id: 'onigiri', icon: ICONS.onigiri, name: 'Oni Giri' },
         { id: 'flyingslash', icon: ICONS.flyingslash, name: 'Flying Slash' },

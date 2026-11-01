@@ -1,4 +1,4 @@
-// === GEARS DE LUFFY (2 → 5) ===
+// === TRANSFORMACIONES: GEARS DE LUFFY (2 → 5), HAKI DE ZORO Y RAID SUIT DE SANJI ===
 // Transformaciones temporales con medidor y activacion manual (Espacio o boton GEAR).
 // - En partida: la carta "Gears" (id interno 'gear2') marca el techo:
 //     nv1 → Gear 2 · nv3 → Gear 3 · evolucion → Gear 4 · Gear 4 + minuto 6 → Gear 5
@@ -7,20 +7,45 @@
 // - Cada Gear tiene su coste canon al terminar (agotamiento, Luffy encogido...).
 // Se carga despues del script principal: usa sus globales (player, skills, meta...).
 
-const GEAR_INFO = {
-    2: { name: 'GEAR SECOND', color: '#f472b6', dur: 8,  sound: 'gear2' },
-    3: { name: 'GEAR THIRD',  color: '#fb923c', dur: 9,  sound: 'boom' },
-    4: { name: 'GEAR FOURTH: BOUNDMAN', color: '#dc2626', dur: 12, sound: 'haoshoku' },
-    5: { name: 'GEAR FIFTH: NIKA', color: '#f8fafc', dur: 15, sound: 'haoshoku' }
+// Transformaciones por personaje. El numero interno (2-5) es el escalon:
+//   2 = carta nv1 · 3 = carta nv3 + hito · 4 = carta evolucionada + hito · 5 = solo Luffy (Nika)
+// dmg/cd/spd/taken: multiplicadores mientras dura. pen: coste canon al terminar [tipo, segundos].
+const FORM_CARD = { luffy: 'gear2', zoro: 'zoroform', sanji: 'sanjiform' };
+const FORM_METER = { luffy: 'GEAR', zoro: 'HAKI', sanji: 'RAID SUIT' };
+const FORMS = {
+    luffy: {
+        2: { name: 'GEAR SECOND', short: 'G2', color: '#f472b6', dur: 8,  sound: 'gear2',    dmg: 1.15, cd: 0.6, spd: 'card', taken: 1 },
+        3: { name: 'GEAR THIRD',  short: 'G3', color: '#fb923c', dur: 9,  sound: 'boom',     dmg: 1.6,  cd: 1.0, spd: 1,   taken: 1,   area: 1.6, atk: 'elephant', atkCd: 1.6, pen: ['chibi', 4], penText: '¡LUFFY ENCOGIDO!' },
+        4: { name: 'GEAR FOURTH: BOUNDMAN', short: 'G4', color: '#dc2626', dur: 12, sound: 'haoshoku', dmg: 2.2, cd: 0.7, spd: 1.2, taken: 0.5, atk: 'kong', atkCd: 1.3, pen: ['exhausted', 8], penText: '¡SIN HAKI! AGOTADO' },
+        // canon: el coste de Nika es el agotamiento (Luffy arrugado y sin fuerzas), no perder vida
+        5: { name: 'GEAR FIFTH: NIKA', short: 'G5', color: '#f8fafc', dur: 15, sound: 'haoshoku', dmg: 2.6, cd: 0.6, spd: 1.3, taken: 0, enemySpd: 0.5, atk: 'dawn', atkCd: 1.2, pen: ['exhausted', 12], penText: 'NIKA SE APAGA... AGOTADO' }
+    },
+    zoro: {
+        // Ryuo (Wano): Haki que fluye por las espadas sin tocar → corta mas y mas rapido
+        2: { name: 'RYUO', short: 'RY', color: '#64748b', dur: 8, sound: 'slash', dmg: 1.3, cd: 0.7, spd: 1.1, taken: 0.85 },
+        // Kyutoryu Asura: tres cabezas y nueve brazos, Ashura Ichibugin. Le deja sin fuerzas (Enies Lobby)
+        3: { name: 'KYUTORYU: ASURA', short: 'AS', color: '#9333ea', dur: 9, sound: 'haoshoku', dmg: 1.6, cd: 0.8, spd: 1, taken: 0.8, area: 1.3, atk: 'asura', atkCd: 1.4, pen: ['exhausted', 4], penText: 'ASURA SE DESVANECE... AGOTADO' },
+        // Rey del Infierno (Onigashima): Haoshoku en las espadas. Enma le chupa el Haki al terminar
+        4: { name: 'REY DEL INFIERNO: ENMA', short: 'EN', color: '#b91c1c', dur: 12, sound: 'haoshoku', dmg: 2.2, cd: 0.7, spd: 1.2, taken: 0.5, atk: 'hell', atkCd: 1.3, pen: ['exhausted', 8], penText: 'ENMA DEVORA SU HAKI... AGOTADO' }
+    },
+    sanji: {
+        // Sky Walk: camina por el aire → mucha velocidad y dificil de alcanzar
+        2: { name: 'SKY WALK', short: 'SW', color: '#38bdf8', dur: 8, sound: 'kick', dmg: 1.15, cd: 0.7, spd: 1.45, taken: 0.8 },
+        // Raid Suit Stealth Black: invisible → casi no le alcanzan
+        3: { name: 'RAID SUIT: STEALTH BLACK', short: 'RS', color: '#475569', dur: 9, sound: 'haoshoku', dmg: 1.6, cd: 0.85, spd: 1.15, taken: 0.45, atk: 'stealth', atkCd: 1.0 },
+        // Ifrit Jambe (Onigashima): llamas azules; su cuerpo se resiente al acabar
+        4: { name: 'IFRIT JAMBE', short: 'IJ', color: '#3b82f6', dur: 12, sound: 'boom', dmg: 2.2, cd: 0.7, spd: 1.25, taken: 0.55, atk: 'ifrit', atkCd: 1.2, pen: ['exhausted', 6], penText: 'EL CUERPO ARDE... AGOTADO' }
+    }
 };
+const GEAR_INFO = FORMS.luffy; // compatibilidad
 const GEAR5_COOLDOWN = 180;   // segundos entre usos de Gear 5
 const GEAR5_MIN_TIME = 360;   // minuto 6 de partida (el boss llega en el 8)
 
-// Mejoras de tienda (persistentes, menores, sin daño). Requieren Gear 3 desbloqueado.
+// Mejoras de tienda (persistentes, menores, sin daño). Valen para las transformaciones de los tres.
 const GEAR_SHOP = [
-    { id: 'meter',   name: 'Respiración de Goma', desc: 'El medidor de Gear empieza un +15% más lleno por nivel.', cost: 3000, max: 3 },
-    { id: 'charge',  name: 'Hambre de Luffy',     desc: '+10% de carga del medidor por nivel.',                   cost: 2500, max: 3 },
-    { id: 'recover', name: 'Banquete de Carne',   desc: '-15% de duración del coste tras un Gear por nivel.',      cost: 4000, max: 3 }
+    { id: 'meter',   name: 'Respiración de Combate', desc: 'El medidor de transformación empieza un +15% más lleno por nivel.', cost: 3000, max: 3 },
+    { id: 'charge',  name: 'Hambre de Pelea',        desc: '+10% de carga del medidor por nivel.',                             cost: 2500, max: 3 },
+    { id: 'recover', name: 'Banquete de Carne',      desc: '-15% de duración del coste tras transformarse por nivel.',        cost: 4000, max: 3 }
 ];
 
 // ---- estado persistente (vive dentro de meta, se guarda con saveMeta) ----
@@ -28,7 +53,13 @@ function gearMetaInit() {
     if (!meta.gear) meta.gear = { unlocked: 2, up: { meter: 0, charge: 0, recover: 0 } };
     meta.gear.up = Object.assign({ meter: 0, charge: 0, recover: 0 }, meta.gear.up || {});
     if (!meta.gear.unlocked || meta.gear.unlocked < 2) meta.gear.unlocked = 2;
+    meta.gear.forms = Object.assign({ zoro: 2, sanji: 2 }, meta.gear.forms || {});
     if (meta.stats && meta.stats.luffyBestCurse === undefined) meta.stats.luffyBestCurse = -1;
+    if (meta.stats && !meta.stats.bestCurseBy) meta.stats.bestCurseBy = { luffy: meta.stats.luffyBestCurse, zoro: -1, sanji: -1 };
+}
+function gearUnlocked(c) {
+    gearMetaInit();
+    return c === 'luffy' ? meta.gear.unlocked : (meta.gear.forms[c] || 2);
 }
 
 // ---- sprites reales (assets/sprites/gears) ----
@@ -44,7 +75,7 @@ const GEAR_SPR = (function () {
         fist
     };
 })();
-// Frame del Gear actual, o null si se dibuja el sprite normal de Luffy
+// Frame del Gear actual, o null si se dibuja el sprite normal
 function gearSpriteFrame() {
     if (!gearIsLuffy()) return null;
     const set = gearState.active >= 4 ? GEAR_SPR[gearState.active] : (gearState.penalty === 'chibi' ? GEAR_SPR.chibi : null);
@@ -58,29 +89,36 @@ function gearSpriteFrame() {
 // ---- estado de la partida ----
 const gearState = { meter: 0, active: 0, remain: 0, penalty: null, penaltyRemain: 0, g5cd: 0, atkTimer: 0, fx: [], areaMul: 1, steam: 0 };
 
-function gearIsLuffy() { return typeof selectedCharacter !== 'undefined' && selectedCharacter === 'luffy'; }
-function gearCardLevel() { return (skills.gear2 && CHAR_SKILLS[selectedCharacter].includes('gear2')) ? skills.gear2.level : 0; }
+function gearChar() { return (typeof selectedCharacter !== 'undefined' && FORM_CARD[selectedCharacter]) ? selectedCharacter : null; }
+function gearIsLuffy() { return gearChar() === 'luffy'; }
+function gearCard() { const c = gearChar(); return c ? skills[FORM_CARD[c]] : null; }
+function gearInfo(g) { const c = gearChar(); return c && FORMS[c][g || gearState.active]; }
+function gearCardLevel() {
+    const c = gearChar(); if (!c) return 0;
+    const id = FORM_CARD[c];
+    return (skills[id] && CHAR_SKILLS[c].includes(id)) ? skills[id].level : 0;
+}
 function gearUp(id) { return (meta.gear && meta.gear.up[id]) || 0; }
 
 function gearReset() {
     gearMetaInit();
     // resetGame ya repuso areaBonus a 1.0: no deshacer el x1.6 de Gear 3 aqui
-    gearState.meter = gearIsLuffy() ? 15 * gearUp('meter') : 0;
+    gearState.meter = gearChar() ? 15 * gearUp('meter') : 0;
     gearState.active = 0; gearState.remain = 0;
     gearState.penalty = null; gearState.penaltyRemain = 0;
     gearState.g5cd = 0; gearState.atkTimer = 0; gearState.fx = []; gearState.areaMul = 1; gearState.steam = 0;
     gearUpdateButton();
 }
 
-// Gear mas alto disponible ahora mismo en esta partida
+// Escalon mas alto disponible ahora mismo en esta partida
 function gearAvailable() {
     const lvl = gearCardLevel();
-    if (!gearIsLuffy() || lvl <= 0) return 0;
-    const unl = meta.gear ? meta.gear.unlocked : 2;
+    if (lvl <= 0) return 0;
+    const c = gearChar(), unl = gearUnlocked(c);
     let g = 2;
     if (lvl >= 3 && unl >= 3) g = 3;
-    if (skills.gear2.evolved && unl >= 4) g = 4;
-    if (g === 4 && unl >= 5 && gameTime >= GEAR5_MIN_TIME && gearState.g5cd <= 0) g = 5;
+    if (gearCard().evolved && unl >= 4) g = 4;
+    if (c === 'luffy' && g === 4 && unl >= 5 && gameTime >= GEAR5_MIN_TIME && gearState.g5cd <= 0) g = 5;
     return g;
 }
 function gearReady() {
@@ -90,14 +128,14 @@ function gearReady() {
 function gearActivate() {
     if (typeof gameState === 'undefined' || gameState !== 'PLAYING' || !gearReady()) return;
     const g = gearAvailable();
-    const info = GEAR_INFO[g];
+    const info = gearInfo(g);
     gearState.active = g;
     gearState.meter = 0;
     gearState.atkTimer = 0.4;
-    // la carta sube la duracion de Gear 2 (+1s por nivel extra)
+    // la carta sube la duracion del primer escalon (+1s por nivel extra)
     gearState.remain = info.dur + (g === 2 ? Math.max(0, gearCardLevel() - 1) : 0);
-    // Gear 3: huesos gigantes → area de todas las armas x1.6 mientras dure
-    gearState.areaMul = g === 3 ? 1.6 : 1;
+    // Gear 3 (huesos gigantes) / Asura (nueve espadas): area de todas las armas mientras dure
+    gearState.areaMul = info.area || 1;
     player.areaBonus *= gearState.areaMul;
     if (g === 5) gearState.g5cd = GEAR5_COOLDOWN;
     window.spawnBanner = { text: info.name + '!', life: 1.6, color: info.color };
@@ -113,17 +151,15 @@ function gearActivate() {
 function gearEnd() {
     const g = gearState.active;
     if (!g) return;
+    const info = gearInfo(g);
     player.areaBonus /= gearState.areaMul;
     gearState.areaMul = 1;
     gearState.active = 0;
     const rec = 1 - 0.15 * gearUp('recover');
-    // coste canon de cada Gear
-    if (g === 3) { gearState.penalty = 'chibi'; gearState.penaltyRemain = 4 * rec; window.spawnBanner = { text: '¡LUFFY ENCOGIDO!', life: 1.2, color: '#fb923c' }; }
-    else if (g === 4) { gearState.penalty = 'exhausted'; gearState.penaltyRemain = 8 * rec; window.spawnBanner = { text: '¡SIN HAKI! AGOTADO', life: 1.4, color: '#94a3b8' }; }
-    else if (g === 5) {
-        gearState.penalty = 'exhausted'; gearState.penaltyRemain = 12 * rec;
-        // canon: el coste es el agotamiento (Luffy arrugado y sin fuerzas), no perder vida
-        window.spawnBanner = { text: 'NIKA SE APAGA... AGOTADO', life: 1.6, color: '#94a3b8' };
+    // coste canon de cada transformacion
+    if (info.pen) {
+        gearState.penalty = info.pen[0]; gearState.penaltyRemain = info.pen[1] * rec;
+        window.spawnBanner = { text: info.penText, life: 1.4, color: '#94a3b8' };
     }
     fxRing(player.x, player.y, '#94a3b8', 18, 0.5);
     if (typeof updateUI === 'function') updateUI();
@@ -132,13 +168,14 @@ function gearEnd() {
 
 // ---- carga del medidor ----
 function gearOnKill(e) {
-    if (!gearIsLuffy() || gearCardLevel() <= 0 || gearState.active || gearState.penalty === 'exhausted') return;
+    if (gearCardLevel() <= 0 || gearState.active || gearState.penalty === 'exhausted') return;
     const base = e.isBoss ? 30 : (e.isMiniboss ? 20 : (e.isElite ? 8 : 1));
     gearState.meter = Math.min(100, gearState.meter + base * (1 + 0.1 * gearUp('charge')));
 }
 
 function gearUpdate(dt) {
-    if (!gearIsLuffy()) return;
+    const c = gearChar();
+    if (!c) return;
     if (gearState.g5cd > 0) gearState.g5cd -= dt;
     const lvl = gearCardLevel();
     if (lvl > 0 && !gearState.active && gearState.penalty !== 'exhausted' && gearState.meter < 100) {
@@ -148,31 +185,34 @@ function gearUpdate(dt) {
         gearState.penaltyRemain -= dt;
         if (gearState.penaltyRemain <= 0) { gearState.penalty = null; gearUpdateButton(); }
     }
-    // fx propios (puños gigantes, ondas)
+    // fx propios (puños gigantes, ondas, cortes)
     for (let i = gearState.fx.length - 1; i >= 0; i--) {
         gearState.fx[i].life -= dt;
         if (gearState.fx[i].life <= 0) gearState.fx.splice(i, 1);
     }
     const g = gearState.active;
-    skills.gear2.active = (g === 2); // vfx.js: piel rosa y vapor del Gear 2
+    if (c === 'luffy') skills.gear2.active = (g === 2); // vfx.js: piel rosa y vapor del Gear 2
     if (!g) { gearUpdateButtonThrottled(dt); return; }
+    const info = gearInfo(g);
     gearState.remain -= dt;
     // Gear 2: la sangre bombea a toda velocidad → drena vida (no mata)
-    if (g === 2) player.hp = Math.max(1, player.hp - player.maxHp * 0.012 * dt);
-    // vapor / nubes
+    if (c === 'luffy' && g === 2) player.hp = Math.max(1, player.hp - player.maxHp * 0.012 * dt);
+    // vapor (Luffy), aura de Haki (Zoro), aire y llamas (Sanji)
     gearState.steam -= dt;
     if (gearState.steam <= 0) {
-        gearState.steam = g === 5 ? 0.05 : 0.08;
-        const col = g === 5 ? '#ffffff' : (g === 4 ? '#fca5a5' : '#fbcfe8');
-        if (g !== 3) particles.push({ x: player.x + (Math.random() * 26 - 13), y: player.y - 8 + Math.random() * 16, vx: (Math.random() - 0.5) * 20, vy: -40 - Math.random() * 30, life: 0.7, maxLife: 0.7, color: col, shape: 'orb', size: g === 5 ? 6 : 4 });
+        gearState.steam = (c === 'luffy' && g === 5) ? 0.05 : 0.08;
+        let col = null, vy = -40, size = 4, y0 = -8;
+        if (c === 'luffy') { if (g !== 3) { col = g === 5 ? '#ffffff' : (g === 4 ? '#fca5a5' : '#fbcfe8'); size = g === 5 ? 6 : 4; } }
+        else if (c === 'zoro') col = g === 2 ? '#1e293b' : (g === 3 ? '#a855f7' : '#ef4444');
+        else if (c === 'sanji') { if (g === 2) { col = '#e0f2fe'; vy = 30; y0 = 18; } else if (g === 4) { col = Math.random() < 0.5 ? '#60a5fa' : '#1d4ed8'; size = 5; } }
+        if (col) particles.push({ x: player.x + (Math.random() * 26 - 13), y: player.y + y0 + Math.random() * 16, vx: (Math.random() - 0.5) * 20, vy: vy - Math.random() * 30, life: 0.7, maxLife: 0.7, color: col, shape: 'orb', size });
     }
     // ataques especiales periodicos
     gearState.atkTimer -= dt;
     if (gearState.atkTimer <= 0) {
-        if (g === 3) { gearState.atkTimer = 1.6; gearElephantGun(); }
-        else if (g === 4) { gearState.atkTimer = 1.3; gearKongGun(); }
-        else if (g === 5) { gearState.atkTimer = 1.2; gearDawnWhip(); }
-        else gearState.atkTimer = 99;
+        gearState.atkTimer = info.atk ? info.atkCd : 99;
+        const f = GEAR_ATTACKS[info.atk];
+        if (f) f();
     }
     if (gearState.remain <= 0) gearEnd();
     gearUpdateButtonThrottled(dt);
@@ -229,35 +269,73 @@ function gearBajrangGun() {
     window._gearFlash = 0.35;
 }
 
+// Zoro · Asura: Ashura Ichibugin, nueve cortes en estrella alrededor
+function gearAsura() {
+    const r = 120 * player.areaBonus;
+    gearState.fx.push({ kind: 'slashes', x: player.x, y: player.y, r: r, n: 9, rot: Math.random() * Math.PI, color: '#c084fc', life: 0.35, max: 0.35 });
+    gearHitArea(player.x, player.y, r, 70 + 15 * gearCardLevel(), 40);
+    playSound('slash');
+}
+// Zoro · Rey del Infierno: tajo de Haoshoku sobre el objetivo
+function gearHellSlash() {
+    const t = gearTarget(); if (!t) { gearState.atkTimer = 0.3; return; }
+    const r = 135 * player.areaBonus;
+    gearState.fx.push({ kind: 'slashes', x: t.x, y: t.y, r: r, n: 3, rot: Math.atan2(t.y - player.y, t.x - player.x), color: '#ef4444', life: 0.45, max: 0.45 });
+    gearState.fx.push({ kind: 'wave', x: t.x, y: t.y, r: r, color: '#111827', life: 0.5, max: 0.5 });
+    gearHitArea(t.x, t.y, r, 170, 90);
+    fxSpark(t.x, t.y, '#fca5a5', 18, 240, 0.45, 3, 40);
+    playSound('slash'); cameraShake = Math.max(cameraShake, 2.2);
+}
+// Sanji · Stealth Black: patada invisible al enemigo mas cercano
+function gearStealthKick() {
+    const t = gearTarget(); if (!t) { gearState.atkTimer = 0.3; return; }
+    const r = 70 * player.areaBonus;
+    gearState.fx.push({ kind: 'wave', x: t.x, y: t.y, r: r, color: '#94a3b8', life: 0.3, max: 0.3 });
+    gearHitArea(t.x, t.y, r, 90 + 15 * gearCardLevel(), 50);
+    playSound('kick');
+}
+// Sanji · Ifrit Jambe: estallido de llamas azules a su alrededor
+function gearIfrit() {
+    const r = 150 * player.areaBonus;
+    gearState.fx.push({ kind: 'wave', x: player.x, y: player.y, r: r, color: '#3b82f6', life: 0.5, max: 0.5 });
+    gearHitArea(player.x, player.y, r, 150, 70);
+    fxSpark(player.x, player.y, '#93c5fd', 20, 240, 0.5, 3, 0);
+    playSound('boom'); cameraShake = Math.max(cameraShake, 1.8);
+}
+const GEAR_ATTACKS = { elephant: gearElephantGun, kong: gearKongGun, dawn: gearDawnWhip, asura: gearAsura, hell: gearHellSlash, stealth: gearStealthKick, ifrit: gearIfrit };
+
 // ---- modificadores que lee el bucle principal ----
 function gearDamageMult() {
-    const g = gearState.active;
-    let m = g === 2 ? 1.15 : g === 3 ? 1.6 : g === 4 ? 2.2 : g === 5 ? 2.6 : 1;
+    const info = gearState.active ? gearInfo() : null;
+    let m = info ? info.dmg : 1;
     if (gearState.penalty === 'chibi') m *= 0.7;
     return m;
 }
 function gearSpeedMult() {
-    const g = gearState.active;
+    const info = gearState.active ? gearInfo() : null;
     let m = 1;
-    if (g === 2) m = 1 + (skills.gear2.speedBonus || 0.3);
-    else if (g === 4) m = 1.2;
-    else if (g === 5) m = 1.3;
+    if (info) m = info.spd === 'card' ? 1 + (skills.gear2.speedBonus || 0.3) : info.spd;
     if (gearState.penalty === 'chibi') m *= 0.8;
     else if (gearState.penalty === 'exhausted') m *= 0.8; // sin Haki y sin aire (medido con bot: x0.5 lo hacía perder)
     return m;
 }
 function gearCdMult() {
-    const g = gearState.active;
-    // cada Gear supera al anterior (medido con bot): con 1.15/1.0 el G3 y el G4 rendían menos que el G2
-    let m = g === 2 ? 0.6 : g === 3 ? 1.0 : g === 4 ? 0.7 : g === 5 ? 0.6 : 1;
+    // cada escalon supera al anterior (medido con bot)
+    const info = gearState.active ? gearInfo() : null;
+    let m = info ? info.cd : 1;
     if (gearState.penalty === 'exhausted') m *= 1.3;
     return m;
 }
 function gearDamageTakenMult() {
-    const g = gearState.active;
-    return g === 5 ? 0 : (g === 4 ? 0.5 : 1);
+    const info = gearState.active ? gearInfo() : null;
+    return info ? info.taken : 1;
 }
-function gearEnemySpeedMult() { return gearState.active === 5 ? 0.5 : 1; }
+function gearEnemySpeedMult() { const info = gearState.active ? gearInfo() : null; return (info && info.enemySpd) || 1; }
+// Stealth Black: Sanji casi invisible
+function gearSpriteAlpha() {
+    if (gearChar() === 'sanji' && gearState.active === 3) return 0.3 + 0.12 * Math.sin(performance.now() / 90);
+    return 1;
+}
 
 // ---- dibujo ----
 // Aura detras del sprite (contexto ya trasladado al jugador)
@@ -265,8 +343,30 @@ function gearDrawAura(ctx) {
     const g = gearState.active;
     if (!g) return;
     const t = performance.now() / 1000;
-    const col = GEAR_INFO[g].color;
+    const col = gearInfo(g).color, c = gearChar();
     ctx.save();
+    if (c !== 'luffy') {
+        if (c === 'zoro' && g === 3) {
+            // Asura: dos cabezas fantasma a los lados y nueve espadas en abanico
+            ctx.globalAlpha = 0.35 + 0.1 * Math.sin(t * 6);
+            ctx.fillStyle = '#581c87';
+            ctx.beginPath(); ctx.arc(-20, -18, 10, 0, Math.PI * 2); ctx.arc(20, -18, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#e9d5ff'; ctx.lineWidth = 2;
+            for (let k = 0; k < 9; k++) { const a = -Math.PI * 0.9 + k * Math.PI * 0.8 / 8 + Math.sin(t * 3) * 0.05; ctx.beginPath(); ctx.moveTo(Math.cos(a) * 18, Math.sin(a) * 18); ctx.lineTo(Math.cos(a) * 40, Math.sin(a) * 40); ctx.stroke(); }
+        } else if (c === 'sanji' && g === 3) {
+            ctx.restore(); return; // Stealth Black: sin aura, es invisible
+        } else {
+            ctx.globalAlpha = 0.22 + 0.1 * Math.sin(t * 10);
+            ctx.fillStyle = col;
+            ctx.beginPath(); ctx.arc(0, 0, g === 4 ? 38 : 30, 0, Math.PI * 2); ctx.fill();
+            if (g === 4) {
+                // Rey del Infierno: aura negra con rayos rojos / Ifrit: lenguas de fuego azul
+                ctx.globalAlpha = 0.75; ctx.strokeStyle = c === 'zoro' ? '#111827' : '#93c5fd'; ctx.lineWidth = 3;
+                for (let k = 0; k < 8; k++) { const a = t * (c === 'zoro' ? -2 : 3) + k * Math.PI / 4, r2 = 38 + 8 * Math.sin(t * 9 + k); ctx.beginPath(); ctx.moveTo(Math.cos(a) * 26, Math.sin(a) * 26); ctx.lineTo(Math.cos(a) * r2, Math.sin(a) * r2); ctx.stroke(); }
+            }
+        }
+        ctx.restore(); return;
+    }
     ctx.globalAlpha = 0.25 + 0.1 * Math.sin(t * 10);
     ctx.fillStyle = col;
     ctx.beginPath(); ctx.arc(0, 0, g === 5 ? 44 : (g === 4 ? 38 : 30), 0, Math.PI * 2); ctx.fill();
@@ -289,6 +389,11 @@ function gearSpriteTransform(ctx) {
     const t = performance.now() / 1000;
     // con sprite propio (G4, G5, encogido) no se reescala ni se tiñe: solo el rebote
     const spr = !!gearSpriteFrame();
+    if (gearChar() !== 'luffy') {
+        if (gearChar() === 'sanji' && g === 2) ctx.translate(0, -8 + Math.sin(t * 6) * 3); // camina sobre el aire
+        if (gearState.penalty === 'exhausted') ctx.filter = 'grayscale(0.6) brightness(0.85)';
+        return;
+    }
     if (g === 3) ctx.scale(1.15, 1.15);
     else if (g === 4) { ctx.translate(0, -Math.abs(Math.sin(t * 7)) * 12); if (!spr) ctx.scale(1.35, 1.35); }
     else if (g === 5) { ctx.translate(0, Math.sin(t * 4) * 4); if (!spr) ctx.scale(1.3, 1.3); }
@@ -322,6 +427,11 @@ function gearDrawWorld(ctx) {
             ctx.beginPath(); ctx.arc(x, y, f.r, 0, Math.PI * 2); ctx.fill();
             ctx.strokeStyle = '#1a0f06'; ctx.lineWidth = 3;
             ctx.beginPath(); ctx.arc(x, y, f.r, 0, Math.PI * 2); ctx.stroke();
+        } else if (f.kind === 'slashes') {
+            ctx.globalAlpha = a;
+            ctx.strokeStyle = f.color; ctx.lineWidth = 4 * a + 1.5; ctx.lineCap = 'round';
+            const rr = f.r * (1.15 - a * 0.4);
+            for (let k = 0; k < f.n; k++) { const ang = f.rot + k * Math.PI / f.n; ctx.beginPath(); ctx.moveTo(f.x - Math.cos(ang) * rr, f.y - Math.sin(ang) * rr); ctx.lineTo(f.x + Math.cos(ang) * rr, f.y + Math.sin(ang) * rr); ctx.stroke(); }
         } else if (f.kind === 'wave') {
             ctx.globalAlpha = a * 0.8;
             ctx.strokeStyle = f.color; ctx.lineWidth = 6 * a + 2;
@@ -335,7 +445,7 @@ function gearDrawWorld(ctx) {
 }
 // Medidor y estado (espacio de pantalla)
 function gearDrawHUD(ctx) {
-    if (!gearIsLuffy() || gearCardLevel() <= 0) return;
+    if (gearCardLevel() <= 0) return;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (window._gearFlash > 0) {
@@ -347,12 +457,12 @@ function gearDrawHUD(ctx) {
     const x = (VIEW_W - w) / 2, y = VIEW_H - 96;
     const g = gearState.active;
     let frac, col, label;
-    if (g) { frac = gearState.remain / GEAR_INFO[g].dur; col = GEAR_INFO[g].color; label = GEAR_INFO[g].name; }
+    if (g) { const inf = gearInfo(g); frac = gearState.remain / inf.dur; col = inf.color; label = inf.name; }
     else if (gearState.penalty) { frac = 0; col = '#94a3b8'; label = (gearState.penalty === 'chibi' ? 'ENCOGIDO ' : 'AGOTADO ') + Math.ceil(gearState.penaltyRemain) + 's'; }
     else {
         frac = gearState.meter / 100; const av = gearAvailable();
-        col = gearState.meter >= 100 ? GEAR_INFO[av].color : '#facc15';
-        label = gearState.meter >= 100 ? GEAR_INFO[av].name + ' LISTO · ESPACIO' : 'GEAR ' + Math.floor(gearState.meter) + '%';
+        col = gearState.meter >= 100 ? gearInfo(av).color : '#facc15';
+        label = gearState.meter >= 100 ? gearInfo(av).name + ' LISTO · ESPACIO' : FORM_METER[gearChar()] + ' ' + Math.floor(gearState.meter) + '%';
     }
     ctx.fillStyle = 'rgba(20,12,4,0.85)';
     ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
@@ -375,13 +485,14 @@ function gearUpdateButtonThrottled(dt) { _gearBtnT -= dt; if (_gearBtnT <= 0) { 
 function gearUpdateButton() {
     const b = document.getElementById('gear-btn');
     if (!b) return;
-    const show = gearIsLuffy() && gearCardLevel() > 0 && typeof gameState !== 'undefined' && gameState === 'PLAYING';
+    const show = gearCardLevel() > 0 && typeof gameState !== 'undefined' && gameState === 'PLAYING';
     b.style.display = show ? 'flex' : 'none';
     if (!show) return;
     const ready = gearReady();
     b.classList.toggle('ready', ready);
     const av = gearAvailable();
-    b.textContent = gearState.active ? 'G' + gearState.active : ('G' + av);
+    const inf = gearInfo(gearState.active || av);
+    b.textContent = inf ? inf.short : '';
 }
 
 // ---- hitos persistentes ----
@@ -389,16 +500,23 @@ function gearUpdateButton() {
 const GEAR_ACHIEVEMENTS = [
     { id: 'gear_3', name: 'Gear Third', desc: 'Conquista una isla con Luffy. Desbloquea el Gear 3.', check: s => (s.winsByChar.luffy || 0) >= 1, reward: 500, gear: 3 },
     { id: 'gear_4', name: 'Gear Fourth', desc: 'Conquista una isla con Luffy en Clima Peligroso 2 o más. Desbloquea el Gear 4.', check: s => (s.luffyBestCurse || -1) >= 2, reward: 1500, gear: 4 },
-    { id: 'gear_5', name: 'Despertar de Nika', desc: 'Conquista una isla con Luffy en Clima Peligroso 4. Desbloquea el Gear 5.', check: s => (s.luffyBestCurse || -1) >= 4, reward: 3000, gear: 5 }
+    { id: 'gear_5', name: 'Despertar de Nika', desc: 'Conquista una isla con Luffy en Clima Peligroso 4. Desbloquea el Gear 5.', check: s => (s.luffyBestCurse || -1) >= 4, reward: 3000, gear: 5 },
+    { id: 'zoro_asura', name: 'Kyutoryu Asura', desc: 'Conquista una isla con Zoro. Desbloquea Kyutoryu Asura.', check: s => (s.winsByChar.zoro || 0) >= 1, reward: 500, gear: 3, formChar: 'zoro', gearText: 'KYUTORYU ASURA' },
+    { id: 'zoro_enma', name: 'Rey del Infierno', desc: 'Conquista una isla con Zoro en Clima Peligroso 2 o más. Desbloquea el Rey del Infierno.', check: s => ((s.bestCurseBy || {}).zoro ?? -1) >= 2, reward: 1500, gear: 4, formChar: 'zoro', gearText: 'REY DEL INFIERNO' },
+    { id: 'sanji_stealth', name: 'Stealth Black', desc: 'Conquista una isla con Sanji. Desbloquea el Raid Suit Stealth Black.', check: s => (s.winsByChar.sanji || 0) >= 1, reward: 500, gear: 3, formChar: 'sanji', gearText: 'RAID SUIT STEALTH BLACK' },
+    { id: 'sanji_ifrit', name: 'Ifrit Jambe', desc: 'Conquista una isla con Sanji en Clima Peligroso 2 o más. Desbloquea Ifrit Jambe.', check: s => ((s.bestCurseBy || {}).sanji ?? -1) >= 2, reward: 1500, gear: 4, formChar: 'sanji', gearText: 'IFRIT JAMBE' }
 ];
 function gearOnAchievement(a) {
     if (!a.gear) return;
     gearMetaInit();
-    meta.gear.unlocked = Math.max(meta.gear.unlocked, a.gear);
+    if (a.formChar) meta.gear.forms[a.formChar] = Math.max(meta.gear.forms[a.formChar] || 2, a.gear);
+    else meta.gear.unlocked = Math.max(meta.gear.unlocked, a.gear);
 }
 function gearOnVictory() {
     gearMetaInit();
-    if (gearIsLuffy()) meta.stats.luffyBestCurse = Math.max(meta.stats.luffyBestCurse, runCurseRank);
+    const c = gearChar(); if (!c) return;
+    if (c === 'luffy') meta.stats.luffyBestCurse = Math.max(meta.stats.luffyBestCurse, runCurseRank);
+    meta.stats.bestCurseBy[c] = Math.max(meta.stats.bestCurseBy[c] ?? -1, runCurseRank);
 }
 
 // ---- tienda ----
@@ -407,9 +525,10 @@ function renderGearShop(container) {
     gearMetaInit();
     const head = document.createElement('div');
     head.className = 'gear-shop-head';
-    head.innerHTML = 'GEARS DE LUFFY · Desbloqueados: ' + [2,3,4,5].map(n => n <= meta.gear.unlocked ? 'G' + n + ' ✔' : 'G' + n + ' 🔒').join(' · ');
+    const row = (c, ns) => ns.map(n => FORMS[c][n].short + (n <= gearUnlocked(c) ? ' ✔' : ' 🔒')).join(' ');
+    head.innerHTML = 'TRANSFORMACIONES · Luffy: ' + row('luffy', [2,3,4,5]) + ' · Zoro: ' + row('zoro', [2,3,4]) + ' · Sanji: ' + row('sanji', [2,3,4]);
     container.appendChild(head);
-    const locked = meta.gear.unlocked < 3;
+    const locked = meta.gear.unlocked < 3 && meta.gear.forms.zoro < 3 && meta.gear.forms.sanji < 3;
     GEAR_SHOP.forEach(u => {
         const lvl = gearUp(u.id);
         const cost = gearShopCost(u, lvl);
@@ -421,7 +540,7 @@ function renderGearShop(container) {
             <div class="upgrade-icon">${ICONS.gear2}</div>
             <div class="upgrade-info" style="flex:1;">
                 <h4>${u.name} (Nv ${lvl}/${u.max})</h4>
-                <p>${locked ? 'Requiere desbloquear el Gear 3 (conquista una isla con Luffy).' : u.desc}</p>
+                <p>${locked ? 'Requiere desbloquear un segundo nivel (conquista una isla con cualquier personaje).' : u.desc}</p>
             </div>
             <div class="upgrade-buy" style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:90px;">
                 <div style="font-family:'Bangers',sans-serif; font-size:16px; color:#b45309; letter-spacing:1px;">${maxed ? 'MÁX' : cost.toLocaleString('en-US') + ' ฿'}</div>

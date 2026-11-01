@@ -248,6 +248,7 @@ function render() {
     ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill();
 
     gearSpriteTransform(ctx);
+    if (typeof gearSpriteAlpha === 'function') ctx.globalAlpha = gearSpriteAlpha();
     if (player.facing === 1) ctx.scale(-1, 1);
     const set = (assetsLoaded && CHAR_IMG[selectedCharacter]) ? CHAR_IMG[selectedCharacter] : null;
     const gearFrame = (typeof gearSpriteFrame === 'function') ? gearSpriteFrame() : null;

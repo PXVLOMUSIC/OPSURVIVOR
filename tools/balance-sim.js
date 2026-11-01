@@ -1,7 +1,7 @@
 // Simulador de balance: un bot juega partidas completas en Chromium headless y mide winrate.
 // Requisitos: servir el repo (python3 -m http.server 8765) y tener Playwright.
 // Uso: node tools/balance-sim.js http://localhost:8765/index.html <partidas por combo> <mejoras: 0 nada | 2 medias | 1 todas> [personajes] [mapas] [paralelo] [gear max 2-5] 2> runs.log
-// El bot activa el Gear de Luffy en cuanto el medidor está lleno. [gear max] fija los Gears desbloqueados (por defecto 2).
+// El bot activa la transformación (Gears, Haki de Zoro, Raid Suit de Sanji) en cuanto el medidor está lleno. [gear max] fija el escalón desbloqueado (por defecto 2; Zoro y Sanji llegan hasta 4).
 //      python3 tools/balance-report.py runs.log
 const { chromium } = require('playwright');
 const URL_ = process.argv[2];
@@ -11,14 +11,14 @@ const CHARS = (process.argv[5] || 'luffy,zoro,sanji').split(',');
 const MAPS = (process.argv[6] || 'baratie,alabasta,skypiea,thrillerbark').split(',');
 const PAR = +process.argv[7] || 8;
 const GEAR = +process.argv[8] || 2;
-// [forzar] = 'evo': a partir del minuto 4 Luffy tiene la carta Gears evolucionada (mide el techo de Gear 4/5)
+// [forzar] = 'evo': a partir del minuto 4 la carta de transformación está evolucionada (mide el techo de Gear 4/5, Enma e Ifrit)
 const FORCE_EVO = process.argv[9] === 'evo';
 
 async function runOne(browser, ch, map, meta) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     await page.addInitScript(({ meta, gear }) => {
-        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true }, gear: { unlocked: gear, up: { meter: 0, charge: 0, recover: 0 } } };
+        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true }, gear: { unlocked: gear, forms: { zoro: Math.min(gear, 4), sanji: Math.min(gear, 4) }, up: { meter: 0, charge: 0, recover: 0 } } };
         // mejoras: se fijan tras cargar el juego a partir de META_UPGRADES (ver abajo)
         // (meta 1 = todas al máximo; meta 2 = la mitad, redondeando arriba y sin Revivir; la Maldición siempre a 0)
         localStorage.setItem('op_survivor_meta', JSON.stringify(m));
@@ -99,8 +99,9 @@ async function runOne(browser, ch, map, meta) {
             }
             const ml = Math.hypot(mx, my);
             joystick.active = ml > 0.05; joystick.dx = ml ? mx / ml : 0; joystick.dy = ml ? my / ml : 0;
-            if (forceEvo && ch === 'luffy' && gameTime > 240 && !skills.gear2.evolved) { skills.gear2.level = 5; skills.gear2.evolved = true; }
-            if (ch === 'luffy' && typeof gearReady === 'function' && gearReady()) { const gv = gearAvailable(); gearActivate(); gu[gv] = (gu[gv] || 0) + 1; }
+            const fc = { luffy: 'gear2', zoro: 'zoroform', sanji: 'sanjiform' }[ch];
+            if (forceEvo && gameTime > 240 && !skills[fc].evolved) { skills[fc].level = 5; skills[fc].evolved = true; }
+            if (typeof gearReady === 'function' && gearReady()) { const gv = gearAvailable(); gearActivate(); gu[gv] = (gu[gv] || 0) + 1; }
             const preHp = player.hp;
             update(DT);
             { const loss = preHp - player.hp; if (loss > 0) { let big = enemies.some(e => (e.isBoss||e.isMiniboss) && Math.hypot(e.x-player.x,e.y-player.y) < 40); let c = enemies.filter(e => Math.hypot(e.x-player.x,e.y-player.y) < 22).length; const key = big ? 'boss' : (c ? (c >= 5 ? 'swarm' : 'contact') : 'bullet'); src[key] = (src[key]||0) + loss; } }

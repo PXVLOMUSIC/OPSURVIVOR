@@ -107,6 +107,8 @@ const ICONS = {
     gatling:     SVG(`<g ${F}><rect x="13" y="2.6" width="7.4" height="6" rx="2"/><rect x="15" y="9.2" width="7.4" height="6" rx="2"/><rect x="12" y="15.6" width="7.4" height="6" rx="2"/></g><g ${S}><path d="M2.5 5.6h8M4.5 12.2h8.5M2 18.6h8" opacity=".6"/></g>`),
     bazooka:     SVG(`<g ${F}><path d="M13.4 3.2h4.4a2 2 0 0 1 2 2v4.4h-6.4zM13.4 14.4h6.4v4.4a2 2 0 0 1-2 2h-4.4z"/><rect x="20.4" y="3.6" width="2" height="5.4" rx="1"/><rect x="20.4" y="15" width="2" height="5.4" rx="1"/></g><g ${S}><path d="M2.5 6.4c3 0 5 1 10.9 0M2.5 17.6c3 0 5-1 10.9 0"/><path d="M5 12h6" opacity=".55"/></g>`),
     gear2:       SVG(`<g ${S}><path d="M7 20.5c-2-2.2 1.6-3.6-.4-6.2s1.4-4-.2-6.6M12 21c-2-2.6 1.8-4.2-.2-7s1.6-4.6-.2-7.6M17 20.5c-2-2.2 1.6-3.6-.4-6.2s1.4-4-.2-6.6"/></g><g ${F}><circle cx="6.6" cy="4.6" r="1.7" opacity=".7"/><circle cx="11.8" cy="3.2" r="2" opacity=".85"/><circle cx="16.6" cy="4.6" r="1.7" opacity=".7"/></g>`),
+    zoroform:    SVG(`<g ${S}><path d="M5 21 17.5 8.5M3.5 17.5 14 7M9 22l11-11" opacity=".55"/></g><g ${F}><path d="M12 1.8c1.2 2.4 3.6 3.4 3.6 6.2a3.6 3.6 0 0 1-7.2 0c0-1.4.8-2.4 1.6-3.2.2 1.2.8 1.8 1.6 2 .2-1.8-.2-3.4.4-5z"/><rect x="9.6" y="12.4" width="4.8" height="2.4" rx=".6"/><path d="M11 14.8h2v7.4h-2z"/></g>`),
+    sanjiform:   SVG(`<g ${F}><path d="M6.5 2.5h4.2l1.4 9.6 6.8 5.2c.8.6 1.1 1.4 1.1 2.4V21H9.6c-2.3 0-4.1-1.8-4.1-4.1z"/></g><g ${S}><path d="M17 3.5c1.6 1.4 2.6 3 1.4 5.4M20.6 6.6c.6 1.4.2 2.8-.8 3.8M14.2 6c.8.8 1 1.8.4 2.8"/></g>`),
     santoryu:    SVG(`<g ${S}><path d="M4 20 20 4M8.5 20 20 8.5M4 15.5 15.5 4"/><path d="M2.6 19.4h3.2M20.9 3.1 18 4.8M3.2 14.3l1.4-1.4"/></g>`),
     onigiri:     SVG(`<g ${S}><path d="M8.5 21.5 19 3M13 21.5 21.5 6"/><path d="M3 18.5h6M2.2 13.6H7" opacity=".55"/></g>`),
     flyingslash: SVG(`<g ${F}><path d="M20.5 3.5C13 4.8 5.2 11.8 3.2 19.6l3.2 1C8.4 14.4 14.4 8.6 20.8 7l-.3-3.5z"/></g>`),
@@ -383,8 +385,8 @@ function updateMenuMusicBtn() {
 }
 const CHAR_SKILLS = {
     luffy: ['pistol','gatling','bazooka','gear2','muchi','ono'],
-    zoro: ['santoryu','onigiri','flyingslash','tatsumaki','poundho'],
-    sanji: ['diablejambe','collier','joueshot','concasse','partycourse']
+    zoro: ['santoryu','onigiri','flyingslash','tatsumaki','poundho','zoroform'],
+    sanji: ['diablejambe','collier','joueshot','concasse','partycourse','sanjiform']
 };
 
 // Animation frame indices within assets/extracted/<char>_gba/

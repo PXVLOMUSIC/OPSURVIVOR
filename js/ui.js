@@ -96,7 +96,7 @@ function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
     if (!wEl || !pEl) return;
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse'];
+    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','zoroform','sanjiform'];
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
     const icons = ICONS;
     wEl.innerHTML = '';
@@ -219,7 +219,7 @@ function resetGame() {
     skills.flyingslash.level = 0; skills.flyingslash.baseDamage = 20; skills.flyingslash.evolved = false;
     skills.tatsumaki.level = 0; skills.tatsumaki.baseDamage = 10; skills.tatsumaki.evolved = false;
     skills.poundho.level = 0; skills.poundho.baseDamage = 30; skills.poundho.evolved = false;
-    skills.diablejambe.level = (selectedCharacter === 'sanji') ? 1 : 0; skills.diablejambe.baseDamage = 16; skills.diablejambe.evolved = false;
+    skills.diablejambe.level = (selectedCharacter === 'sanji') ? 1 : 0; skills.diablejambe.baseDamage = 18; skills.diablejambe.evolved = false;
     skills.collier.level = 0; skills.collier.baseDamage = 10; skills.collier.evolved = false;
     skills.joueshot.level = 0; skills.joueshot.baseDamage = 26; skills.joueshot.evolved = false;
     skills.concasse.level = 0; skills.concasse.baseDamage = 75; skills.concasse.evolved = false;

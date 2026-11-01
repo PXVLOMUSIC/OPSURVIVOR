@@ -149,6 +149,7 @@ const SPRITE_PATHS = {
     thrillerbarkMap: 'assets/maps/thrillerbark.jpg',
     enieslobbyMap: 'assets/maps/enieslobby.jpg',
     marinefordMap: 'assets/maps/marineford.jpg',
+    wanoMap: 'assets/maps/wano.jpg',
     water7Map: 'assets/maps/water7.jpg',
     saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
     saber_poundho: 'assets/extracted/objetos_gba/sprite_025.png',
@@ -188,6 +189,12 @@ const ENEMY_ANIMS = {
     boss_akainu: { folder: 'akainu', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
     aokiji: { folder: 'aokiji', idle: [0, 1, 2, 3, 4, 5, 6], attack: [7, 8, 9, 10], faces: 1 },
     kizaru: { folder: 'kizaru', idle: [0, 1], attack: [2, 3, 4], faces: 1 },
+    // Wano (3DS Great Pirate Colosseum): asalto a Onigashima
+    boss_kaido: { folder: 'kaido', idle: [0, 1], attack: [2] },
+    drake: { folder: 'drake', idle: [0, 1], attack: [2], faces: -1 },
+    hawkins: { folder: 'hawkins', idle: [0, 1], attack: [2], faces: 1 },
+    kanjuro: { folder: 'kanjuro', idle: [0, 1], attack: [2, 3], faces: -1 },
+    ink_bird: { folder: 'ink_bird', idle: [0, 1, 2], attack: [3], faces: 1 },
     // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
     krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
@@ -352,26 +359,28 @@ const ELITE_INFO = {
     jango:          { always: true, name: { all: 'Jango el Hipnotizador' } },
     fullbody:       { always: true, name: { all: 'Teniente Fullbody, Puño de Hierro' } },
     tashigi:        { always: true, name: { all: 'Sargento Mayor Tashigi' } },
-    krieg_knife:    { name: { water7: 'Matón de la Familia Franky', all: 'Malabarista Veterano de Krieg' } },
+    krieg_knife:    { name: { water7: 'Matón de la Familia Franky', wano: 'Gifter de las Bestias', all: 'Malabarista Veterano de Krieg' } },
     marine_sword:   { name: { baratie: 'Cabo de Fullbody', alabasta: 'Cabo de Smoker', all: 'Cabo de la Marina' } },
     sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } },
-    spandam:        { always: true, name: { all: 'Spandam y Funkfreed' } }
+    spandam:        { always: true, name: { all: 'Spandam y Funkfreed' } },
+    kanjuro:        { always: true, name: { all: 'Kurozumi Kanjuro — Fude Fude no Mi' } }
 };
 function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[selectedMap] || i.name.all || i.name.baratie) : null; }
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
     pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno',
     kaku: 'Kaku — CP9, Ushi Ushi no Mi: Jirafa', spandam: 'Spandam — Jefe del CP9',
     lucci_human: 'Rob Lucci — CP9 infiltrado en Galley-La',
-    aokiji: 'Almirante Aokiji — Hie Hie no Mi', kizaru: 'Almirante Kizaru — Pika Pika no Mi' };
-const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky' };
+    aokiji: 'Almirante Aokiji — Hie Hie no Mi', kizaru: 'Almirante Kizaru — Pika Pika no Mi',
+    drake: 'X Drake — Tobiroppo, Ryu Ryu no Mi: Alosaurio', hawkins: 'Basil Hawkins — Headliner, Wara Wara no Mi' };
+const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky', boss_kaido: 'Kaido de las Bestias — Yonko' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000 };
+const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_kaido: 20000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
     contactMult: 1.0,     // daño por contacto = daño del enemigo x esto (por segundo); antes 0.8
-    hpGrowth: 1.31,       // multiplicador de vida enemiga por minuto (continuo); 1.36 antes del PR #8
+    hpGrowth: 1.32,        // multiplicador de vida enemiga por minuto (continuo); 1.36 antes del PR #8
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
@@ -394,7 +403,8 @@ const ENEMY_STATS = {
     // Bestiario ampliado: cada tipo tiene un papel (enjambre, embestida, bruto, kamikaze, fantasma)
     krieg_starved: [16, 96, 10], krieg_knife: [40, 70, 18], marine_sword: [44, 70, 18], jango: [140, 56, 22], fullbody: [170, 50, 30],
     tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3],
-    kaku: [150, 60, 28], spandam: [110, 54, 22], aokiji: [200, 50, 32], kizaru: [180, 70, 30], lucci_human: [190, 62, 32]
+    kaku: [150, 60, 28], spandam: [110, 54, 22], aokiji: [200, 50, 32], kizaru: [180, 70, 30], lucci_human: [190, 62, 32],
+    kanjuro: [120, 58, 24], ink_bird: [26, 100, 14], drake: [210, 56, 34], hawkins: [190, 52, 32]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
 //  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
@@ -404,7 +414,7 @@ const ENEMY_STATS = {
 //  hypno    Jango: "Uno, dos... ¡Jango!" te duerme a medias (lentitud 60% 1,2 s) cada 7 s
 const ENEMY_BEHAVIOR = {
     krieg_starved: 'zigzag', negative_hollow: 'hollow', krieg_knife: 'charge', sky_shark: 'charge',
-    tama: 'explode', jango: 'hypno'
+    tama: 'explode', jango: 'hypno', ink_bird: 'zigzag'
 };
 // Tiradores: disparan balas (ver BALANCE.shooterCd / bulletDmg)
 const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner']);
@@ -418,7 +428,7 @@ const FODDER_ELITE = {
 // events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
 const MAP_ENEMIES = {
     baratie: {
-        hpMult: 0.88, // dificultad del mapa (vida enemiga)
+        hpMult: 0.72, // dificultad del mapa (vida enemiga)
         // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
         base: 'krieg_pirate',
         pool: [
@@ -431,7 +441,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
     },
     alabasta: {
-        hpMult: 0.97, // dificultad del mapa (vida enemiga)
+        hpMult: 0.74, // dificultad del mapa (vida enemiga)
         // Dugongos kung-fu del desierto, fusileros de la Marina de Smoker y los agentes de Baroque Works
         base: 'dugong',
         pool: [
@@ -444,7 +454,7 @@ const MAP_ENEMIES = {
         events: { ring: 'dugong', charge: 'marine_sword', runners: 'dugong', swarm: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
     },
     skypiea: {
-        hpMult: 0.93, // dificultad del mapa (vida enemiga)
+        hpMult: 0.73, // dificultad del mapa (vida enemiga)
         // Guerreros shandia y los sacerdotes de Enel; Wiper y Ohm como minijefes
         base: 'shandia',
         pool: [
@@ -456,7 +466,7 @@ const MAP_ENEMIES = {
         events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'sky_shark', swarm: 'tama', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
-        hpMult: 1.02, // dificultad del mapa (vida enemiga)
+        hpMult: 0.90, // dificultad del mapa (vida enemiga)
         base: 'inupen',
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
@@ -468,7 +478,7 @@ const MAP_ENEMIES = {
         events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
     },
     enieslobby: {
-        hpMult: 1.02, // dificultad del mapa (vida enemiga)
+        hpMult: 1.00, // dificultad del mapa (vida enemiga)
         // Los marines y la guardia de Enies Lobby; Spandam con Funkfreed y Kaku del CP9; Rob Lucci de jefe
         base: 'grunt',
         pool: [
@@ -480,7 +490,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡LA GUARDIA DE ENIES LOBBY TE RODEA!', chargeText: '¡CARGAN LOS 10.000 MARINES!' }
     },
     water7: {
-        hpMult: 0.88, // dificultad del mapa (vida enemiga)
+        hpMult: 0.94, // dificultad del mapa (vida enemiga)
         // Familia Franky (piratas de relleno) en el muelle; Kaku y Lucci se quitan la máscara de Galley-La; Franky de jefe
         base: 'krieg_pirate',
         pool: [
@@ -492,7 +502,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
     },
     marineford: {
-        hpMult: 0.92, // dificultad del mapa (vida enemiga)
+        hpMult: 1.00, // dificultad del mapa (vida enemiga)
         // La Guerra en la Cumbre: marines, oficiales de la Marina; Aokiji y Kizaru de minijefes, Akainu de jefe
         base: 'grunt',
         pool: [
@@ -502,6 +512,19 @@ const MAP_ENEMIES = {
         minibosses: [ { type: 'aokiji', min: 3, hp: 800, speed: 46, damage: 32 }, { type: 'kizaru', min: 6, hp: 850, speed: 62, damage: 34 } ],
         boss: 'boss_akainu',
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡EL CERCO DE LA MARINA SE CIERRA!', chargeText: '¡CARGAN LOS VICEALMIRANTES!' }
+    },
+    wano: {
+        hpMult: 1.45, // dificultad del mapa (vida enemiga): el más difícil
+        // Asalto a Onigashima: piratas de las Bestias y los dibujos de tinta del traidor Kanjuro;
+        // X Drake y Basil Hawkins de minijefes, Kaido de jefe
+        base: 'krieg_pirate',
+        pool: [
+            { type: 'kanjuro', min: 3, p: 0.03 }, { type: 'krieg_knife', min: 1, p: 0.20 },
+            { type: 'krieg_gunner', min: 1, p: 0.34 }, { type: 'ink_bird', min: 0, p: 0.52 }
+        ],
+        minibosses: [ { type: 'drake', min: 3, hp: 850, speed: 50, damage: 34 }, { type: 'hawkins', min: 6, hp: 900, speed: 48, damage: 34 } ],
+        boss: 'boss_kaido',
+        events: { ring: 'krieg_pirate', charge: 'krieg_knife', runners: 'ink_bird', swarm: 'ink_bird', ringText: '¡LOS PIRATAS DE LAS BESTIAS TE RODEAN!', chargeText: '¡CARGAN LOS GIFTERS!' }
     }
 };
 // Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
@@ -580,7 +603,7 @@ function selectMap(id) {
     playSound('ui');
     selectedMap = id;
     prefetchRun(id, selectedCharacter);
-    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7' };
+    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7', wano: 'Wano' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }

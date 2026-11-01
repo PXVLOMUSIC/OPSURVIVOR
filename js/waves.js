@@ -28,7 +28,8 @@ const WAVE_TEXT = {
     thrillerbark: { swarm: '¡NEGATIVE HOLLOWS!', horde: '¡NOCHE DE LOS ZOMBIS!' },
     enieslobby:   { swarm: '¡LA MARINA CRUZA EL PUENTE!', horde: '¡BUSTER CALL!' },
     water7:       { swarm: '¡LA FAMILIA FRANKY ASALTA EL MUELLE!', horde: '¡AQUA LAGUNA SE ACERCA!' },
-    marineford:   { swarm: '¡LOS MARINES SALTAN DE LOS BARCOS!', horde: '¡LA GUERRA EN LA CUMBRE!' }
+    marineford:   { swarm: '¡LOS MARINES SALTAN DE LOS BARCOS!', horde: '¡LA GUERRA EN LA CUMBRE!' },
+    wano:         { swarm: '¡LOS DIBUJOS DE KANJURO COBRAN VIDA!', horde: '¡EL ASALTO A ONIGASHIMA!' }
 };
 
 function waveSpot(x, y) { return selectedMap !== 'baratie' ? clampToArena(x, y) : [x, y]; }

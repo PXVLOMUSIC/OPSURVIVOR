@@ -11,6 +11,7 @@ const VFX_MAP = {
     alabasta: { dust: ['#e6c487', '#d8ad68', '#f2dcaa'], debris: ['#c99a55', '#e0b874', '#b8863e'], debrisShape: 'grain' },
     skypiea:  { dust: ['#ffffff', '#eef6ff', '#dbeafe'], debris: ['#ffffff', '#e0f2fe', '#f8fafc'], debrisShape: 'puff' },
     enieslobby: { dust: ['#d9c48f', '#c8b27a', '#ece0b8'], debris: ['#b89f68', '#d9c48f', '#9c8456'], debrisShape: 'chip' },
+    wholecake: { dust: ['#fbcfe8', '#f9a8d4', '#fef3c7'], debris: ['#f472b6', '#fde68a', '#a16207'], debrisShape: 'chip' },
     wano: { dust: ['#c8a46a', '#a37a45', '#f4c6d6'], debris: ['#8b5a2b', '#6b3f1f', '#b07d4a'], debrisShape: 'chip' },
     marineford: { dust: ['#9aa79d', '#7a8a80', '#c5cec7'], debris: ['#6b7a70', '#8d9b91', '#56645b'], debrisShape: 'chip' },
     water7: { dust: ['#a3a8ad', '#8a9098', '#c9cdd1'], debris: ['#70767c', '#8a9098', '#5c6166'], debrisShape: 'chip' }

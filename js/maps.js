@@ -289,6 +289,7 @@ const MAP_OBSTACLES = {
   thrillerbark: [],
   enieslobby: [],
   marineford: [],
+  wholecake: [],
   wano: [],
   water7: []
 };

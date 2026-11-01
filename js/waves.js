@@ -29,6 +29,7 @@ const WAVE_TEXT = {
     enieslobby:   { swarm: '¡LA MARINA CRUZA EL PUENTE!', horde: '¡BUSTER CALL!' },
     water7:       { swarm: '¡LA FAMILIA FRANKY ASALTA EL MUELLE!', horde: '¡AQUA LAGUNA SE ACERCA!' },
     marineford:   { swarm: '¡LOS MARINES SALTAN DE LOS BARCOS!', horde: '¡LA GUERRA EN LA CUMBRE!' },
+    wholecake:    { swarm: '¡AVANZAN LOS SOLDADOS DE AJEDREZ!', horde: '¡LA FIESTA DEL TÉ DE BIG MOM!' },
     wano:         { swarm: '¡LOS DIBUJOS DE KANJURO COBRAN VIDA!', horde: '¡EL ASALTO A ONIGASHIMA!' }
 };
 

@@ -149,6 +149,7 @@ const SPRITE_PATHS = {
     thrillerbarkMap: 'assets/maps/thrillerbark.jpg',
     enieslobbyMap: 'assets/maps/enieslobby.jpg',
     marinefordMap: 'assets/maps/marineford.jpg',
+    wholecakeMap: 'assets/maps/wholecake.jpg',
     wanoMap: 'assets/maps/wano.jpg',
     water7Map: 'assets/maps/water7.jpg',
     saber_flyingslash: 'assets/extracted/objetos_gba/sprite_030.png',
@@ -195,6 +196,22 @@ const ENEMY_ANIMS = {
     hawkins: { folder: 'hawkins', idle: [0, 1], attack: [2], faces: 1 },
     kanjuro: { folder: 'kanjuro', idle: [0, 1], attack: [2, 3], faces: -1 },
     ink_bird: { folder: 'ink_bird', idle: [0, 1, 2], attack: [3], faces: 1 },
+    // Wano: las Tres Calamidades y los Tobiroppo (sprites de fans en estilo Gigant Battle; ver SPRITES_SOURCES.md)
+    king: { folder: 'king', idle: [0, 1, 2, 3], attack: [4, 5], faces: 1 },
+    queen: { folder: 'queen', idle: [0, 1], attack: [2, 3] },
+    jack: { folder: 'jack', idle: [0, 1], attack: [2, 3] },
+    ulti: { folder: 'ulti', idle: [0, 1], attack: [2, 3], faces: -1 },
+    page_one: { folder: 'page_one', idle: [0, 1], attack: [2, 3] },
+    sasaki: { folder: 'sasaki', idle: [0, 1], attack: [2, 3] },
+    black_maria: { folder: 'black_maria', idle: [0, 1], attack: [2, 3] },
+    // Whole Cake: soldados de ajedrez (dibujados por código), la familia Charlotte y Big Mom
+    chess_soldier: { folder: 'chess_soldier', idle: [0, 1, 2, 3], attack: [4, 5], faces: 1 },
+    chess_soldier_b: { folder: 'chess_soldier_b', idle: [0, 1, 2, 3], attack: [4, 5], faces: 1 },
+    tamago: { folder: 'tamago', idle: [0, 1], attack: [2, 3] },
+    pekoms: { folder: 'pekoms', idle: [0, 1], attack: [2, 3], faces: 1 },
+    smoothie: { folder: 'smoothie', idle: [0, 1], attack: [2, 3] },
+    katakuri: { folder: 'katakuri', idle: [0, 1], attack: [2, 3], faces: 1 },
+    boss_bigmom: { folder: 'bigmom', idle: [0, 1, 2, 3], attack: [4, 5] },
     // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
     krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
@@ -363,7 +380,14 @@ const ELITE_INFO = {
     marine_sword:   { name: { baratie: 'Cabo de Fullbody', alabasta: 'Cabo de Smoker', all: 'Cabo de la Marina' } },
     sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } },
     spandam:        { always: true, name: { all: 'Spandam y Funkfreed' } },
-    kanjuro:        { always: true, name: { all: 'Kurozumi Kanjuro — Fude Fude no Mi' } }
+    kanjuro:        { always: true, name: { all: 'Kurozumi Kanjuro — Fude Fude no Mi' } },
+    ulti:           { always: true, name: { all: 'Ulti — Tobiroppo, Ryu Ryu no Mi: Paquicefalosaurio' } },
+    page_one:       { always: true, name: { all: 'Page One — Tobiroppo, Ryu Ryu no Mi: Espinosaurio' } },
+    sasaki:         { always: true, name: { all: 'Sasaki — Tobiroppo, Ryu Ryu no Mi: Triceratops' } },
+    black_maria:    { always: true, name: { all: 'Black Maria — Tobiroppo, Kumo Kumo no Mi' } },
+    tamago:         { always: true, name: { all: 'Barón Tamago — Tama Tama no Mi' } },
+    pekoms:         { always: true, name: { all: 'Pekoms — Mink de los Piratas de Big Mom' } },
+    chess_soldier:  { name: { all: 'Caballero de Ajedrez' } }
 };
 function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[selectedMap] || i.name.all || i.name.baratie) : null; }
 const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
@@ -371,10 +395,13 @@ const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew
     kaku: 'Kaku — CP9, Ushi Ushi no Mi: Jirafa', spandam: 'Spandam — Jefe del CP9',
     lucci_human: 'Rob Lucci — CP9 infiltrado en Galley-La',
     aokiji: 'Almirante Aokiji — Hie Hie no Mi', kizaru: 'Almirante Kizaru — Pika Pika no Mi',
-    drake: 'X Drake — Tobiroppo, Ryu Ryu no Mi: Alosaurio', hawkins: 'Basil Hawkins — Headliner, Wara Wara no Mi' };
-const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky', boss_kaido: 'Kaido de las Bestias — Yonko' };
+    drake: 'X Drake — Tobiroppo, Ryu Ryu no Mi: Alosaurio', hawkins: 'Basil Hawkins — Headliner, Wara Wara no Mi',
+    jack: 'Jack la Sequía — Calamidad, Zou Zou no Mi: Mamut', queen: 'Queen la Plaga — Calamidad, Ryu Ryu no Mi: Braquiosaurio',
+    king: 'King el Incendio — Calamidad, Ryu Ryu no Mi: Pteranodon',
+    smoothie: 'Charlotte Smoothie — Comandante Dulce, Shibo Shibo no Mi', katakuri: 'Charlotte Katakuri — Comandante Dulce, Mochi Mochi no Mi' };
+const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky', boss_kaido: 'Kaido de las Bestias — Yonko', boss_bigmom: 'Charlotte Linlin, Big Mom — Yonko, Soru Soru no Mi' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_kaido: 20000 };
+const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_bigmom: 17000, boss_kaido: 20000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
@@ -404,7 +431,12 @@ const ENEMY_STATS = {
     krieg_starved: [16, 96, 10], krieg_knife: [40, 70, 18], marine_sword: [44, 70, 18], jango: [140, 56, 22], fullbody: [170, 50, 30],
     tashigi: [150, 64, 26], tama: [20, 80, 22], sky_shark: [46, 66, 20], negative_hollow: [14, 96, 3],
     kaku: [150, 60, 28], spandam: [110, 54, 22], aokiji: [200, 50, 32], kizaru: [180, 70, 30], lucci_human: [190, 62, 32],
-    kanjuro: [120, 58, 24], ink_bird: [26, 100, 14], drake: [210, 56, 34], hawkins: [190, 52, 32]
+    kanjuro: [120, 58, 24], ink_bird: [26, 100, 14], drake: [210, 56, 34], hawkins: [190, 52, 32],
+    ulti: [180, 64, 30], page_one: [170, 60, 30], sasaki: [190, 54, 32], black_maria: [200, 48, 30],
+    jack: [260, 46, 36], queen: [260, 42, 36], king: [240, 60, 36],
+    // Whole Cake: piezas blancas = raso, piezas negras = embestida (como el pirata del cuchillo)
+    chess_soldier: [32, 78, 16], chess_soldier_b: [40, 70, 18], tamago: [150, 52, 26], pekoms: [170, 56, 28],
+    smoothie: [210, 52, 32], katakuri: [230, 62, 36]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
 //  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
@@ -414,14 +446,15 @@ const ENEMY_STATS = {
 //  hypno    Jango: "Uno, dos... ¡Jango!" te duerme a medias (lentitud 60% 1,2 s) cada 7 s
 const ENEMY_BEHAVIOR = {
     krieg_starved: 'zigzag', negative_hollow: 'hollow', krieg_knife: 'charge', sky_shark: 'charge',
-    tama: 'explode', jango: 'hypno', ink_bird: 'zigzag'
+    tama: 'explode', jango: 'hypno', ink_bird: 'zigzag', chess_soldier_b: 'charge'
 };
 // Tiradores: disparan balas (ver BALANCE.shooterCd / bulletDmg)
 const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner']);
 // Élite ocasional de los tipos de relleno: [probabilidad, x vida, x daño, x velocidad]
 const FODDER_ELITE = {
     krieg_pirate: [0.008, 9, 2, 0.8], krieg_gunner: [0.008, 9, 2, 1.2], krieg_bomber: [0.01, 6, 2, 0.9],
-    dugong: [0.008, 9, 2, 0.8], shandia: [0.008, 9, 2, 0.8], shandia_gunner: [0.008, 9, 2, 1.2]
+    dugong: [0.008, 9, 2, 0.8], shandia: [0.008, 9, 2, 0.8], shandia_gunner: [0.008, 9, 2, 1.2],
+    chess_soldier: [0.008, 9, 2, 0.8]
 };
 // pool: se recorre en orden; el primero con min <= minuto y azar < p gana. Si ninguno, sale 'base'.
 // minibosses: aparecen una vez por partida en su minuto. boss: jefe final del minuto 8.
@@ -513,23 +546,39 @@ const MAP_ENEMIES = {
         boss: 'boss_akainu',
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡EL CERCO DE LA MARINA SE CIERRA!', chargeText: '¡CARGAN LOS VICEALMIRANTES!' }
     },
+    wholecake: {
+        hpMult: 1.30, // dificultad del mapa (vida enemiga): entre Marineford y Wano
+        // Tottoland: los soldados de ajedrez de Big Mom, Pekoms y el Barón Tamago; Smoothie y Katakuri de minijefes
+        base: 'chess_soldier',
+        pool: [
+            { type: 'tamago', min: 3, p: 0.03 }, { type: 'pekoms', min: 2, p: 0.06 },
+            { type: 'chess_soldier_b', min: 1, p: 0.36 }
+        ],
+        minibosses: [ { type: 'smoothie', min: 3, hp: 850, speed: 50, damage: 34 }, { type: 'katakuri', min: 6, hp: 1000, speed: 62, damage: 36 } ],
+        boss: 'boss_bigmom',
+        events: { ring: 'chess_soldier', charge: 'chess_soldier_b', runners: 'chess_soldier_b', swarm: 'chess_soldier', ringText: '¡LOS SOLDADOS DE AJEDREZ TE RODEAN!', chargeText: '¡CARGAN LAS PIEZAS NEGRAS!' }
+    },
     wano: {
-        hpMult: 1.45, // dificultad del mapa (vida enemiga): el más difícil
+        hpMult: 1.60, // dificultad del mapa (vida enemiga): el más difícil
         // Asalto a Onigashima: piratas de las Bestias y los dibujos de tinta del traidor Kanjuro;
-        // X Drake y Basil Hawkins de minijefes, Kaido de jefe
+        // los Tobiroppo como élites; X Drake, Hawkins y las Tres Calamidades (Jack, Queen y King) de minijefes, Kaido de jefe
         base: 'krieg_pirate',
         pool: [
-            { type: 'kanjuro', min: 3, p: 0.03 }, { type: 'krieg_knife', min: 1, p: 0.20 },
-            { type: 'krieg_gunner', min: 1, p: 0.34 }, { type: 'ink_bird', min: 0, p: 0.52 }
+            { type: 'ulti', min: 2, p: 0.012 }, { type: 'page_one', min: 2, p: 0.024 },
+            { type: 'sasaki', min: 3, p: 0.036 }, { type: 'black_maria', min: 4, p: 0.048 },
+            { type: 'kanjuro', min: 3, p: 0.07 }, { type: 'krieg_knife', min: 1, p: 0.22 },
+            { type: 'krieg_gunner', min: 1, p: 0.36 }, { type: 'ink_bird', min: 0, p: 0.54 }
         ],
-        minibosses: [ { type: 'drake', min: 3, hp: 850, speed: 50, damage: 34 }, { type: 'hawkins', min: 6, hp: 900, speed: 48, damage: 34 } ],
+        minibosses: [ { type: 'jack', min: 2, hp: 850, speed: 46, damage: 34 }, { type: 'drake', min: 3, hp: 850, speed: 50, damage: 34 },
+            { type: 'queen', min: 4, hp: 950, speed: 42, damage: 36 }, { type: 'hawkins', min: 5, hp: 900, speed: 48, damage: 34 },
+            { type: 'king', min: 6, hp: 1050, speed: 60, damage: 38 } ],
         boss: 'boss_kaido',
         events: { ring: 'krieg_pirate', charge: 'krieg_knife', runners: 'ink_bird', swarm: 'ink_bird', ringText: '¡LOS PIRATAS DE LAS BESTIAS TE RODEAN!', chargeText: '¡CARGAN LOS GIFTERS!' }
     }
 };
 // Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
 // Tararan (207x158 px) se reduce a ~75x57 para quedar a la altura de Hogback/Kumashi (~55-80 px).
-const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3 };
+const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3, king: 0.62 };
 function mapEnemies() { return MAP_ENEMIES[selectedMap] || MAP_ENEMIES.baratie; }
 function makeEnemy(type, x, y, hpScale, extra) {
     const st = ENEMY_STATS[type] || ENEMY_STATS.grunt;
@@ -603,7 +652,7 @@ function selectMap(id) {
     playSound('ui');
     selectedMap = id;
     prefetchRun(id, selectedCharacter);
-    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7', wano: 'Wano' };
+    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7', wholecake: 'Whole Cake', wano: 'Wano' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }

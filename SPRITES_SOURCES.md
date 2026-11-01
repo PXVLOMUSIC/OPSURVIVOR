@@ -34,3 +34,12 @@ Misma fuente y licencia: spritedatabase.net, uso exclusivamente no comercial. El
 - Marineford: Almirantes Akainu (12761), Aokiji (12457) y Kizaru (9445), de DS Gigant Battle. Mapa: arte de Pablo (`source-art/maps/hd/marineford.png`), colisión elíptica ajustada a la cara superior de la plataforma.
 - Water 7: Franky (DS Gigant Battle, 12153) y Rob Lucci con traje de Galley-La (frames humanos de 12061). Mapa: arte de Pablo (`source-art/maps/hd/water7.png`), colisión desde su línea roja.
 - Wano (asalto a Onigashima): Kaido (21137, rip de Megadoomer), X Drake (21139, rip de Grim), Basil Hawkins (21133, Megadoomer) y Kurozumi Kanjuro con sus dibujos de tinta (21114, Megadoomer), de One Piece: Great Pirate Colosseum (3DS), vía The Sprite Database. Los piratas de las Bestias reutilizan los piratas genéricos de la GBA. Mapa: arte de Pablo (`source-art/maps/hd/wano.png`), con la misma colisión que Whole Cake. Jack (21138) no se usa porque su hoja solo trae el busto.
+
+## Wano (Calamidades y Tobiroppo) y Whole Cake (2026-11-01)
+No existen sprites 2D oficiales de estos arcos (los juegos 2D de spritedatabase.net acaban antes), así que se usan hojas hechas por fans en estilo One Piece Gigant Battle (DS), publicadas en DeviantArt. Uso exclusivamente no comercial; el crédito es de cada autor. Las hojas originales están en `source-art/sprites_originales/Wano` y `WholeCake` (solo local) y se recortan con `source-art/extraer_wano_wholecake.py`. A los personajes con un único frame el script les sintetiza la respiración y el golpe.
+- Jack, Queen (cuerpo), Ulti, Page One y Black Maria: Hecbator, compendio «All My One Piece Gigant Battle Chars» (DeviantArt 1319624632). Queen con brazo cíborg: Hecbator 854884641. Sasaki: Hecbator 943936217.
+- King en forma de pteranodon (vuelo y llamarada): drawkars 935467598.
+- Big Mom con Prometheus y Zeus: drawkars 934598510. Katakuri: VolknerThanh 731173210. Smoothie: drawkars 718010975. Barón Tamago: Hecbator 336082452.
+- Pekoms: rip oficial de One Piece: Great Pirate Colosseum (3DS), spritedatabase.net 21189, de Megadoomer, reducido a la altura de los demás.
+- Soldados de ajedrez (blancos y negros): dibujados por código en `source-art/dibujar_soldado_ajedrez.py`.
+- Hojas completas sin usar (con andar y más ataques; requieren sesión en DeviantArt): Big Mom de Gameinvader247 (1197000597, subida por Alexis2jj) y Katakuri de drawkars (724495953). Si se descargan, basta con recortarlas en el script.

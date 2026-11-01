@@ -1,9 +1,30 @@
-# Mapas en alta definición: escala el HD x2 (Lanczos) con un enfoque suave y lo guarda en JPEG.
-# Así 1 píxel de la imagen = 1 píxel de pantalla con MAP_SCALE 2 (antes 1 píxel = 4 tras el pixelado GBA).
-# Uso: python3 source-art/escalar_mapas.py source-art/maps/hd/<mapa>.png assets/maps/<mapa>.jpg
-import sys
-from PIL import Image, ImageFilter
-src, out = sys.argv[1], sys.argv[2]
+# Mapas en alta definición: reescala el HD x2 con IA (Real-ESRGAN, modelo anime_6B, para ilustración)
+# y lo guarda en JPEG de como mucho 1,5 MB. Mismas proporciones (2W x 2H), así que las colisiones no cambian.
+# Requisitos: pip install torch spandrel pillow numpy  (CPU basta: ~1,5 min por mapa con 4 núcleos)
+# Modelo: https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth
+# Uso: python3 source-art/escalar_mapas.py RealESRGAN_x4plus_anime_6B.pth source-art/maps/hd/<mapa>.png assets/maps/<mapa>.jpg
+import io, sys, torch, numpy as np
+from PIL import Image
+from spandrel import ModelLoader
+
+MAX_BYTES = 1_500_000
+mp, src, out = sys.argv[1:4]
+m = ModelLoader().load_from_file(mp).eval()
 im = Image.open(src).convert('RGB'); W, H = im.size
-up = im.resize((W * 2, H * 2), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=1.6, percent=55, threshold=2))
-up.save(out, quality=85, optimize=True, progressive=True, subsampling=0)
+x = torch.from_numpy(np.array(im)).permute(2, 0, 1).float().div(255).unsqueeze(0)
+s, T, P = m.scale, 256, 16  # teselas de 256 px con 16 px de margen para que no se noten las uniones
+y = torch.zeros(1, 3, H * s, W * s)
+with torch.inference_mode():
+    for ty in range(0, H, T):
+        for tx in range(0, W, T):
+            y0, x0, y1, x1 = max(ty - P, 0), max(tx - P, 0), min(ty + T + P, H), min(tx + T + P, W)
+            o = m(x[:, :, y0:y1, x0:x1]).clamp(0, 1)
+            ey, ex = min(ty + T, H), min(tx + T, W)
+            y[:, :, ty*s:ey*s, tx*s:ex*s] = o[:, :, (ty-y0)*s:(ey-y0)*s, (tx-x0)*s:(ex-x0)*s]
+r = Image.fromarray((y[0].permute(1, 2, 0).numpy() * 255 + 0.5).astype(np.uint8))
+if r.size != (W * 2, H * 2):
+    r = r.resize((W * 2, H * 2), Image.LANCZOS)  # el modelo es x4: se baja a x2 exacto
+for q in range(90, 59, -2):
+    b = io.BytesIO(); r.save(b, 'JPEG', quality=q, optimize=True, progressive=True, subsampling=0)
+    if b.tell() <= MAX_BYTES: break
+open(out, 'wb').write(b.getvalue()); print(out, r.size, f'q{q}', b.tell())

@@ -199,7 +199,9 @@ function render() {
             const fc = eCfg && (eState === 'attack' && eCfg.facesAtk ? eCfg.facesAtk : eCfg.faces);
             const flip = fc && ((fc > 0) !== ((e._face || (player.x >= e.x ? 1 : -1)) > 0));
             if (flip) ctx.scale(-1, 1);
-            ctx.drawImage(eImg, -eImg.width*s/2, -eImg.height*s/2, eImg.width*s, eImg.height*s);
+            // sprites de un solo frame: saltito al andar (ENEMY_ANIMS[tipo].bob)
+            const bob = eCfg && eCfg.bob ? -Math.abs(Math.sin(gameTime * 9 + e.x * 0.07)) * 2.5 * eCfg.bob : 0;
+            ctx.drawImage(eImg, -eImg.width*s/2, -eImg.height*s/2 + bob, eImg.width*s, eImg.height*s);
             if (flip) ctx.scale(-1, 1); // deshace el espejo: sin esto, el nombre del élite salía en espejo
         } else if (e.type === 'grunt') ctx.drawImage(Sprites.marine, -16, -16);
         else if (e.type === 'shooter') ctx.drawImage(Sprites.shooter, -16, -16);

@@ -234,6 +234,13 @@ const ENEMY_ANIMS = {
     // Enies Lobby: CP9 (DS Gigant Battle)
     boss_lucci: { folder: 'lucci', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
     kaku: { folder: 'kaku', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    // Familia Franky (Water 7): pixel art de Terre-21 (DeviantArt, CC BY-NC-ND 3.0), un solo frame sin modificar.
+    // bob: se balancean al andar para no ir rígidos (el archivo no se toca: lo prohíbe la licencia).
+    ff_kiev: { folder: 'ff_kiev', idle: [0], attack: [0], bob: 1 },
+    ff_zambai: { folder: 'ff_zambai', idle: [0], attack: [0], bob: 1 },
+    ff_kiwi: { folder: 'ff_kiwi', idle: [0], attack: [0], faces: 1, bob: 1 },
+    ff_mozu: { folder: 'ff_mozu', idle: [0], attack: [0], faces: -1, bob: 1 },
+    ff_tamagon: { folder: 'ff_tamagon', idle: [0], attack: [0], bob: 0.6 },
     spandam: { folder: 'spandam', idle: [0, 1, 2], attack: [3, 4, 5], faces: 1 },
     // Water 7: Franky y el CP9 infiltrado en Galley-La (DS Gigant Battle)
     boss_franky: { folder: 'franky', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
@@ -449,6 +456,10 @@ const ELITE_INFO = {
     fullbody:       { always: true, name: { all: 'Teniente Fullbody, Puño de Hierro' } },
     tashigi:        { always: true, name: { all: 'Sargento Mayor Tashigi' } },
     sham:           { always: true, name: { all: 'Sham — Hermanos Nyaban, Piratas del Gato Negro' } },
+    ff_zambai:      { always: true, name: { all: 'Zambai — Familia Franky' } },
+    ff_kiwi:        { always: true, name: { all: 'Kiwi — Square Sisters, Familia Franky' } },
+    ff_mozu:        { always: true, name: { all: 'Mozu — Square Sisters, Familia Franky' } },
+    ff_tamagon:     { always: true, name: { all: 'Tamagon — Familia Franky' } },
     lapahn_big:     { name: { all: 'Lapahn Jefe de la Manada' } },
     ripper:         { always: true, name: { all: 'Teniente Ripper — Marina de Morgan' } },
     chew:           { always: true, name: { all: 'Chew — Piratas de Arlong, Disparo de Agua' } },
@@ -536,7 +547,7 @@ const ENEMY_STATS = {
     chess_soldier: [32, 78, 16], chess_soldier_b: [40, 70, 18], tamago: [150, 52, 26], pekoms: [170, 56, 28],
     smoothie: [210, 52, 32], katakuri: [230, 62, 36],
     // Shell Town y Arlong Park: hombre-pez = raso, hombre-pez azul = embestida, gordo = bruto
-    sham: [120, 70, 22], lapahn: [30, 90, 16], lapahn_big: [60, 76, 22],
+    sham: [120, 70, 22], ff_kiev: [32, 78, 16], ff_zambai: [110, 74, 22], ff_kiwi: [80, 84, 20], ff_mozu: [80, 84, 20], ff_tamagon: [300, 48, 36], lapahn: [30, 90, 16], lapahn_big: [60, 76, 22],
     ripper: [130, 56, 22], merman: [32, 78, 16], merman_b: [40, 70, 18], fat_merman: [300, 46, 40], chew: [110, 54, 22]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
@@ -547,13 +558,13 @@ const ENEMY_STATS = {
 //  hypno    Jango: "Uno, dos... ¡Jango!" te duerme a medias (lentitud 60% 1,2 s) cada 7 s
 const ENEMY_BEHAVIOR = {
     krieg_starved: 'zigzag', negative_hollow: 'hollow', krieg_knife: 'charge', sky_shark: 'charge',
-    tama: 'explode', jango: 'hypno', ink_bird: 'zigzag', chess_soldier_b: 'charge', merman_b: 'charge', lapahn: 'zigzag', lapahn_big: 'charge'
+    tama: 'explode', jango: 'hypno', ff_kiwi: 'charge', ff_mozu: 'charge', ink_bird: 'zigzag', chess_soldier_b: 'charge', merman_b: 'charge', lapahn: 'zigzag', lapahn_big: 'charge'
 };
 // Tiradores: disparan balas (ver BALANCE.shooterCd / bulletDmg)
 const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner', 'chew']); // Chew escupe balas de agua
 // Élite ocasional de los tipos de relleno: [probabilidad, x vida, x daño, x velocidad]
 const FODDER_ELITE = {
-    krieg_pirate: [0.008, 9, 2, 0.8], krieg_gunner: [0.008, 9, 2, 1.2], krieg_bomber: [0.01, 6, 2, 0.9],
+    ff_kiev: [0.008, 9, 2, 0.8], krieg_pirate: [0.008, 9, 2, 0.8], krieg_gunner: [0.008, 9, 2, 1.2], krieg_bomber: [0.01, 6, 2, 0.9],
     dugong: [0.008, 9, 2, 0.8], shandia: [0.008, 9, 2, 0.8], shandia_gunner: [0.008, 9, 2, 1.2],
     chess_soldier: [0.008, 9, 2, 0.8], merman: [0.008, 9, 2, 0.8], fat_merman: [0.01, 6, 2, 0.9]
 };
@@ -670,14 +681,14 @@ const MAP_ENEMIES = {
     water7: {
         hpMult: 0.95, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Familia Franky (piratas de relleno) en el muelle; Kaku y Lucci se quitan la máscara de Galley-La; Franky de jefe
-        base: 'krieg_pirate',
+        base: 'ff_kiev',
         pool: [
-            { type: 'krieg_bomber', min: 3, p: 0.10 }, { type: 'krieg_knife', min: 1, p: 0.20 },
-            { type: 'krieg_gunner', min: 1, p: 0.36 }, { type: 'krieg_starved', min: 0, p: 0.52 }
+            { type: 'ff_tamagon', min: 4, p: 0.02 }, { type: 'ff_zambai', min: 2, p: 0.05 },
+            { type: 'ff_kiwi', min: 1, p: 0.08 }, { type: 'ff_mozu', min: 1, p: 0.11 }
         ],
         minibosses: [ { type: 'kaku', min: 3, hp: 650, speed: 52, damage: 30 }, { type: 'lucci_human', min: 6, hp: 800, speed: 58, damage: 34 } ],
         boss: 'boss_franky',
-        events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
+        events: { ring: 'ff_kiev', charge: 'ff_kiev', runners: 'ff_kiev', swarm: 'ff_kiev', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
     },
     marineford: {
         hpMult: 0.98, // Marineford: los Almirantes y los tiradores la hacen más dura que su vida enemiga sugiere (bot)
@@ -723,7 +734,7 @@ const MAP_ENEMIES = {
 };
 // Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
 // Tararan (207x158 px) se reduce a ~75x57 para quedar a la altura de Hogback/Kumashi (~55-80 px).
-const ENEMY_DRAW_SCALE = { boss_wapol: 1.2, lapahn: 1.6, lapahn_big: 1.5, chess: 1.3, kuromarimo: 1.3, tararan: 0.36, elite_tararan: 0.36, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3, king: 0.62 };
+const ENEMY_DRAW_SCALE = { boss_wapol: 1.2, lapahn: 1.6, lapahn_big: 1.5, chess: 1.3, kuromarimo: 1.3, tararan: 0.36, elite_tararan: 0.36, ff_kiev: 0.85, ff_zambai: 0.85, ff_kiwi: 0.85, ff_mozu: 0.8, ff_tamagon: 0.9, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3, king: 0.62 };
 function mapEnemies() { return MAP_ENEMIES[selectedMap] || MAP_ENEMIES.baratie; }
 function makeEnemy(type, x, y, hpScale, extra) {
     const st = ENEMY_STATS[type] || ENEMY_STATS.grunt;

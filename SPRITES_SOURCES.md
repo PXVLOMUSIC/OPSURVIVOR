@@ -15,6 +15,16 @@
 - source-art/ (hojas originales y frames limpios; no se cargan en el juego)
 - source-art/sprites_originales/ (colección completa de hojas por juego, Luffy_Gears, CATALOGO_ROLES.txt y CREDITOS.txt; solo local, ignorada en .gitignore por ser material de uso no comercial y pesado)
 
+## Familia Franky (Water 7) — Terre-21
+Pixel art de Terre-21 (DeviantArt, 2013), licencia CC BY-NC-ND 3.0: uso no comercial, citando al autor y sin modificar el archivo.
+Se usan tal cual (un frame cada uno; el juego solo los escala y los balancea al dibujarlos):
+- assets/extracted/ff_zambai — Zambai: https://www.deviantart.com/terre-21/art/Zambai-365925602
+- assets/extracted/ff_kiwi — Kiwi: https://www.deviantart.com/terre-21/art/Kiwi-366019011
+- assets/extracted/ff_mozu — Mozu: https://www.deviantart.com/terre-21/art/Mozu-366023424
+- assets/extracted/ff_kiev — Kiev (matón genérico): https://www.deviantart.com/terre-21/art/Kiev-365925875
+- assets/extracted/ff_tamagon — Tamagon: https://www.deviantart.com/terre-21/art/Tamagon-366726423
+Personajes © Eiichiro Oda / Shueisha / Toei Animation.
+
 ## Notas
 - Si se descargan nuevos sheets, procesar con source-art/process_animations.py (tratar fondo como transparente).
 - Añadir nuevos personajes a CHAR_ANIMS y SPRITE_PATHS en js/core.js.

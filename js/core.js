@@ -146,7 +146,11 @@ const SPRITE_PATHS = {
     zoro: 'assets/sprites/zoro.png',
     sanji: 'assets/sprites/sanji.png',
     objetos: 'assets/sprites/objetos.png',
+    shelltownMap: 'assets/maps/shelltown.jpg',
+    syrupMap: 'assets/maps/syrup.jpg',
+    drumMap: 'assets/maps/drum.jpg',
     baratieMap: 'assets/maps/baratie.jpg',
+    arlongparkMap: 'assets/maps/arlongpark.jpg',
     alabastaMap: 'assets/maps/alabasta.jpg',
     skypieaMap: 'assets/maps/skypiea.jpg',
     thrillerbarkMap: 'assets/maps/thrillerbark.jpg',
@@ -217,6 +221,26 @@ const ENEMY_ANIMS = {
     smoothie: { folder: 'smoothie', idle: [0, 1], attack: [2, 3] },
     katakuri: { folder: 'katakuri', idle: [0, 1], attack: [2, 3], faces: 1 },
     boss_bigmom: { folder: 'bigmom', idle: [0, 1, 2, 3], attack: [4, 5] },
+    // Shell Town y Arlong Park (GBA One Piece / Grand Battle; source-art/extraer_eastblue.py)
+    boss_morgan: { folder: 'morgan_gba', idle: [0, 1, 2, 3], attack: [27, 28] },
+    helmeppo: { folder: 'helmeppo', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7] },
+    ripper: { folder: 'marine_sword', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    merman: { folder: 'merman', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
+    merman_b: { folder: 'merman_b', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
+    fat_merman: { folder: 'fat_merman', idle: [0, 1], attack: [2, 3], faces: -1 },
+    kuroobi: { folder: 'kuroobi', idle: [0, 1], attack: [2, 3, 4], faces: 1 },
+    chew: { folder: 'chew', idle: [0, 1, 2], attack: [3, 4, 5], faces: 1 },
+    hachi: { folder: 'hachi', idle: [0, 1, 2, 3], attack: [4, 5] },
+    boss_arlong: { folder: 'arlong', idle: [0, 1, 2, 3, 4], attack: [5, 6, 7, 8], faces: -1 },
+    // Syrup (GBA One Piece) y Drum (DS Gigant Battle)
+    boss_kuro: { folder: 'kuro', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
+    buchi: { folder: 'buchi', idle: [0], attack: [1, 2, 3] },
+    sham: { folder: 'sham', idle: [0, 1], attack: [2, 3], faces: 1 },
+    boss_wapol: { folder: 'wapol', idle: [0, 1, 2, 3], attack: [4, 5], faces: -1 },
+    chess: { folder: 'chess', idle: [0, 1], attack: [2] },
+    kuromarimo: { folder: 'kuromarimo', idle: [0, 1], attack: [2] },
+    lapahn: { folder: 'lapahn', idle: [0, 1], attack: [2, 3] },
+    lapahn_big: { folder: 'lapahn_big', idle: [0], attack: [1] },
     // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
     krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
@@ -364,8 +388,8 @@ const ELITE_INFO = {
     elite_ryuma:   { name: { baratie: 'Ryuma del Norte', alabasta: 'Mr. 1 — Daz Bones', skypiea: 'Wyper, Guerrero Shandia', thrillerbark: 'Ryuma del Norte' } },
     elite_absalom: { name: { baratie: 'Absalom, el Hombre-Mutante', alabasta: 'Capitán Billions', skypiea: 'Sacerdote Shura', thrillerbark: 'Absalom, el Hombre-Mutante' } },
     // élites de relleno (raras) y oficiales con nombre (always: siempre salen como élite)
-    krieg_pirate:   { name: { all: 'Pirata Veterano de Krieg' } },
-    krieg_gunner:   { name: { all: 'Tirador Veterano de Krieg' } },
+    krieg_pirate:   { name: { syrup: 'Pirata Veterano del Gato Negro', all: 'Pirata Veterano de Krieg' } },
+    krieg_gunner:   { name: { syrup: 'Tirador Veterano del Gato Negro', all: 'Tirador Veterano de Krieg' } },
     krieg_bomber:   { name: { all: 'Bombardero de Krieg' } },
     dugong:         { name: { all: 'Maestro Dugongo Kung-fu' } },
     shandia:        { name: { all: 'Guerrero Shandia Veterano' } },
@@ -381,7 +405,13 @@ const ELITE_INFO = {
     jango:          { always: true, name: { all: 'Jango el Hipnotizador' } },
     fullbody:       { always: true, name: { all: 'Teniente Fullbody, Puño de Hierro' } },
     tashigi:        { always: true, name: { all: 'Sargento Mayor Tashigi' } },
-    krieg_knife:    { name: { water7: 'Matón de la Familia Franky', wano: 'Gifter de las Bestias', all: 'Malabarista Veterano de Krieg' } },
+    sham:           { always: true, name: { all: 'Sham — Hermanos Nyaban, Piratas del Gato Negro' } },
+    lapahn_big:     { name: { all: 'Lapahn Jefe de la Manada' } },
+    ripper:         { always: true, name: { all: 'Teniente Ripper — Marina de Morgan' } },
+    chew:           { always: true, name: { all: 'Chew — Piratas de Arlong, Disparo de Agua' } },
+    merman:         { name: { all: 'Hombre-pez Veterano de Arlong' } },
+    fat_merman:     { name: { all: 'Hombre-pez Gigante de Arlong' } },
+    krieg_knife:    { name: { syrup: 'Matón Veterano del Gato Negro', water7: 'Matón de la Familia Franky', wano: 'Gifter de las Bestias', all: 'Malabarista Veterano de Krieg' } },
     marine_sword:   { name: { baratie: 'Cabo de Fullbody', alabasta: 'Cabo de Smoker', all: 'Cabo de la Marina' } },
     sky_shark:      { name: { all: 'Tiburón del Cielo Gigante' } },
     spandam:        { always: true, name: { all: 'Spandam y Funkfreed' } },
@@ -395,7 +425,9 @@ const ELITE_INFO = {
     chess_soldier:  { name: { all: 'Caballero de Ajedrez' } }
 };
 function eliteName(type) { const i = ELITE_INFO[type]; return i ? (i.name[selectedMap] || i.name.all || i.name.baratie) : null; }
-const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
+const MINIBOSS_INFO = { buchi: 'Buchi — Hermanos Nyaban, Piratas del Gato Negro', jango: 'Jango el Hipnotizador — Piratas del Gato Negro', chess: 'Chess — Reino de Drum, Ministro de Wapol', kuromarimo: 'Kuromarimo — Reino de Drum, Capitán de la guardia',
+    helmeppo: 'Helmeppo — Hijo del Capitán Morgan', kuroobi: 'Kuroobi — Piratas de Arlong, Gyojin Karate', hachi: 'Hatchan — Piratas de Arlong, Rokutoryu',
+    moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew Kuma — Shichibukai', morgan: 'Capitán Morgan, el Pez-Hacha', absalom: 'Absalom — Los Cuatro Misteriosos', pacifista: 'Capitán de la Marina',
     pearl: 'Pearl, el Muro de Hierro — Flota de Krieg', gin: 'Gin, el Demonio — Flota de Krieg', mr2: 'Mr. 2 Bon Clay — Mane Mane', mr1: 'Mr. 1 Daz Bones — Supa Supa', wiper: 'Wiper, el Guerrero Shandia', ohm: 'Ohm, Sacerdote del Infierno',
     kaku: 'Kaku — CP9, Ushi Ushi no Mi: Jirafa', spandam: 'Spandam — Jefe del CP9',
     lucci_human: 'Rob Lucci — CP9 infiltrado en Galley-La',
@@ -404,9 +436,9 @@ const MINIBOSS_INFO = { moria: 'Gekko Moria — Shichibukai', kuma: 'Bartholomew
     jack: 'Jack la Sequía — Calamidad, Zou Zou no Mi: Mamut', queen: 'Queen la Plaga — Calamidad, Ryu Ryu no Mi: Braquiosaurio',
     king: 'King el Incendio — Calamidad, Ryu Ryu no Mi: Pteranodon',
     smoothie: 'Charlotte Smoothie — Comandante Dulce, Shibo Shibo no Mi', katakuri: 'Charlotte Katakuri — Comandante Dulce, Mochi Mochi no Mi' };
-const BOSS_INFO = { boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky', boss_kaido: 'Kaido de las Bestias — Yonko', boss_bigmom: 'Charlotte Linlin, Big Mom — Yonko, Soru Soru no Mi' };
+const BOSS_INFO = { boss_kuro: 'Capitán Kuro de las Cien Maniobras — Piratas del Gato Negro', boss_wapol: 'Wapol — Rey de Drum, Baku Baku no Mi', boss_morgan: 'Capitán Morgan, el Pez-Hacha — Marina, base 153', boss_arlong: 'Arlong, el Pez-Sierra — Piratas de Arlong', boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky', boss_kaido: 'Kaido de las Bestias — Yonko', boss_bigmom: 'Charlotte Linlin, Big Mom — Yonko, Soru Soru no Mi' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_bigmom: 17000, boss_kaido: 20000 };
+const BOSS_HP = { boss_kuro: 6000, boss_wapol: 7500, boss_morgan: 4500, boss_arlong: 7000, boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_bigmom: 17000, boss_kaido: 20000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
@@ -459,7 +491,10 @@ const ENEMY_STATS = {
     jack: [260, 46, 36], queen: [260, 42, 36], king: [240, 60, 36],
     // Whole Cake: piezas blancas = raso, piezas negras = embestida (como el pirata del cuchillo)
     chess_soldier: [32, 78, 16], chess_soldier_b: [40, 70, 18], tamago: [150, 52, 26], pekoms: [170, 56, 28],
-    smoothie: [210, 52, 32], katakuri: [230, 62, 36]
+    smoothie: [210, 52, 32], katakuri: [230, 62, 36],
+    // Shell Town y Arlong Park: hombre-pez = raso, hombre-pez azul = embestida, gordo = bruto
+    sham: [120, 70, 22], lapahn: [30, 90, 16], lapahn_big: [60, 76, 22],
+    ripper: [130, 56, 22], merman: [32, 78, 16], merman_b: [40, 70, 18], fat_merman: [300, 46, 40], chew: [110, 54, 22]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
 //  zigzag   avanza ondulando; ghost además atraviesa los muros de la arena
@@ -469,20 +504,42 @@ const ENEMY_STATS = {
 //  hypno    Jango: "Uno, dos... ¡Jango!" te duerme a medias (lentitud 60% 1,2 s) cada 7 s
 const ENEMY_BEHAVIOR = {
     krieg_starved: 'zigzag', negative_hollow: 'hollow', krieg_knife: 'charge', sky_shark: 'charge',
-    tama: 'explode', jango: 'hypno', ink_bird: 'zigzag', chess_soldier_b: 'charge'
+    tama: 'explode', jango: 'hypno', ink_bird: 'zigzag', chess_soldier_b: 'charge', merman_b: 'charge', lapahn: 'zigzag', lapahn_big: 'charge'
 };
 // Tiradores: disparan balas (ver BALANCE.shooterCd / bulletDmg)
-const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner']);
+const ENEMY_RANGED = new Set(['shooter', 'krieg_gunner', 'shandia_gunner', 'chew']); // Chew escupe balas de agua
 // Élite ocasional de los tipos de relleno: [probabilidad, x vida, x daño, x velocidad]
 const FODDER_ELITE = {
     krieg_pirate: [0.008, 9, 2, 0.8], krieg_gunner: [0.008, 9, 2, 1.2], krieg_bomber: [0.01, 6, 2, 0.9],
     dugong: [0.008, 9, 2, 0.8], shandia: [0.008, 9, 2, 0.8], shandia_gunner: [0.008, 9, 2, 1.2],
-    chess_soldier: [0.008, 9, 2, 0.8]
+    chess_soldier: [0.008, 9, 2, 0.8], merman: [0.008, 9, 2, 0.8], fat_merman: [0.01, 6, 2, 0.9]
 };
 // pool: se recorre en orden; el primero con min <= minuto y azar < p gana. Si ninguno, sale 'base'.
 // minibosses: aparecen una vez por partida en su minuto. boss: jefe final del minuto 8.
 // events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
 const MAP_ENEMIES = {
+    shelltown: {
+        hpMult: 0.66, // primera isla (Romance Dawn): la más fácil
+        // Base 153 de la Marina: los marines del Capitán Morgan; Helmeppo de minijefe, el teniente Ripper como élite y Morgan de jefe
+        base: 'grunt',
+        pool: [
+            { type: 'ripper', min: 4, p: 0.02 }, { type: 'marine_sword', min: 1, p: 0.24 }, { type: 'shooter', min: 2, p: 0.32 }
+        ],
+        minibosses: [ { type: 'helmeppo', min: 3, hp: 450, speed: 48, damage: 22 } ],
+        boss: 'boss_morgan',
+        events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'grunt', ringText: '¡LOS MARINES DE MORGAN TE RODEAN!', chargeText: '¡CARGAN LOS FUSILEROS DE LA BASE 153!' }
+    },
+    syrup: {
+        hpMult: 0.69, // segunda isla: el pueblo de Syrup, donde se une Usopp
+        // Piratas del Gato Negro (piratas genéricos de la GBA), Sham como élite; Buchi y Jango de minijefes, el Capitán Kuro de jefe
+        base: 'krieg_pirate',
+        pool: [
+            { type: 'sham', min: 2, p: 0.025 }, { type: 'krieg_knife', min: 1, p: 0.20 }, { type: 'krieg_gunner', min: 1, p: 0.38 }
+        ],
+        minibosses: [ { type: 'buchi', min: 3, hp: 550, speed: 44, damage: 26 }, { type: 'jango', min: 6, hp: 650, speed: 56, damage: 24 } ],
+        boss: 'boss_kuro',
+        events: { ring: 'krieg_pirate', charge: 'krieg_knife', runners: 'krieg_knife', swarm: 'krieg_pirate', ringText: '¡LOS PIRATAS DEL GATO NEGRO TE RODEAN!', chargeText: '¡CARGAN LOS PIRATAS DEL GATO NEGRO!' }
+    },
     baratie: {
         hpMult: 0.72, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
@@ -495,6 +552,28 @@ const MAP_ENEMIES = {
         minibosses: [ { type: 'pearl', min: 3, hp: 600, speed: 40, damage: 28 }, { type: 'gin', min: 6, hp: 800, speed: 52, damage: 32 } ],
         boss: 'boss_krieg',
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
+    },
+    arlongpark: {
+        hpMult: 0.74, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        // Piratas de Arlong: hombres-pez rasos, embestidas y gordos; Chew como élite que dispara agua;
+        // Kuroobi y Hatchan de minijefes, Arlong de jefe
+        base: 'merman',
+        pool: [
+            { type: 'chew', min: 2, p: 0.03 }, { type: 'fat_merman', min: 3, p: 0.14 },
+            { type: 'merman_b', min: 1, p: 0.38 }
+        ],
+        minibosses: [ { type: 'kuroobi', min: 3, hp: 650, speed: 50, damage: 30 }, { type: 'hachi', min: 6, hp: 800, speed: 46, damage: 32 } ],
+        boss: 'boss_arlong',
+        events: { ring: 'merman', charge: 'merman_b', runners: 'merman_b', swarm: 'merman', ringText: '¡LOS HOMBRES-PEZ TE RODEAN!', chargeText: '¡CARGAN LOS PIRATAS DE ARLONG!' }
+    },
+    drum: {
+        hpMult: 0.75, // isla de Drum, donde se une Chopper (en el canon va antes de Alabasta)
+        // Lapahn (conejos de las nieves) en manada; Chess y Kuromarimo de minijefes, Wapol de jefe
+        base: 'lapahn',
+        pool: [ { type: 'lapahn_big', min: 1, p: 0.42 } ],
+        minibosses: [ { type: 'chess', min: 3, hp: 650, speed: 50, damage: 28 }, { type: 'kuromarimo', min: 5, hp: 750, speed: 46, damage: 30 } ],
+        boss: 'boss_wapol',
+        events: { ring: 'lapahn', charge: 'lapahn_big', runners: 'lapahn', swarm: 'lapahn', ringText: '¡UNA MANADA DE LAPAHN TE RODEA!', chargeText: '¡CARGAN LOS LAPAHN!' }
     },
     alabasta: {
         hpMult: 0.76, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
@@ -601,7 +680,7 @@ const MAP_ENEMIES = {
 };
 // Escala de dibujo por tipo: los sprites extraídos vienen a tamaños muy distintos.
 // Tararan (207x158 px) se reduce a ~75x57 para quedar a la altura de Hogback/Kumashi (~55-80 px).
-const ENEMY_DRAW_SCALE = { tararan: 0.36, elite_tararan: 0.36, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3, king: 0.62 };
+const ENEMY_DRAW_SCALE = { boss_wapol: 1.2, lapahn: 1.6, lapahn_big: 1.5, chess: 1.3, kuromarimo: 1.3, tararan: 0.36, elite_tararan: 0.36, tama: 1.25, sky_shark: 1.5, negative_hollow: 1.3, king: 0.62 };
 function mapEnemies() { return MAP_ENEMIES[selectedMap] || MAP_ENEMIES.baratie; }
 function makeEnemy(type, x, y, hpScale, extra) {
     const st = ENEMY_STATS[type] || ENEMY_STATS.grunt;
@@ -669,7 +748,7 @@ function px(g, col, x, y, w, h) { g.fillStyle = col; g.fillRect(x, y, w, h); }
 
 // --- CHARACTER SELECTION & ANIMATION ---
 let selectedCharacter = 'luffy';
-let selectedMap = 'baratie';
+let selectedMap = 'shelltown';
 function selectMap(id) {
     if (mapLocked(id)) {
         const a = unlockAchievement('map_' + id);
@@ -680,17 +759,17 @@ function selectMap(id) {
     playSound('ui');
     selectedMap = id;
     prefetchRun(id, selectedCharacter);
-    const names = { baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7', wholecake: 'Whole Cake', wano: 'Wano' };
+    const names = { shelltown: 'Shell Town', syrup: 'Syrup', drum: 'Drum', arlongpark: 'Arlong Park', baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7', wholecake: 'Whole Cake', wano: 'Wano' };
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }
-// VS: las etapas se desbloquean por logros (ACHIEVEMENTS con unlock 'map_<isla>'); Baratie está abierta desde el inicio.
+// VS: las etapas se desbloquean por logros (ACHIEVEMENTS con unlock 'map_<isla>'); Shell Town está abierta desde el inicio.
 // Las islas que ya se jugaron en un guardado anterior siguen abiertas.
 function mapLocked(id) {
     if (!unlockAchievement('map_' + id) || meta.unlocked['map_' + id]) return false;
     return !((meta.wins[id] || 0) > 0 || (meta.stats.maxTime[id] || 0) > 0);
 }
-// Peligro de cada isla (1 = Baratie ... 9 = Wano), según su orden en la selección: cada una tiene más vida enemiga (hpMult) que la anterior
+// Peligro de cada isla (1 = Shell Town ... 13 = Wano), según su orden en la selección: cada una tiene más vida enemiga (hpMult) que la anterior
 function mapDanger(id) {
     const order = Array.from(document.querySelectorAll('#map-select .map-btn')).map(b => b.dataset.map);
     return { tier: order.indexOf(id) + 1, total: order.length, hp: (MAP_ENEMIES[id] && MAP_ENEMIES[id].hpMult) || 1 };

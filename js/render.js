@@ -6,7 +6,7 @@ const MAP_PX_W = 1408, MAP_PX_H = 768;
 // Tamaño de dibujado de personajes y enemigos (petición de Pablo, 2026-11-01: se veían pequeños).
 // Solo afecta al dibujo: hitboxes, alcances y velocidades no cambian.
 const SPRITE_ZOOM = 1.3;
-const MAP_ORIGIN_Y = { baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446, enieslobby: 446, marineford: 446, water7: 446, wholecake: 446, wano: 446 };
+const MAP_ORIGIN_Y = { shelltown: 446, syrup: 446, drum: 446, arlongpark: 520, baratie: 430, alabasta: 446, skypiea: 446, thrillerbark: 446, enieslobby: 446, marineford: 446, water7: 446, wholecake: 446, wano: 446 };
 function cameraCenter() {
     const img = IMG[selectedMap + 'Map'];
     if (!assetsLoaded || !img || !img.complete || !img.width) return [player.x, player.y];
@@ -70,7 +70,7 @@ function render() {
         if (ex > sx && ey > sy) ctx.drawImage(mapImg, sx, sy, ex - sx, ey - sy, mx0 + sx * f, my0 + sy * f, (ex - sx) * f, (ey - sy) * f);
         ctx.imageSmoothingEnabled = false;
     } else {
-        const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#9fbfdc', thrillerbark: '#2e1f47', enieslobby: '#d9c48f', marineford: '#7a8a80', water7: '#8a9098', wholecake: '#f9a8d4', wano: '#1e3a8a' };
+        const fallback = { shelltown: '#b08a5a', syrup: '#9a6b40', drum: '#dbe7f3', arlongpark: '#1e6f8f', baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#9fbfdc', thrillerbark: '#2e1f47', enieslobby: '#d9c48f', marineford: '#7a8a80', water7: '#8a9098', wholecake: '#f9a8d4', wano: '#1e3a8a' };
         ctx.fillStyle = fallback[selectedMap] || '#0284c7';
         ctx.fillRect(MAP_BOUNDS.minX - 1200, MAP_BOUNDS.minY - 1200, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 2400, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 2400);
     }

@@ -25,7 +25,7 @@ const QUALITY = process.argv[8] || 'high'; // calidad fija para comparar (auto |
     await page.addInitScript((q) => {
         let s = 12345;
         Math.random = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, map_alabasta: true, map_skypiea: true, map_water7: true, map_enieslobby: true, map_thrillerbark: true, map_marineford: true, map_wholecake: true, map_wano: true } };
+        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, map_syrup: true, map_baratie: true, map_arlongpark: true, map_drum: true, map_alabasta: true, map_skypiea: true, map_water7: true, map_enieslobby: true, map_thrillerbark: true, map_marineford: true, map_wholecake: true, map_wano: true } };
         localStorage.setItem('op_survivor_meta', JSON.stringify(m));
         localStorage.setItem('op_survivor_opts', JSON.stringify({ quality: q }));
         window.__realRAF = window.requestAnimationFrame.bind(window);

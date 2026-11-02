@@ -22,6 +22,10 @@ const WAVE_SCRIPT = [
     { t: 462, kind: 'warn' }
 ];
 const WAVE_TEXT = {
+    syrup:        { swarm: '¡LOS PIRATAS DEL GATO NEGRO BAJAN LA CUESTA!', horde: '¡EL PLAN DEL CAPITÁN KURO!' },
+    drum:         { swarm: '¡ESTAMPIDA DE LAPAHN!', horde: '¡AVALANCHA EN LAS DRUM ROCKIES!' },
+    shelltown:    { swarm: '¡LOS MARINES DE MORGAN SALEN DEL CUARTEL!', horde: '¡LA BASE 153 ENTERA AL ATAQUE!' },
+    arlongpark:   { swarm: '¡LOS HOMBRES-PEZ SALEN DEL AGUA!', horde: '¡LOS PIRATAS DE ARLONG ASALTAN LA PLAZA!' },
     baratie:      { swarm: '¡BANCO DE PIRATAS HAMBRIENTOS!', horde: '¡ABORDAJE DE LA FLOTA DE KRIEG!' },
     alabasta:     { swarm: '¡ESTAMPIDA DE DUGONGOS KUNG-FU!', horde: '¡LOS REBELDES Y BAROQUE WORKS CHOCAN!' },
     skypiea:      { swarm: '¡LLUVIA DE TAMA DE SATORI!', horde: '¡EL EJÉRCITO SHANDIA ATACA!' },

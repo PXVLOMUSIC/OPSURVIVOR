@@ -35,7 +35,7 @@ Object.assign(ICONS, {
 //       clone (copia que ataca sola). up: mejora por nivel (2-5). evo: arma + pasiva → evolución en cofre.
 const CREW_TECH = {
     // ---- NAMI (Clima-Tact) ----
-    gustsword: { char: 'nami', title: 'Gust Sword', kind: 'bolt', look: 'gust', sound: 'laser',
+    gustsword: { char: 'nami', title: 'Gust Sword', kind: 'bolt', look: 'gust', sound: 'wind',
         desc: 'Ráfaga de viento a presión del Clima-Tact: atraviesa a todos en línea y los empuja.',
         sk: { baseDamage: 26, cooldown: 2.2, range: 340, speed: 640, w: 26, pierce: 99, push: 26, shots: 1 },
         up: s => { s.baseDamage += 9; s.range += 20; if (s.level === 4) s.shots++; },
@@ -45,18 +45,18 @@ const CREW_TECH = {
         sk: { baseDamage: 20, cooldown: 2.6, range: 230, speed: 420, w: 30, shots: 1 },
         up: s => { s.baseDamage += 7; s.w += 3; if (s.level === 3 || s.level === 5) s.shots++; },
         evo: { passive: 'area', name: 'Cyclone Tempo', fx: s => { s.baseDamage *= 1.7; s.w += 16; s.range += 60; } } },
-    thunderbreed: { char: 'nami', title: 'Thunder Breed Tempo', kind: 'zone', look: 'cloud', sound: 'laser', target: 'dense',
+    thunderbreed: { char: 'nami', title: 'Thunder Breed Tempo', kind: 'zone', look: 'cloud', sound: 'thunder', target: 'dense',
         desc: 'Una nube de tormenta se posa sobre el grupo más denso y descarga rayos sin parar.',
         sk: { baseDamage: 14, cooldown: 5.0, r: 70, dur: 3.0, tick: 0.45, reach: 360, stun: 0 },
         up: s => { s.baseDamage += 5; s.r += 6; s.dur += 0.3; },
         evo: { passive: 'growth', name: 'Weather Egg', fx: s => { s.baseDamage *= 1.7; s.r += 25; s.stun = 0.25; } } },
-    raintempo: { char: 'nami', title: 'Rain Tempo', kind: 'zone', look: 'rain', sound: 'laser', target: 'player',
+    raintempo: { char: 'nami', title: 'Rain Tempo', kind: 'zone', look: 'rain', sound: 'rain', target: 'player',
         desc: 'Lluvia del Clima-Tact a su alrededor: frena a los enemigos cercanos y los cala.',
         sk: { baseDamage: 6, cooldown: 6.0, r: 105, dur: 4.0, tick: 0.5, slow: 0.55, reach: 0 },
         up: s => { s.baseDamage += 3; s.r += 10; s.dur += 0.4; },
         evo: { passive: 'luck', name: 'Fog Tempo: Mirage', fx: s => { s.baseDamage *= 1.8; s.r += 30; s.slow = 0.4; } } },
     // ---- USOPP (Kabuto) ----
-    namari: { char: 'usopp', title: 'Hissatsu: Namari Boshi', kind: 'bolt', look: 'namari', sound: 'pistol',
+    namari: { char: 'usopp', title: 'Hissatsu: Namari Boshi', kind: 'bolt', look: 'namari', sound: 'twang',
         desc: 'Ráfaga de perdigones de plomo con el tirachinas al enemigo más cercano.',
         sk: { baseDamage: 24, cooldown: 0.8, range: 330, speed: 820, w: 14, pierce: 1, push: 0, shots: 1, spread: 0.12 },
         up: s => { s.baseDamage += 5; if (s.level === 3 || s.level === 5) s.shots++; },
@@ -66,7 +66,7 @@ const CREW_TECH = {
         sk: { baseDamage: 58, cooldown: 3.0, r: 66, delay: 0.25, reach: 340, fire: 1, fireDmg: 7, fireDur: 2.2 },
         up: s => { s.baseDamage += 14; s.r += 6; s.fireDmg += 2; },
         evo: { passive: 'area', name: 'Midori Boshi: Skull Bomb Grass', fx: s => { s.baseDamage *= 1.8; s.r += 25; s.fireDur += 1; } } },
-    tabasco: { char: 'usopp', title: 'Hissatsu: Tabasco Boshi', kind: 'zone', look: 'tabasco', sound: 'pistol', target: 'nearest',
+    tabasco: { char: 'usopp', title: 'Hissatsu: Tabasco Boshi', kind: 'zone', look: 'tabasco', sound: 'twang', target: 'nearest',
         desc: 'Bola de tabasco que revienta en una nube picante: los enemigos se paran a llorar.',
         sk: { baseDamage: 12, cooldown: 4.0, r: 66, dur: 2.2, tick: 0.5, slow: 0.35, reach: 320, stun: 0 },
         up: s => { s.baseDamage += 4; s.r += 6; s.dur += 0.25; },
@@ -139,7 +139,7 @@ const CREW_FORMS = {
         evoName: 'God Usopp', evoPassive: 'crit',
         forms: {
             // Sogeking (Enies Lobby): el héroe de la Isla del Francotirador
-            2: { name: 'SOGEKING', short: 'SK', color: '#eab308', dur: 8, sound: 'pistol', dmg: 1.25, cd: 0.7, spd: 1.1, taken: 0.85 },
+            2: { name: 'SOGEKING', short: 'SK', color: '#eab308', dur: 8, sound: 'twang', dmg: 1.25, cd: 0.7, spd: 1.1, taken: 0.85 },
             // Kenbunshoku (Dressrosa): ve a Sugar a kilómetros y no falla
             3: { name: 'KENBUNSHOKU: OJO DE HALCÓN', short: 'KB', color: '#22c55e', dur: 9, sound: 'haoshoku', dmg: 1.55, cd: 0.8, spd: 1.1, taken: 0.6, atk: 'snipe', atkCd: 0.9 },
             // God Usopp (Dressrosa): el disparo de 3 km; acaba echando espuma por la boca
@@ -449,7 +449,7 @@ Object.assign(GEAR_ATTACKS, {
         const list = enemies.filter(e => !e.isProp && crewDist(e) < 320).sort((a, b) => crewDist(a) - crewDist(b)).slice(0, 3);
         if (!list.length) { gearState.atkTimer = 0.3; return; }
         for (const e of list) crewThunder(e.x, e.y, 40 * player.areaBonus, 55 + 12 * gearCardLevel(), false);
-        playSound('laser');
+        playSound('thunder');
     },
     // Nami · Zeus: rayo gigante sobre el grupo más denso
     zeus() {
@@ -458,7 +458,7 @@ Object.assign(GEAR_ATTACKS, {
         crewThunder(t.x, t.y, r * 0.5, 0, true);
         gearState.fx.push({ kind: 'wave', x: t.x, y: t.y, r, color: '#facc15', life: 0.5, max: 0.5 });
         gearHitArea(t.x, t.y, r, 170, 50);
-        playSound('boom'); cameraShake = Math.max(cameraShake, 2.2);
+        playSound('thunder'); cameraShake = Math.max(cameraShake, 2.2);
     },
     // Usopp · Kenbunshoku: disparo certero al enemigo más fuerte a la vista
     snipe() {
@@ -469,7 +469,7 @@ Object.assign(GEAR_ATTACKS, {
         gearState.fx.push({ kind: 'fist', x0: player.x, y0: player.y, x: t.x, y: t.y, r: 7, color: '#22c55e', life: 0.25, max: 0.25 });
         gearState.fx.push({ kind: 'wave', x: t.x, y: t.y, r, color: '#86efac', life: 0.35, max: 0.35 });
         gearHitArea(t.x, t.y, r, 75 + 15 * gearCardLevel(), 20);
-        playSound('pistol');
+        playSound('twang');
     },
     // Usopp · God Usopp: disparo que cruza la pantalla y aturde
     godsnipe() {

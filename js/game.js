@@ -67,7 +67,6 @@ function update(dt) {
             });
             playSound('haoshoku');
             fxRing(player.x, player.y, '#38bdf8', 16, 0.45);
-            playSound('coin');
         }
     }
     if (window.vacuumTimer > 0) window.vacuumTimer -= dt;
@@ -501,11 +500,11 @@ function update(dt) {
                 window.freezeTimer = 6;
                 window.spawnBanner = { text: '¡CAMPANA DE SKYPIEA! Enemigos congelados 6s', life: 2.2, color: '#67e8f9' };
                 cameraShake = 1;
-                playSound('reward');
+                playSound('bell');
             } else if (d.type === 'vacuum') {
                 // Iman Magico (VS Vacuum): atrae todas las gemas de XP hacia el jugador
                 window.vacuumTimer = 2.0;
-                playSound('gem');
+                playSound('magnet');
             }
             updateUI(); drops.splice(i, 1);
         }
@@ -532,7 +531,7 @@ function handleAttacks(dt) {
         let angle = player.facing === 1 ? 0 : Math.PI;
         if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
 
-        playSound('pistol');
+        playSound('stretch');
         activeAttacks.push({
             type: 'pistol', startX: player.x, startY: player.y, attached: true,
             angle: angle, speed: 780, currentRange: 0,
@@ -551,7 +550,7 @@ function handleAttacks(dt) {
             let target = getNearestEnemy();
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
-            playSound('pistol');
+            playSound('throw');
             // Evolución (Shakushi de Kuro): abanico de 5 hojas
             const fan = skills.cuchillo.evolved ? [-0.5, -0.25, 0, 0.25, 0.5] : [0];
             for (const off of fan) activeAttacks.push({ vis: 'knife',
@@ -650,7 +649,7 @@ function handleAttacks(dt) {
             let target = getNearestEnemy();
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
-            playSound('slash');
+            playSound('twang');
             activeAttacks.push({ vis: 'bolt',
                 type: 'poundho', startX: player.x, startY: player.y,
                 angle: angle, speed: skills.ballesta.speed, currentRange: 0,
@@ -711,7 +710,7 @@ function handleAttacks(dt) {
             let target = getNearestEnemy();
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
-            playSound('slash');
+            playSound('throw');
             // Evolución (Ninpo de Raizo): cuatro shuriken en cruz además del dirigido
             for (const off of (skills.shuriken.evolved ? [0, Math.PI / 4, 3 * Math.PI / 4, -Math.PI / 4, -3 * Math.PI / 4] : [0])) activeAttacks.push({ vis: 'shuriken',
                 type: 'flyingslash', startX: player.x, startY: player.y,
@@ -858,7 +857,7 @@ function handleAttacks(dt) {
             let target = getNearestEnemy();
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
-            playSound('laser');
+            playSound('kick');
             activeAttacks.push({
                 type: 'joueshot', startX: player.x, startY: player.y,
                 angle: angle, speed: skills.joueshot.speed, currentRange: 0,
@@ -878,7 +877,7 @@ function handleAttacks(dt) {
             let target = getNearestEnemy();
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
-            playSound('laser');
+            playSound('whip');
             activeAttacks.push({
                 type: 'muchi', x: player.x, y: player.y,
                 angle: angle, radius: skills.muchi.radius * player.areaBonus,
@@ -935,7 +934,7 @@ function handleAttacks(dt) {
             let target = getNearestEnemy();
             let angle = player.facing === 1 ? 0 : Math.PI;
             if (target) angle = Math.atan2(target.y - player.y, target.x - player.x);
-            playSound('laser');
+            playSound('wind');
             activeAttacks.push({
                 type: 'poundho', startX: player.x, startY: player.y,
                 angle: angle, speed: skills.poundho.speed, currentRange: 0,
@@ -1128,7 +1127,7 @@ function updateEventsRandom(dt) {
         // Emboscada: anillo de piratas cierra TODO el contorno hacia el jugador
         const ev = mapEnemies().events;
         window.spawnBanner = { text: ev.ringText, life: 2.0, color: '#ef4444' };
-        playSound('levelup');
+        playSound('warn');
         const n = 24 + minutes * 2;
         // VS: el cerco deja un hueco (1/5 del anillo) para que se pueda escapar sin tanquear
         const gapAt = Math.random() * Math.PI * 2;
@@ -1144,7 +1143,7 @@ function updateEventsRandom(dt) {
         // Carga de la Armada: filas cruzando el mapa desde un costado
         const ev = mapEnemies().events;
         window.spawnBanner = { text: ev.chargeText, life: 2.0, color: '#38bdf8' };
-        playSound('levelup');
+        playSound('warn');
         const side = Math.random() < 0.5 ? -1 : 1;
         const n = 20 + minutes * 2;
         for (let k = 0; k < n; k++) {
@@ -1436,7 +1435,7 @@ function evolveWeapon(id) {
     // VS: cutscene de evolución — el mundo se congela, lluvia de confetti y cartel
     window._evolveCut = { life: 1.3 };
     window.spawnBanner = { text: '◆ ¡' + EVOLUTIONS[id].name.toUpperCase() + ' ◆', life: 1.3, color: '#c084fc' };
-    playSound('levelup');
+    playSound('evolve');
     cameraShake = 2;
     if (window.runStats) window.runStats.evolves++;
     // burst inicial: anillo + confetti de 5 colores
@@ -1456,7 +1455,7 @@ function checkEvolutions() {
         const sk = skills[id];
         if (sk && sk.level >= 5 && !sk.evolved && (player.passives[EVOLUTIONS[id].passive] || 0) >= 1) {
             evolveWeapon(id);
-            playSound('evolve'); cameraShake = 2;
+            cameraShake = 2;
             return;
         }
     }
@@ -1466,7 +1465,7 @@ let currentUpgradeCount = 3, upgradeIsChest = false, _banishing = false;
 
 function showUpgradeScreen(count, isChest) {
     upgradeIsChest = !!isChest;
-    playSound(isChest ? 'chest' : 'reward');
+    if (isChest) playSound('chest'); // la subida de nivel ya suena en levelUp()
     // VS: en subidas de nivel hay una 4ta opción con probabilidad (1 - 1/SuerteTotal)
     if (count === undefined || count === null) count = 3 + (Math.random() < (1 - 1 / player.luckBonus) ? 1 : 0);
     currentUpgradeCount = count;
@@ -1682,6 +1681,7 @@ function resumeAfterUpgrade() {
         window._pendingLevelUps--;
         updateUI();
         gameState = 'UPGRADE';
+        playSound('levelup');
         showUpgradeScreen();
         return;
     }
@@ -1838,7 +1838,7 @@ function triggerGameOver() {
         player.revives--;
         player.hp = player.maxHp * 0.3; // Revivir: 30% (antes 50%)
         cameraShake = 2;
-        playSound('levelup');
+        playSound('revive');
         updateUI();
         return;
     }

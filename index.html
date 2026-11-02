@@ -194,7 +194,7 @@
         </div>
         <div class="menu-secondary">
             <button class="map-btn" onclick="showAchievements()"><span class="op-slot" data-ico="hat"></span> LOGROS</button>
-            <button class="map-btn" onclick="showBestiary()"><span class="op-slot" data-ico="skull"></span> REGISTRO MARINO</button>
+            <button class="map-btn" onclick="showCollection()"><span class="op-slot" data-ico="skull"></span> COLECCIÓN</button>
             <button class="map-btn" onclick="showRecords()"><span class="op-slot" data-ico="clock"></span> RÉCORDS</button>
             <button class="map-btn" onclick="showOptions()"><span class="op-slot" data-ico="gear"></span> OPCIONES</button>
             <button class="map-btn" id="btn-menu-music" onclick="toggleMenuMusic()"><span class="op-slot" id="menu-music-ico" data-ico="sound"></span> MÚSICA: <span id="menu-music-label">ON</span></button>
@@ -286,17 +286,20 @@
         <button class="btn-start" style="background: linear-gradient(135deg, #94a3b8, #475569); margin-top: 8px;" onclick="backToMenu()">VOLVER AL MENÚ</button>
     </div>
 
-    <!-- Achievements Screen -->
-    <div id="achievements-screen" class="overlay-screen" style="display: none;">
-        <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
-            <div class="wanted-title">SEÑALAMIENTOS</div>
-            <div class="wanted-subtitle" id="ach-subtitle">LOGROS SELLADOS POR LA ARMADA</div>
-            <div class="upgrade-list" id="ach-list"></div>
-            <button class="btn-start" style="margin-top:12px;" onclick="closeAchievements()">VOLVER</button>
+    <!-- Logros: cartel agrupado por lo que desbloquea cada uno (js/collection.js) -->
+    <div id="achievements-screen" class="overlay-screen cl-screen" style="display: none;">
+        <div class="wanted-board op-board cl-board">
+            <div class="op-head">
+                <div class="wanted-title op-title">LOGROS</div>
+                <div class="pz-chips" id="ach-chips"></div>
+                <div class="cl-tabs" role="tablist" id="ach-tabs"></div>
+            </div>
+            <div class="op-scroll" id="ach-list"></div>
+            <button class="btn-start op-foot" onclick="closeAchievements()">VOLVER</button>
         </div>
     </div>
 
-    <!-- Bestiary Screen -->
+    <!-- Récords -->
     <div id="records-screen" class="overlay-screen" style="display: none;">
         <div class="wanted-board" style="max-width: 94vw; max-height: 86vh; overflow-y: auto;">
             <div class="wanted-title">RÉCORDS</div>
@@ -306,12 +309,16 @@
         </div>
     </div>
 
-    <div id="bestiary-screen" class="overlay-screen" style="display: none;">
-        <div class="wanted-board" style="max-width: 90vw; max-height: 80vh; overflow-y: auto;">
-            <div class="wanted-title">REGISTRO MARINO</div>
-            <div class="wanted-subtitle" id="bestiary-subtitle">ENEMIGOS AVISTADOS EN EL GRAND LINE</div>
-            <div class="upgrade-list" id="bestiary-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px;"></div>
-            <button class="btn-start" style="margin-top:12px;" onclick="closeBestiary()">VOLVER</button>
+    <!-- Colección: enemigos por isla, arsenal y recetas de evolución (js/collection.js) -->
+    <div id="collection-screen" class="overlay-screen cl-screen" style="display: none;">
+        <div class="wanted-board op-board cl-board">
+            <div class="op-head">
+                <div class="wanted-title op-title">COLECCIÓN</div>
+                <div class="cl-tabs" role="tablist" id="coll-tabs"></div>
+            </div>
+            <div class="op-scroll" id="coll-body"></div>
+            <div class="cl-detail" id="coll-detail" aria-live="polite"></div>
+            <button class="btn-start op-foot" onclick="closeCollection()">VOLVER</button>
         </div>
     </div>
 
@@ -372,6 +379,7 @@
 <script src="js/crewfx.js"></script>
 <script src="js/arsenalfx.js"></script>
 <script src="js/pixicons.js"></script>
+<script src="js/collection.js"></script>
 <script src="js/main.js"></script>
 <button id="gear-btn" onclick="gearActivate()" aria-label="Activar Gear">G2</button>
 <div id="ach-toast"></div>

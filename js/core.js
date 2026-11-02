@@ -1,5 +1,5 @@
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', { alpha: false });
+let ctx = canvas.getContext('2d', { alpha: false }); // let: js/vfx.js lo cambia un momento a la capa de contornos
 
 let VIEW_W = 800, VIEW_H = 600;
 // Móvil (pantalla estrecha o tumbada): HUD compacto estilo VS, igual que en css/style.css

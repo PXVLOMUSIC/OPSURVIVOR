@@ -913,10 +913,84 @@ function playerSpriteFilter() {
 }
 
 // Dibujo de todas las partículas
+// Contorno de los efectos claros (cortes, viento, rayos y proyectiles) para que no se pierdan en mapas claros
+// (Skypiea, Alabasta). Antes de dibujar cada efecto se dibuja una pasada "silueta": mismos trazos en azul muy oscuro
+// al 60 % (no negro puro, como los contornos de los sprites GBA/DS), 2 px más gruesos (1 px por lado), y los rellenos
+// con un trazo de 2 px alrededor. Los brillos (degradados y colores con alfa < 0,5) no llevan silueta, así que el
+// borde solo rodea los trazos sólidos y el brillo no se oscurece. Sin capas extra ni copias de canvas: cuesta
+// lo mismo que dibujar esos efectos una vez más. No se aplica a áreas grandes ni explosiones, ni con calidad baja.
+const FX_RIM_TYPES = new Set(['rifle', 'gatling', 'knife', 'santoryu', 'onigiri', 'flyingslash', 'shuriken', 'tatsumaki', 'spear', 'thunder']);
+const FX_RIM_LOOKS = new Set(['gust', 'tornado']); // ataques de la tripulación (atk.look en js/crew.js)
+const FX_RIM_PARTICLES = new Set(['cut', 'streak']);
+const FX_RIM_COLOR = 'rgb(12,20,45)', FX_RIM_ALPHA = 0.6;
+function fxIsRim(atk) { return FX_RIM_TYPES.has(atk.vis || atk.type) || (atk.type === 'crew' && FX_RIM_LOOKS.has(atk.look)); }
+function fxRimColorAlpha(v) {
+    if (typeof v !== 'string') return 0; // degradados y patrones: brillo, sin silueta
+    const m = /^(?:rgba|hsla)\([^)]*[,\/]\s*([\d.]+)\s*\)$/.exec(v);
+    return m ? +m[1] : 1;
+}
+let _rimProxy = null, _rimReal = null, _rimCalls = 0;
+function fxRimMakeProxy(real) {
+    // estado que el efecto cree tener (alfa global y alfa de cada color), con su propia pila para save/restore
+    let st = { ga: 1, fa: 1, sa: 1 };
+    const stack = [], W = 2; // 2 px más de grosor = 1 px por lado (en px del juego)
+    const on = colA => (st.ga * colA >= 0.5 ? (real.globalAlpha = FX_RIM_ALPHA, true) : false);
+    const noop = () => {};
+    const fns = {
+        save: () => { stack.push({ ...st }); real.save(); },
+        restore: () => { if (stack.length) st = stack.pop(); real.restore(); },
+        fill: (...a) => { if (on(st.fa)) { real.fill(...a); const lw = real.lineWidth; real.lineWidth = W; real.stroke(); real.lineWidth = lw; } },
+        stroke: (...a) => { if (on(st.sa)) { const lw = real.lineWidth; real.lineWidth = lw + W; real.stroke(...a); real.lineWidth = lw; } },
+        fillRect: (x, y, w, h) => { if (on(st.fa)) { real.fillRect(x, y, w, h); const lw = real.lineWidth; real.lineWidth = W; real.strokeRect(x, y, w, h); real.lineWidth = lw; } },
+        strokeRect: (x, y, w, h) => { if (on(st.sa)) { const lw = real.lineWidth; real.lineWidth = lw + W; real.strokeRect(x, y, w, h); real.lineWidth = lw; } },
+        drawImage: noop, fillText: noop, strokeText: noop, putImageData: noop,
+    };
+    const proxy = new Proxy(real, {
+        get(t, k) {
+            if (k in fns) return fns[k];
+            if (k === 'globalAlpha') return st.ga;
+            const v = t[k];
+            return typeof v === 'function' ? v.bind(t) : v;
+        },
+        set(t, k, v) {
+            if (k === 'fillStyle') { st.fa = fxRimColorAlpha(v); return true; }
+            if (k === 'strokeStyle') { st.sa = fxRimColorAlpha(v); return true; }
+            if (k === 'globalAlpha') { st.ga = v; return true; }
+            if (k === 'globalCompositeOperation') return true; // siempre source-over
+            t[k] = v; return true;
+        },
+    });
+    proxy._rimReset = () => { st = { ga: 1, fa: 1, sa: 1 }; stack.length = 0; };
+    return proxy;
+}
+// Dibuja draw() dos veces: silueta y normal, con el mismo azar en las dos pasadas (algunos efectos tiemblan al azar).
+function fxRimDraw(draw) {
+    if (!_rimProxy || _rimReal !== ctx) { _rimReal = ctx; _rimProxy = fxRimMakeProxy(ctx); }
+    const real = ctx, rnd = Math.random;
+    const seed = ((gameTime * 1000) | 0) ^ (++_rimCalls * 7919); // no consume Math.random: no cambia la partida
+    const seeded = () => { let s0 = seed; return () => ((s0 = (Math.imul(s0, 1103515245) + 12345) & 0x7fffffff) / 2147483648); };
+    real.save();
+    real.fillStyle = real.strokeStyle = FX_RIM_COLOR; real.globalCompositeOperation = 'source-over';
+    _rimProxy._rimReset(); ctx = _rimProxy; Math.random = seeded();
+    try { draw(); } finally { ctx = real; real.restore(); }
+    Math.random = seeded();
+    try { draw(); } finally { Math.random = rnd; }
+}
 function drawParticles() {
+    const rim = !lowFx(), later = [];
     for (let p of particles) {
         // culling: fuera de pantalla no se dibuja (los rayos con puntos propios se dibujan siempre)
         if (!p.pts && !onScreen(p.x, p.y, 60 + (p.size || 0) * 2)) continue;
+        if (rim && FX_RIM_PARTICLES.has(p.shape)) later.push(p); else drawParticle(p);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    if (later.length) fxRimDraw(() => {
+        for (const p of later) drawParticle(p);
+        ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    });
+}
+function drawParticle(p) {
         const a = Math.max(0, p.life / (p.maxLife || 0.4));
         switch (p.shape) {
             case 'ring':
@@ -1014,7 +1088,4 @@ function drawParticles() {
                 ctx.globalAlpha = a; ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.7, (p.size || 2) * a), 0, Math.PI * 2); ctx.fill();
         }
-    }
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'source-over';
 }

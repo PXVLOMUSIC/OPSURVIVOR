@@ -239,7 +239,11 @@ function render() {
     }
 
     // Ataques del jugador por encima de los enemigos (js/vfx.js)
-    for (let atk of activeAttacks) drawAttackFX(atk);
+    // Contorno fino oscuro (no negro puro) en los efectos claros: cortes, viento, rayos y proyectiles,
+    // para que no se pierdan en mapas claros (Skypiea, Alabasta). Las áreas grandes y explosiones van sin él.
+    const rimFx = [];
+    for (let atk of activeAttacks) { if (!low && fxIsRim(atk)) rimFx.push(atk); else drawAttackFX(atk); }
+    if (rimFx.length) fxRimDraw(() => { for (const atk of rimFx) drawAttackFX(atk); });
 
     // Boss Bar Header if Active (VS: barra superior con nombre del boss real, para todos los mapas)
     const boss = enemies.find(e => e.isBoss && e.hp > 0);

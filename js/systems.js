@@ -215,37 +215,6 @@ function renderShop() {
         }
         container.appendChild(card);
     });
-    // character unlocks
-    ['zoro','sanji'].forEach(ch => {
-        if (meta.unlocked[ch]) return;
-        const cost = ch === 'zoro' ? 15000 : 10000;
-        const card = document.createElement('div');
-        card.className = 'upgrade-card';
-        card.style.display = 'flex';
-        card.style.alignItems = 'center';
-        card.style.gap = '10px';
-        card.innerHTML = `
-            <div class="upgrade-icon">${ICONS.unlock}</div>
-            <div class="upgrade-info" style="flex:1;">
-                <h4>Desbloquear ${ch === 'zoro' ? 'Zoro' : 'Sanji'}</h4>
-                <p>Personaje bloqueado</p>
-            </div>
-            <div class="upgrade-buy" style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:90px;">
-                <div style="font-family:'Bangers',sans-serif; font-size:16px; color:#b45309; letter-spacing:1px;">${cost.toLocaleString('en-US')} ฿</div>
-                <button class="btn-buy" style="padding:6px 14px; font-size:13px; font-weight:700; border-radius:8px; border:2px solid #b45309; background:linear-gradient(135deg,#facc15,#b45309); color:#1a0f06; cursor:pointer; font-family:'Bangers',sans-serif; letter-spacing:1px;">COMPRAR</button>
-            </div>
-        `;
-        const btn = card.querySelector('.btn-buy');
-        if (meta.beli >= cost) {
-            btn.onclick = (e) => { e.stopPropagation(); meta.beli -= cost; meta.unlocked[ch] = true; saveMeta(); renderShop(); updateMetaUI(); flashShopWallet(); };
-        } else {
-            card.style.opacity = '0.5';
-            btn.disabled = true;
-            btn.style.cursor = 'not-allowed';
-            btn.style.opacity = '0.5';
-        }
-        container.appendChild(card);
-    });
     if (typeof renderGearShop === 'function') renderGearShop(container);
 }
 function buyUpgrade(id) {
@@ -284,15 +253,27 @@ const ACHIEVEMENTS = [
     { id: 'elites_25',    name: 'Cabezas de Cartel',   desc: 'Derrota 25 élites con nombre propio.',          check: s => s.elites >= 25,  reward: 400 },
     { id: 'survive_10',   name: 'Hasta el Fondo del Mar', desc: 'Sobrevive los 8 minutos completos.',        check: s => Math.max(...Object.values(s.maxTime)) >= 480, reward: 600 },
     { id: 'gold_20k',     name: 'Sueño del Gold Roger', desc: 'Acumula 20,000 Berries en total.',                check: s => s.beliTotal >= 20000, reward: 800 },
-    { id: 'win_luffy',    name: 'Hay Que Ser Leyenda', desc: 'Conquista una isla con Luffy, el Hombre-Goma.', check: s => s.winsByChar.luffy >= 1, reward: 800, unlock: 'zoro' },
-    { id: 'win_zoro',     name: 'El Mejor Espadachín del Mundo', desc: 'Conquista una isla con Zoro.',        check: s => s.winsByChar.zoro >= 1, reward: 800, unlock: 'sanji' },
+    { id: 'win_luffy',    name: 'Hay Que Ser Leyenda', desc: 'Conquista una isla con Luffy, el Hombre-Goma.', check: s => s.winsByChar.luffy >= 1, reward: 800 },
+    { id: 'win_zoro',     name: 'El Mejor Espadachín del Mundo', desc: 'Conquista una isla con Zoro.',        check: s => s.winsByChar.zoro >= 1, reward: 800 },
     { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 1200 },
     { id: 'win_curse4',   name: 'Rey del Mar Peligroso', desc: 'Conquista una isla con el Clima Peligroso 4.', check: s => (s.winsByCurse[4] || 0) >= 1, reward: 2000 },
     { id: 'endless_30',   name: 'Leyenda del Grand Line', desc: 'Navega el Modo Infinito hasta el minuto 30.', check: s => Math.max(...Object.values(s.maxTime)) >= 1800, reward: 2000 },
-    { id: 'unlock_usopp',   name: 'El Valiente Guerrero del Mar', desc: 'Sobrevive 5 minutos en cualquier isla. Usopp llegará próximamente.', check: s => Math.max(...Object.values(s.maxTime)) >= 300, reward: 400, unlock: 'usopp', unlockText: 'USOPP (PRÓXIMAMENTE)' },
-    { id: 'unlock_nami',    name: 'La Gata Ladrona',      desc: 'Conquista el Baratie. Nami llegará próximamente.', check: s => (meta.wins.baratie || 0) >= 1, reward: 600, unlock: 'nami', unlockText: 'NAMI (PRÓXIMAMENTE)' },
-    { id: 'unlock_chopper', name: 'Doctor del Reino de Drum', desc: 'Derrota 1.500 enemigos en total. Chopper llegará próximamente.', check: s => s.kills >= 1500, reward: 600, unlock: 'chopper', unlockText: 'CHOPPER (PRÓXIMAMENTE)' },
-    { id: 'unlock_robin',   name: 'Miss All Sunday',      desc: 'Conquista Alabasta. Robin llegará próximamente.',     check: s => (meta.wins.alabasta || 0) >= 1, reward: 800, unlock: 'robin', unlockText: 'ROBIN (PRÓXIMAMENTE)' },
+    // === DESBLOQUEO DE LA TRIPULACIÓN (orden de llegada al barco; lockText = cartel de la carta bloqueada) ===
+    { id: 'unlock_zoro',    name: 'El Cazador de Piratas', desc: 'Derrota 5 élites con nombre propio. Desbloquea a Zoro.', check: s => s.elites >= 5, reward: 300, unlock: 'zoro', unlockText: 'ZORO', lockText: 'DERROTA 5 ÉLITES' },
+    { id: 'unlock_nami',    name: 'La Gata Ladrona',      desc: 'Acumula 5.000 Berries en total. Desbloquea a Nami.', check: s => s.beliTotal >= 5000, reward: 400, unlock: 'nami', unlockText: 'NAMI', lockText: 'ACUMULA 5.000 BERRIES' },
+    { id: 'unlock_usopp',   name: 'El Valiente Guerrero del Mar', desc: 'Sobrevive 5 minutos en cualquier isla. Desbloquea a Usopp.', check: s => Math.max(...Object.values(s.maxTime)) >= 300, reward: 400, unlock: 'usopp', unlockText: 'USOPP', lockText: 'SOBREVIVE 5 MINUTOS' },
+    { id: 'unlock_sanji',   name: 'El Cocinero del Baratie', desc: 'Conquista el Baratie derrotando a Don Krieg. Desbloquea a Sanji.', check: s => (meta.wins.baratie || 0) >= 1, reward: 500, unlock: 'sanji', unlockText: 'SANJI', lockText: 'CONQUISTA EL BARATIE' },
+    { id: 'unlock_chopper', name: 'Doctor del Reino de Drum', desc: 'Evoluciona 2 armas en total (como la Rumble Ball). Desbloquea a Chopper.', check: s => s.evolves >= 2, reward: 500, unlock: 'chopper', unlockText: 'CHOPPER', lockText: 'EVOLUCIONA 2 ARMAS' },
+    { id: 'unlock_robin',   name: 'Miss All Sunday',      desc: 'Conquista Alabasta derrotando a Crocodile. Desbloquea a Robin.', check: s => (meta.wins.alabasta || 0) >= 1, reward: 600, unlock: 'robin', unlockText: 'ROBIN', lockText: 'CONQUISTA ALABASTA' },
+    // === DESBLOQUEO DE ISLAS (orden de la historia; cada una más peligrosa que la anterior) ===
+    { id: 'map_alabasta',     name: 'Rumbo a la Grand Line', desc: 'Derrota a Gin y a Pearl en el Baratie. Desbloquea Alabasta.', check: s => (s.killsByType.gin || 0) >= 1 && (s.killsByType.pearl || 0) >= 1, reward: 300, unlock: 'map_alabasta', unlockText: 'ISLA: ALABASTA', lockText: 'DERROTA A GIN Y PEARL' },
+    { id: 'map_skypiea',      name: 'Knock Up Stream',      desc: 'Alcanza el nivel 25 en una singladura. Desbloquea Skypiea.', check: s => (s.maxLevel || 0) >= 25, reward: 400, unlock: 'map_skypiea', unlockText: 'ISLA: SKYPIEA', lockText: 'ALCANZA EL NIVEL 25' },
+    { id: 'map_water7',       name: 'El Capitán Usopp',     desc: 'Conquista una isla con Usopp. Desbloquea Water 7.', check: s => (s.winsByChar.usopp || 0) >= 1, reward: 500, unlock: 'map_water7', unlockText: 'ISLA: WATER 7', lockText: 'GANA CON USOPP' },
+    { id: 'map_enieslobby',   name: '¡Quiero Vivir!',       desc: 'Conquista una isla con Robin. Desbloquea Enies Lobby.', check: s => (s.winsByChar.robin || 0) >= 1, reward: 600, unlock: 'map_enieslobby', unlockText: 'ISLA: ENIES LOBBY', lockText: 'GANA CON ROBIN' },
+    { id: 'map_thrillerbark', name: 'Ejército de Zombis',   desc: 'Derrota 5.000 enemigos en total. Desbloquea Thriller Bark.', check: s => s.kills >= 5000, reward: 700, unlock: 'map_thrillerbark', unlockText: 'ISLA: THRILLER BARK', lockText: 'DERROTA 5.000 ENEMIGOS' },
+    { id: 'map_marineford',   name: 'La Guerra de la Cumbre', desc: 'Conquista una isla con el Clima Peligroso 1 o más. Desbloquea Marineford.', check: s => [1, 2, 3, 4].some(c => (s.winsByCurse[c] || 0) >= 1), reward: 800, unlock: 'map_marineford', unlockText: 'ISLA: MARINEFORD', lockText: 'GANA EN CLIMA 1+' },
+    { id: 'map_wholecake',    name: 'La Boda del Té',       desc: 'Conquista una isla con Sanji. Desbloquea Whole Cake.', check: s => (s.winsByChar.sanji || 0) >= 1, reward: 900, unlock: 'map_wholecake', unlockText: 'ISLA: WHOLE CAKE', lockText: 'GANA CON SANJI' },
+    { id: 'map_wano',         name: 'El País de Wa',        desc: 'Conquista 6 islas distintas. Desbloquea Wano.', check: s => Object.values(meta.wins).filter(v => v > 0).length >= 6, reward: 1200, unlock: 'map_wano', unlockText: 'ISLA: WANO', lockText: 'CONQUISTA 6 ISLAS' },
     { id: 'win_skypiea',    name: 'No Hay Dios en el Cielo', desc: 'Conquista Skypiea. Desbloquea el Dial de Impacto.',  check: s => (meta.wins.skypiea || 0) >= 1, reward: 800, unlock: 'item_dial', unlockText: 'DIAL DE IMPACTO' },
     { id: 'win_thriller',   name: 'Recupera tu Sombra',   desc: 'Conquista Thriller Bark. Desbloquea la Bandera Pirata.', check: s => (meta.wins.thrillerbark || 0) >= 1, reward: 800, unlock: 'item_jolly', unlockText: 'BANDERA PIRATA' },
     { id: 'mode_haki',      name: 'Haki del Rey',         desc: 'Conquista 2 islas distintas. Desbloquea el Modo Haki.', check: s => Object.values(meta.wins).filter(v => v > 0).length >= 2, reward: 1000, unlock: 'mode_haki', unlockText: 'MODO HAKI' },
@@ -397,7 +378,7 @@ function checkAchievements() {
         kills: st.kills + (rs ? rs.kills : 0),
         elites: st.elites + (rs ? rs.elites : 0),
         evolves: st.evolves + (rs ? rs.evolves : 0),
-        killsByType: st.killsByType,
+        killsByType: rs ? Object.keys(rs.killsByType).reduce((o, k) => (o[k] = (o[k] || 0) + rs.killsByType[k], o), { ...st.killsByType }) : st.killsByType,
         // Doble Ejecucion: SOLO la singlatura actual (no sobrevive al merge)
         moriaThis: !!(rs && rs.moriaThis),
         kumaThis: !!(rs && rs.kumaThis),

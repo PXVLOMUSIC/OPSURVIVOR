@@ -150,7 +150,7 @@ function pauseSlot(id, lvl, evo, owner, kind) {
     const sk = skills[id];
     const name = evo && sk && sk.evolvedName ? sk.evolvedName : (PAUSE_NAMES[id] || (typeof CREW_SHORT !== 'undefined' && CREW_SHORT[id]) || id);
     div.title = name;
-    div.innerHTML = `<div class="pz-ico">${(typeof pxIcon === 'function' && pxIcon(id)) || ICONS[PAUSE_PASSIVE_ICO[id] || id] || ICONS.up}</div><div class="pz-name"></div><div class="pz-lv">${evo ? 'EVO' : 'Nv ' + lvl}</div>`;
+    div.innerHTML = `<div class="pz-ico">${(evo && evoIcon(id)) || (typeof pxIcon === 'function' && pxIcon(id)) || ICONS[PAUSE_PASSIVE_ICO[id] || id] || ICONS.up}</div><div class="pz-name"></div><div class="pz-lv">${evo ? 'EVO' : 'Nv ' + lvl}</div>`;
     div.querySelector('.pz-name').textContent = name;
     return div;
 }

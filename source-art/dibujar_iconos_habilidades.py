@@ -1153,5 +1153,8 @@ document.documentElement.style.setProperty('--pxi-size', `${{PX_ICON_GRID.cols *
     open(os.path.join(ROOT, 'js', 'pixicons.js'), 'w', encoding='utf-8').write(js)
     print(len(names), 'iconos;', len(buf.getvalue()), 'bytes PNG')
 
+# Iconos propios de las evoluciones (evo_<arma>)
+exec(open(os.path.join(ROOT, 'source-art', 'dibujar_iconos_evoluciones.py'), encoding='utf-8').read())
+
 if __name__ == '__main__':
     build()

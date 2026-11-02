@@ -197,7 +197,7 @@ function collEnemiesHTML() {
 function collItemCard(u, c) {
     const got = !!c.items[u.id], owner = collOwner(u), evo = got && c.evos[u.id];
     return `<button class="cl-card cl-item ${got ? '' : 'unseen'}${evo ? ' evo' : ''}" data-kind="${u.type}" style="--c:${COLL_COLOR[owner] || (u.type === 'passive' ? '#2563eb' : 'var(--shared)')}" onclick="collDetail('i:${u.id}')">`
-        + `<span class="cl-ico">${u.icon || ''}</span>`
+        + `<span class="cl-ico">${(evo && evoIcon(u.id, u.icon)) || u.icon || ''}</span>`
         + `<span class="cl-name">${got ? collEsc(u.title.replace(/ \(.*\)$/, '')) : '???'}</span></button>`;
 }
 function collArsenalHTML() {
@@ -237,7 +237,7 @@ function collEvosHTML() {
             html += `<button class="cl-evo${done ? ' done' : ''}" onclick="collDetail('v:${id}')">`
                 + `<span class="cl-ing${hasW ? '' : ' unseen'}" title="${collEsc(u.title)}">${u.icon || ''}<small>Nv 5</small></span><b class="cl-op">+</b>`
                 + `<span class="cl-ing${hasP ? '' : ' unseen'}" title="${collEsc(p.title)}">${p.icon || ''}</span><b class="cl-op">➜</b>`
-                + `<span class="cl-ing cl-res${done ? '' : ' unseen'}">${u.icon || ''}</span>`
+                + `<span class="cl-ing cl-res${done ? '' : ' unseen'}">${evoIcon(id, u.icon)}</span>`
                 + `<span class="cl-evo-txt"><span class="cl-name">${done ? collEsc(ev.name) : '???'}</span><span class="cl-sub">${collEsc(u.title.replace(/ \(.*\)$/, ''))} + ${collEsc(p.title.replace(/ \(.*\)$/, ''))}</span></span></button>`;
         }
         html += '</div>';
@@ -277,7 +277,7 @@ function collDetail(key) {
         else text = 'Aún no la has cogido. ' + who + '.';
     } else if (kind === 'v') {
         const u = cat.byId[a], ev = EVOLUTIONS[a], p = cat.byId[ev.passive] || { title: ev.passive };
-        ico = `<span class="cl-evo-ico${c.evos[a] ? '' : ' unseen'}">${u.icon || ''}</span>`;
+        ico = `<span class="cl-evo-ico${c.evos[a] ? '' : ' unseen'}">${evoIcon(a, u.icon)}</span>`;
         title = c.evos[a] ? ev.name : '???';
         text = u.title + ' (Nv 5) + ' + p.title + ' + cofre de minijefe o jefe.' + (c.evos[a] ? ' ¡Conseguida!' : '');
     }

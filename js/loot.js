@@ -140,7 +140,7 @@ function showChestScreen(items, tier, beliVal, evolvedNames) {
     scr.innerHTML = `<div class="wanted-board chest-board tier${tier}">
         <div class="wanted-title">¡${tierName}!</div>
         <div class="wanted-subtitle">${items.length > 1 ? items.length + ' TESOROS' : 'LA RULETA GIRA...'} · +${beliVal.toLocaleString('en-US')} BERRIES</div>
-        ${evolvedNames.map(n => `<div class="chest-evo">◆ ${n}</div>`).join('')}
+        ${evolvedNames.map(n => { const id = Object.keys(EVOLUTIONS).find(k => EVOLUTIONS[k].name === n); return `<div class="chest-evo">${id ? evoIcon(id) : ''}◆ ${n}</div>`; }).join('')}
         <div class="chest-reels">${items.map((_, k) => `<div class="chest-reel" data-k="${k}"><div class="chest-icon"></div><div class="chest-name"></div></div>`).join('')}</div>
         <button class="btn-start chest-take" disabled>¡RECOGER!</button>
     </div>`;

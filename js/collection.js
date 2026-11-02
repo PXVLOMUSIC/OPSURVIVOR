@@ -16,7 +16,7 @@ const COLL_ELITE_OF = { grunt: 'elite_marine', shooter: 'elite_shooter', inupen:
 const COLL_NAMES = {
     all: { grunt: 'Marine raso — soldado de la Marina', shooter: 'Fusilero de la Marina', chess_soldier: 'Soldado de Ajedrez — Mil Soldados de Big Mom', chess_soldier_b: 'Soldado de Ajedrez — lancero', ink_bird: 'Pájaro de tinta — dibujo de Kanjuro' },
     syrup: { krieg_pirate: 'Pirata del Gato Negro — espada', krieg_knife: 'Pirata del Gato Negro — cuchillos', krieg_gunner: 'Pirata del Gato Negro — pistola' },
-    water7: { krieg_pirate: 'Familia Franky — matón', krieg_knife: 'Familia Franky — cuchillos', krieg_gunner: 'Familia Franky — pistola', krieg_bomber: 'Familia Franky — bombas', krieg_starved: 'Familia Franky — recluta' },
+    water7: { ff_kiev: 'Familia Franky — matón', krieg_pirate: 'Familia Franky — matón', krieg_knife: 'Familia Franky — cuchillos', krieg_gunner: 'Familia Franky — pistola', krieg_bomber: 'Familia Franky — bombas', krieg_starved: 'Familia Franky — recluta' },
     enieslobby: { grunt: 'Marine de Enies Lobby — guardia de la isla judicial' },
     marineford: { grunt: 'Marine del Cuartel General — la Guerra en la Cumbre' },
     wano: { krieg_pirate: 'Pirata de las Bestias — Waiter', krieg_knife: 'Gifter de las Bestias', krieg_gunner: 'Pirata de las Bestias — tirador' }

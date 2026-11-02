@@ -444,6 +444,7 @@ const BESTIARY_INFO = {
     inupen: 'Inuppen — el zombi perruno',
     kumashi: 'Kumashi — el guardián gritón',
     absalom: 'Absalom — el invisible',
+    ff_kiev: 'Matón de la Familia Franky', ff_zambai: 'Zambai — Familia Franky', ff_kiwi: 'Kiwi — Square Sisters', ff_mozu: 'Mozu — Square Sisters', ff_tamagon: 'Tamagon — Familia Franky',
     boss_krieg: 'Don Krieg — la flota pirata',
     boss_morgan: 'Capitán Morgan — el Pez-Hacha', helmeppo: 'Helmeppo — el hijo de Morgan', ripper: 'Teniente Ripper — base 153',
     boss_kuro: 'Capitán Kuro — las Cien Maniobras', buchi: 'Buchi — Hermanos Nyaban', sham: 'Sham — Hermanos Nyaban',

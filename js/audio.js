@@ -42,8 +42,8 @@ function initAudio() {
 // + efectos sintetizados a juego con tools/sfx-gen.py (heal, ouch, sad, revive, warn, magnet, bell, stretch,
 //   whip, wind, thunder, rain, twang, throw, crack, drums).
 const SFX_FILES = {
-    coin: 'coin.wav', gem: 'gem.wav', beli_rush: 'beli_rush.wav', buy: 'buy.wav', meat: 'heal.wav',
-    levelup: 'levelup.wav', evolve: 'evolve.wav', achievement: 'achievement.wav',
+    coin: 'coin.wav', gem: 'gem.wav', beli_rush: 'beli_rush.wav', buy: 'buy.wav', meat: 'levelup.wav',
+    levelup: 'heal.wav', evolve: 'evolve.wav', achievement: 'achievement.wav',
     victory: 'victory.wav', gameover: 'sad.wav', chest: 'chest.wav', reward: 'reward.wav',
     hit: 'hit.wav', crit: 'crit.wav', hurt: 'ouch.wav', enemydie: 'enemydie.wav',
     boss: 'boss.wav', boss_die: 'boss_die.wav', death: 'death.wav',
@@ -59,8 +59,8 @@ let sfxPreloaded = false;
 // volumen relativo por sonido (mezcla: los de spam van bajos, los avisos por encima)
 const SFX_VOL = {
     enemydie: 0.28, hit: 0.45, crit: 0.5, gem: 0.38, coin: 0.4, gatling: 0.35, pistol: 0.45,
-    meat: 0.6, chest: 0.6, reward: 0.55, ui: 0.4, select: 0.5, error: 0.4, muted: 0.35,
-    beli_rush: 0.5, buy: 0.5, levelup: 0.55, evolve: 0.6, achievement: 0.55,
+    meat: 0.55, chest: 0.6, reward: 0.55, ui: 0.4, select: 0.5, error: 0.4, muted: 0.35,
+    beli_rush: 0.5, buy: 0.5, levelup: 0.6, evolve: 0.6, achievement: 0.55,
     victory: 0.6, gameover: 0.55, hurt: 0.6, boss: 0.6, boss_die: 0.55, death: 0.55,
     laser: 0.45, slash: 0.45, kick: 0.45, boom: 0.45, gear2: 0.5, haoshoku: 0.55,
     revive: 0.6, warn: 0.55, magnet: 0.5, bell: 0.55, stretch: 0.5, whip: 0.5, wind: 0.5,

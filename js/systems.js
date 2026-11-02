@@ -415,37 +415,7 @@ function showAchToast(text) {
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => { t.style.display = 'none'; }, 600); }, 3800);
 }
-function showAchievements() {
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('achievements-screen').style.display = 'flex';
-    renderAchievements();
-}
-function closeAchievements() {
-    document.getElementById('achievements-screen').style.display = 'none';
-    document.getElementById('start-screen').style.display = 'flex';
-    updateMetaUI();
-}
-function renderAchievements() {
-    const list = document.getElementById('ach-list');
-    if (!list) return;
-    list.innerHTML = '';
-    const done = ACHIEVEMENTS.filter(a => meta.achievements[a.id]).length;
-    document.getElementById('ach-subtitle').innerText = 'SELLADOS POR LA ARMADA: ' + done + '/' + ACHIEVEMENTS.length;
-    ACHIEVEMENTS.forEach(a => {
-        const got = meta.achievements[a.id];
-        const card = document.createElement('div');
-        card.className = 'upgrade-card';
-        card.style.opacity = got ? '1' : '0.55';
-        card.innerHTML = `
-            <div class="upgrade-icon">${got ? '◉' : '○'}</div>
-            <div class="upgrade-info">
-                <h4>${a.name}${got ? ' — ¡SELLADO!' : ''}</h4>
-                <p>${a.desc} · Recompensa: ${a.reward} Berries${a.unlock ? ' · Desbloquea: ' + (a.unlockText || a.unlock.toUpperCase()) : ''}</p>
-            </div>
-        `;
-        list.appendChild(card);
-    });
-}
+// Pantallas de Logros y Colección: js/collection.js
 // === REGISTRO MARINO (bestiary) ===
 const BESTIARY_INFO = {
     krieg_starved: 'Pirata Hambriento de Krieg — cien días a la deriva',
@@ -490,55 +460,4 @@ function bestiaryName(type) {
     if (MINIBOSS_INFO[type]) return MINIBOSS_INFO[type];
     if (BOSS_INFO[type]) return BOSS_INFO[type];
     return type;
-}
-// miniaturas del bestiario a partir de los sprites idle ya cargados (cache dataURL)
-const BESTIARY_THUMB = {};
-function bestiaryThumb(type) {
-    if (BESTIARY_THUMB[type]) return BESTIARY_THUMB[type];
-    const cfg = ENEMY_IMG[type];
-    const img = (cfg && cfg.idle && cfg.idle[0]) ? cfg.idle[0] : null;
-    if (!img) return null;
-    // sprites de archivo: se usa la ruta directamente (se carga al abrir el bestiario, sin esperar ni copiar a dataURL)
-    if (img instanceof HTMLImageElement) return (BESTIARY_THUMB[type] = img.getAttribute('src'));
-    if (!img.width) return null;
-    try {
-        const c = document.createElement('canvas');
-        c.width = img.width; c.height = img.height;
-        c.getContext('2d').drawImage(img, 0, 0);
-        return (BESTIARY_THUMB[type] = c.toDataURL());
-    } catch (e) { return null; }
-}
-function showBestiary() {
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('bestiary-screen').style.display = 'flex';
-    renderBestiary();
-}
-function closeBestiary() {
-    document.getElementById('bestiary-screen').style.display = 'none';
-    document.getElementById('start-screen').style.display = 'flex';
-    updateMetaUI();
-}
-function renderBestiary() {
-    const grid = document.getElementById('bestiary-list');
-    if (!grid) return;
-    grid.innerHTML = '';
-    const types = Object.keys(ENEMY_ANIMS).filter(t => !PROP_TYPES.includes(t)); // sin barriles ni faroles
-    let found = 0;
-    const st = meta.stats.killsByType;
-    types.forEach(type => {
-        const seen = (st[type] || 0) > 0;
-        if (seen) found++;
-        const card = document.createElement('div');
-        card.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:8px;text-align:center;color:#3d2314;';
-        const thumb = seen ? bestiaryThumb(type) : null;
-        card.innerHTML = `
-            <div style="height:48px; display:flex; align-items:center; justify-content:center;">
-                ${thumb ? `<img src="${thumb}" style="image-rendering:pixelated; max-height:44px; max-width:56px; filter:none;">` : '<span style="font-size:26px; opacity:0.35;">?</span>'}
-            </div>
-            <div style="font-weight:800; font-size:11px; font-family:Bangers,Verdana,sans-serif; letter-spacing:0.5px; margin-top:4px; line-height:1.15; min-height:26px;">${seen ? bestiaryName(type) : '???'}</div>
-            <div style="font-size:10px; font-family:Segoe UI,Verdana,sans-serif; opacity:0.8;">${seen ? '×' + st[type] + ' derrotados' : 'sin avistar'}</div>
-        `;
-        grid.appendChild(card);
-    });
-    document.getElementById('bestiary-subtitle').innerText = 'AVISTADOS: ' + found + '/' + types.length + ' — GRAND LINE';
 }

@@ -1409,3 +1409,23 @@ body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-
     .opt-body { grid-template-columns: 1fr 1fr; }
     .pz-body { grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr); }
 }
+
+/* === Iconos pixel art de técnicas y pasivas (js/pixicons.js) === */
+.pxi {
+    display: inline-block; width: 22px; height: 22px; vertical-align: middle; flex-shrink: 0;
+    background-image: var(--pxi-sheet); background-size: var(--pxi-size); background-repeat: no-repeat;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+}
+.upgrade-icon .pxi, .chest-reel .chest-icon .pxi { width: 44px; height: 44px; }
+#upgrade-options .upgrade-icon:has(.pxi), #arcana-options .upgrade-icon:has(.pxi), .upgrade-icon:has(.pxi) {
+    background: radial-gradient(circle at 50% 40%, #fff6dc, #e9d3a2); border-color: var(--ink, #2a1a0e);
+}
+.wslot .hud-ico .pxi { width: 33px; height: 33px; display: block; }
+.pz-ico .pxi { width: 33px; height: 33px; }
+.wslot.evo .hud-ico .pxi, .pz-slot.evo .pz-ico .pxi, .upgrade-card.evo .upgrade-icon .pxi { filter: drop-shadow(0 0 3px #facc15) drop-shadow(0 0 1px #fff7c2); }
+@media (max-width: 900px), (max-height: 500px) {
+    .wslot .hud-ico .pxi { width: 22px; height: 22px; }
+}
+@media (max-height: 500px), (max-width: 600px) {
+    #upgrade-options .upgrade-icon .pxi, #arcana-options .upgrade-icon .pxi { width: 30px; height: 30px; }
+}

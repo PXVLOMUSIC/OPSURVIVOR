@@ -1530,6 +1530,7 @@ function showUpgradeScreen(count, isChest) {
         { id: 'jolly', type: 'passive', chars: 'all', title: 'Bandera Pirata', icon: ICONS.jolly, desc: 'Izas tu Jolly Roger: +10% enemigos y peligro, +10% XP y Berries.' },
     ];
     possibleUpgrades.push(...CREW_UPGRADES); // kits de Nami, Usopp, Chopper y Robin (js/crew.js), al final por el sesgo del sorteo
+    if (typeof pxIcon === 'function') for (const u of possibleUpgrades) u.icon = pxIcon(u.id) || u.icon; // iconos pixel art (js/pixicons.js)
     // Quien no usa Haki en el canon (Nami, Chopper, Robin) ve Poder y Armadura sin el nombre de Haki
     if (!itemAllowed('haki_buso', selectedCharacter)) for (const u of possibleUpgrades) {
         if (u.id === 'power') u.title = 'Entrenamiento (Poder %)';

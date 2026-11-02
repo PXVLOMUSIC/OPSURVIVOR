@@ -438,7 +438,7 @@ const MINIBOSS_INFO = { buchi: 'Buchi — Hermanos Nyaban, Piratas del Gato Negr
     smoothie: 'Charlotte Smoothie — Comandante Dulce, Shibo Shibo no Mi', katakuri: 'Charlotte Katakuri — Comandante Dulce, Mochi Mochi no Mi' };
 const BOSS_INFO = { boss_kuro: 'Capitán Kuro de las Cien Maniobras — Piratas del Gato Negro', boss_wapol: 'Wapol — Rey de Drum, Baku Baku no Mi', boss_morgan: 'Capitán Morgan, el Pez-Hacha — Marina, base 153', boss_arlong: 'Arlong, el Pez-Sierra — Piratas de Arlong', boss_krieg: 'Don Krieg — Flota Pirata de Krieg', boss_crocodile: 'Sir Crocodile — Baroque Works', boss_enel: 'Enel, el Dios del Trueno', boss_moria: 'Gekko Moria — Shichibukai', boss_lucci: 'Rob Lucci — CP9, Neko Neko no Mi: Leopardo', boss_akainu: 'Almirante Akainu — Magu Magu no Mi', boss_franky: 'Cutty Flam, Franky — Familia Franky', boss_kaido: 'Kaido de las Bestias — Yonko', boss_bigmom: 'Charlotte Linlin, Big Mom — Yonko, Soru Soru no Mi' };
 // VS: la vida del boss escala por etapa/mapa
-const BOSS_HP = { boss_kuro: 6000, boss_wapol: 7500, boss_morgan: 5500, boss_arlong: 7000, boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_bigmom: 17000, boss_kaido: 20000 };
+const BOSS_HP = { boss_kuro: 6000, boss_wapol: 7500, boss_morgan: 4500, boss_arlong: 7000, boss_krieg: 6500, boss_crocodile: 9500, boss_enel: 10500, boss_moria: 11000, boss_lucci: 12000, boss_akainu: 14000, boss_franky: 8000, boss_bigmom: 17000, boss_kaido: 20000 };
 
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
@@ -493,7 +493,7 @@ const ENEMY_STATS = {
     chess_soldier: [32, 78, 16], chess_soldier_b: [40, 70, 18], tamago: [150, 52, 26], pekoms: [170, 56, 28],
     smoothie: [210, 52, 32], katakuri: [230, 62, 36],
     // Shell Town y Arlong Park: hombre-pez = raso, hombre-pez azul = embestida, gordo = bruto
-    sham: [120, 70, 22], lapahn: [28, 84, 14], lapahn_big: [44, 72, 18],
+    sham: [120, 70, 22], lapahn: [30, 90, 16], lapahn_big: [60, 76, 22],
     ripper: [130, 56, 22], merman: [32, 78, 16], merman_b: [40, 70, 18], fat_merman: [300, 46, 40], chew: [110, 54, 22]
 };
 // Comportamientos (estilo VS: murciélagos en zigzag, cargas, bombas que estallan):
@@ -523,7 +523,7 @@ const MAP_ENEMIES = {
         // Base 153 de la Marina: los marines del Capitán Morgan; Helmeppo de minijefe, el teniente Ripper como élite y Morgan de jefe
         base: 'grunt',
         pool: [
-            { type: 'ripper', min: 4, p: 0.02 }, { type: 'marine_sword', min: 1, p: 0.24 }, { type: 'shooter', min: 1, p: 0.42 }
+            { type: 'ripper', min: 4, p: 0.02 }, { type: 'marine_sword', min: 1, p: 0.24 }, { type: 'shooter', min: 2, p: 0.32 }
         ],
         minibosses: [ { type: 'helmeppo', min: 3, hp: 450, speed: 48, damage: 22 } ],
         boss: 'boss_morgan',
@@ -559,8 +559,8 @@ const MAP_ENEMIES = {
         // Kuroobi y Hatchan de minijefes, Arlong de jefe
         base: 'merman',
         pool: [
-            { type: 'chew', min: 2, p: 0.025 }, { type: 'fat_merman', min: 3, p: 0.12 },
-            { type: 'merman_b', min: 1, p: 0.34 }
+            { type: 'chew', min: 2, p: 0.03 }, { type: 'fat_merman', min: 3, p: 0.14 },
+            { type: 'merman_b', min: 1, p: 0.38 }
         ],
         minibosses: [ { type: 'kuroobi', min: 3, hp: 650, speed: 50, damage: 30 }, { type: 'hachi', min: 6, hp: 800, speed: 46, damage: 32 } ],
         boss: 'boss_arlong',
@@ -570,7 +570,7 @@ const MAP_ENEMIES = {
         hpMult: 0.75, // isla de Drum, donde se une Chopper (en el canon va antes de Alabasta)
         // Lapahn (conejos de las nieves) en manada; Chess y Kuromarimo de minijefes, Wapol de jefe
         base: 'lapahn',
-        pool: [ { type: 'lapahn_big', min: 1, p: 0.30 } ],
+        pool: [ { type: 'lapahn_big', min: 1, p: 0.42 } ],
         minibosses: [ { type: 'chess', min: 3, hp: 650, speed: 50, damage: 28 }, { type: 'kuromarimo', min: 5, hp: 750, speed: 46, damage: 30 } ],
         boss: 'boss_wapol',
         events: { ring: 'lapahn', charge: 'lapahn_big', runners: 'lapahn', swarm: 'lapahn', ringText: '¡UNA MANADA DE LAPAHN TE RODEA!', chargeText: '¡CARGAN LOS LAPAHN!' }

@@ -52,7 +52,7 @@ def note(f, d, kind=square, duty=0.5, a=0.004, r=0.03):
     s = kind(fr, duty) if kind is square else kind(fr)
     return s * adsr(n, a, r)
 
-# Carne del suelo (VS: pollo del suelo): mordisco + arpegio ascendente cálido = "curarse"
+# Subir de nivel (antes: carne del suelo; Pablo los intercambió): mordisco + arpegio ascendente
 def heal():
     bite = lowpass(noise(0.035), 1800) * env(int(SR * 0.035), 0.002, 0.012)
     arp = [note(f, 0.055, tri, r=0.02) * 0.9 + note(f * 2, 0.055, square, 0.25, r=0.02) * 0.12 for f in (523, 659, 784, 1047)]

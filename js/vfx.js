@@ -7,6 +7,8 @@
 
 // Paleta del entorno: polvo y restos que levanta cada impacto según el mapa
 const VFX_MAP = {
+    syrup: { dust: ['#9a6b40', '#b98a5a', '#d6b58e'], debris: ['#6b4423', '#8b5a2b', '#a0703f'], debrisShape: 'chip' },
+    drum: { dust: ['#ffffff', '#eef6ff', '#f9d5e5'], debris: ['#ffffff', '#e0f2fe', '#f8fafc'], debrisShape: 'puff' },
     shelltown: { dust: ['#c9a06a', '#b08a5a', '#e2c79a'], debris: ['#8b6a43', '#a37f52', '#6e5434'], debrisShape: 'grain' },
     arlongpark: { dust: ['#a8a294', '#8f897c', '#cdc7b8'], debris: ['#6f6a5f', '#8f897c', '#5a564d'], debrisShape: 'chip' },
     baratie:  { dust: ['#9a6b40', '#b98a5a', '#d6b58e'], debris: ['#6b4423', '#8b5a2b', '#a0703f'], debrisShape: 'chip' },

@@ -1,5 +1,5 @@
-# Recorta los sprites de Shell Town y Arlong Park de las hojas de la GBA (One Piece / Grand Battle, spritedatabase.net)
-# Uso: python3 source-art/extraer_eastblue.py <carpeta sprites_originales/GBA_OnePiece> <assets/extracted>
+# Recorta los sprites de Shell Town, Syrup, Arlong Park y Drum (GBA One Piece / Grand Battle y DS Gigant Battle, spritedatabase.net)
+# Uso: python3 source-art/extraer_eastblue.py <carpeta sprites_originales> <assets/extracted>
 # Cada tipo se guarda como sprite_000..N alineado por los pies (mismo lienzo para todos sus frames),
 # así el sprite no baila al pasar de reposo a ataque. idle = primeros frames, attack = el resto (ver ENEMY_ANIMS).
 import os, sys, colorsys
@@ -7,15 +7,15 @@ import numpy as np
 from PIL import Image
 from collections import deque
 
-def comps(path, minpx=150):
+def comps(path, gap=1, minpx=150):
     a = np.array(Image.open(path).convert('RGBA'))
     bg = a[0, 0, :3].copy()
     fg = np.any(a[:, :, :3] != bg, axis=2)
     H, W = fg.shape
-    p = np.pad(fg, 1)
+    p = np.pad(fg, gap)
     d = np.zeros_like(fg)
-    for dy in range(3):
-        for dx in range(3):
+    for dy in range(2 * gap + 1):
+        for dx in range(2 * gap + 1):
             d |= p[dy:dy + H, dx:dx + W]
     lab = np.zeros((H, W), bool); boxes = []
     for y in range(H):
@@ -62,22 +62,37 @@ def hue_shift(im, dh):
                 if s > 0.15: out[y, x, :3] = colorsys.hls_to_rgb((h + dh) % 1, l, s)
     return Image.fromarray((out * 255 + 0.5).astype(np.uint8))
 
-# tipo: (hoja, índices de componentes: reposo + ataque)
+# tipo: (hoja, índices de componentes: reposo + ataque, separación al agrupar piezas)
+G = 'GBA_OnePiece/'
 SETS = {
-    'helmeppo':   ('4045_Helmeppo.gif',  [3, 4, 5, 6] + [7, 8, 9, 10]),
-    'merman':     ('4041_Mermen.gif',    [0, 1, 9, 10] + [2, 3, 4]),
-    'fat_merman': ('4042_FatMerman.gif', [4, 5] + [0, 1]),
-    'kuroobi':    ('4057_ArlongsCrew.gif', [7, 8] + [4, 5, 6]),
-    'chew':       ('4057_ArlongsCrew.gif', [29, 30, 31] + [23, 24, 25]),
-    'hachi':      ('4057_ArlongsCrew.gif', [56, 57, 58, 59] + [46, 47]),
-    'arlong':     ('4058_Arlong.gif',    [0, 1, 2, 3, 4] + [9, 10, 11, 12]),
+    'helmeppo':   (G + '4045_Helmeppo.gif',  [3, 4, 5, 6] + [7, 8, 9, 10], 1),
+    'merman':     (G + '4041_Mermen.gif',    [0, 1, 9, 10] + [2, 3, 4], 1),
+    'fat_merman': (G + '4042_FatMerman.gif', [4, 5] + [0, 1], 1),
+    'kuroobi':    (G + '4057_ArlongsCrew.gif', [7, 8] + [4, 5, 6], 1),
+    'chew':       (G + '4057_ArlongsCrew.gif', [29, 30, 31] + [23, 24, 25], 1),
+    'hachi':      (G + '4057_ArlongsCrew.gif', [56, 57, 58, 59] + [46, 47], 1),
+    'arlong':     (G + '4058_Arlong.gif',    [0, 1, 2, 3, 4] + [9, 10, 11, 12], 1),
+    # Syrup: el Capitán Kuro (Shakushi) y los hermanos Nyaban (Sham y Buchi)
+    'kuro':       (G + '4053_Kuro.gif',      [0, 1, 2, 3] + [43, 44, 45], 1),
+    'buchi':      (G + '4051_NyabanBros.gif', [0] + [1, 2, 3], 1),
+    'sham':       (G + '4051_NyabanBros.gif', [11, 13] + [12, 14], 1),
+    # Drum: Wapol (DS Gigant Battle), Chess, Kuromarimo y los Lapahn (NPC de Drum de la DS)
+    'wapol':      ('DS_GigantBattle1/12067_Wapol.png', [0, 1, 2, 3] + [9, 10], 1),
+    'chess':      ('DS_GigantBattle1/12482_Grandline1.png', [26, 28] + [27], 0),
+    'kuromarimo': ('DS_GigantBattle1/12482_Grandline1.png', [29, 30] + [31], 0),
+    'lapahn':     ('DS_GigantBattle1/12482_Grandline1.png', [17, 18] + [19, 8], 0),
+    'lapahn_big': ('DS_GigantBattle1/12482_Grandline1.png', [23] + [24], 0),
 }
+MIRROR_ATTACK = {'wapol': 4}  # tipo: nº de frames de reposo
 src, dst = sys.argv[1], sys.argv[2]
 cache = {}
-for t, (sheet, idx) in SETS.items():
-    if sheet not in cache: cache[sheet] = comps(os.path.join(src, sheet))
-    im, boxes = cache[sheet]
-    save_set([im.crop(boxes[i]) for i in idx], os.path.join(dst, t))
+for t, (sheet, idx, gap) in SETS.items():
+    if (sheet, gap) not in cache: cache[(sheet, gap)] = comps(os.path.join(src, sheet), gap)
+    im, boxes = cache[(sheet, gap)]
+    frames = [im.crop(boxes[i]) for i in idx]
+    if t in MIRROR_ATTACK:  # la hoja trae el ataque mirando al otro lado: se espeja para que todo el set mire igual
+        n = MIRROR_ATTACK[t]; frames = frames[:n] + [f.transpose(Image.FLIP_LEFT_RIGHT) for f in frames[n:]]
+    save_set(frames, os.path.join(dst, t))
     print(t, len(idx))
 # hombre-pez de piel azul (paleta cambiada; la hoja solo trae un frame azul)
 m = os.path.join(dst, 'merman'); os.makedirs(os.path.join(dst, 'merman_b'), exist_ok=True)

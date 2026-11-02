@@ -253,7 +253,16 @@ const SHELLTOWN_POLY = [
 const ARLONGPARK_POLY = [
   [-688,-227], [-181,-240], [-128,-293], [139,-293], [192,-240], [619,-227], [885,-173], [1005,27], [1059,208], [299,213], [85,261], [-395,240], [-1035,213], [-1155,133], [-1008,-27], [-875,-160]
 ];
+// Syrup: tablado de madera del puerto. Drum: plaza nevada del bosque (el borde de cada arena)
+const SYRUP_POLY = [
+  [-648,-252], [699,-252], [885,-39], [1112,321], [-608,329], [-1075,321]
+];
+const DRUM_POLY = [
+  [-635,-257], [739,-257], [885,-92], [1032,308], [-1035,313]
+];
 const WALK_POLYS = {
+  syrup: SYRUP_POLY,
+  drum: DRUM_POLY,
   shelltown: SHELLTOWN_POLY,
   arlongpark: ARLONGPARK_POLY,
   baratie: WALK_POLY,
@@ -291,6 +300,8 @@ function pointInPoly(x, y, poly) {
 // === Obstáculos dentro de la zona caminable (rejas, barandillas, farolas, macetas...) ===
 // Cápsulas { ax, ay, bx, by, r } en coordenadas de mundo. Bloquean al jugador y a los enemigos normales.
 const MAP_OBSTACLES = {
+  syrup: [],
+  drum: [],
   shelltown: [],
   arlongpark: [],
   // Vacío a petición: solo cuenta el borde de la arena. Las cápsulas detectadas (rejas, farolas,

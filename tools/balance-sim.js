@@ -21,7 +21,7 @@ async function runOne(browser, ch, map, meta) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     await page.addInitScript(({ meta, gear }) => {
-        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, map_baratie: true, map_arlongpark: true, map_alabasta: true, map_skypiea: true, map_water7: true, map_enieslobby: true, map_thrillerbark: true, map_marineford: true, map_wholecake: true, map_wano: true, item_dial: true, item_jolly: true }, gear: { unlocked: gear, forms: { zoro: Math.min(gear, 4), sanji: Math.min(gear, 4), nami: Math.min(gear, 4), usopp: Math.min(gear, 4), chopper: Math.min(gear, 4), robin: Math.min(gear, 4) }, up: { meter: 0, charge: 0, recover: 0 } } };
+        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, map_syrup: true, map_baratie: true, map_arlongpark: true, map_drum: true, map_alabasta: true, map_skypiea: true, map_water7: true, map_enieslobby: true, map_thrillerbark: true, map_marineford: true, map_wholecake: true, map_wano: true, item_dial: true, item_jolly: true }, gear: { unlocked: gear, forms: { zoro: Math.min(gear, 4), sanji: Math.min(gear, 4), nami: Math.min(gear, 4), usopp: Math.min(gear, 4), chopper: Math.min(gear, 4), robin: Math.min(gear, 4) }, up: { meter: 0, charge: 0, recover: 0 } } };
         // mejoras: se fijan tras cargar el juego a partir de META_UPGRADES (ver abajo)
         // (meta 1 = todas al máximo; meta 2 = la mitad, redondeando arriba y sin Revivir; la Maldición siempre a 0)
         localStorage.setItem('op_survivor_meta', JSON.stringify(m));

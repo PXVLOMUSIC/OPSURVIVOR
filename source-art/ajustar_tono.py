@@ -8,6 +8,7 @@ from PIL import Image, ImageEnhance
 
 TONE = {
     'skypiea': dict(gamma=1.5, top=0.80, tint=(0.87, 0.92, 1.0), sat=1.2),  # brillo medio 193 -> 128
+    'drum': dict(gamma=1.3, top=0.85, tint=(0.90, 0.94, 1.0), sat=1.15),  # nieve de Drum (brillo medio 162 -> ~120), mismo trato que Skypiea
 }
 
 def tone(im, mapa):

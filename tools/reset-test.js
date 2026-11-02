@@ -9,7 +9,7 @@ async function newPage(browser) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     await page.addInitScript(() => {
-        localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true }, gear: { unlocked: 5, forms: { zoro: 4, sanji: 4, nami: 4, usopp: 4, chopper: 4, robin: 4 }, up: { meter: 0, charge: 0, recover: 0 } } }));
+        localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, map_alabasta: true, map_skypiea: true, map_water7: true, map_enieslobby: true, map_thrillerbark: true, map_marineford: true, map_wholecake: true, map_wano: true }, gear: { unlocked: 5, forms: { zoro: 4, sanji: 4, nami: 4, usopp: 4, chopper: 4, robin: 4 }, up: { meter: 0, charge: 0, recover: 0 } } }));
         window.requestAnimationFrame = () => 0; // el bucle lo mueve la prueba
     });
     const errors = [];

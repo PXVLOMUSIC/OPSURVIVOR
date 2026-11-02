@@ -484,7 +484,7 @@ const FODDER_ELITE = {
 // events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
 const MAP_ENEMIES = {
     baratie: {
-        hpMult: 0.72, // dificultad del mapa (vida enemiga)
+        hpMult: 0.72, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
         base: 'krieg_pirate',
         pool: [
@@ -497,7 +497,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
     },
     alabasta: {
-        hpMult: 0.74, // dificultad del mapa (vida enemiga)
+        hpMult: 0.76, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Dugongos kung-fu del desierto, fusileros de la Marina de Smoker y los agentes de Baroque Works
         base: 'dugong',
         pool: [
@@ -510,7 +510,7 @@ const MAP_ENEMIES = {
         events: { ring: 'dugong', charge: 'marine_sword', runners: 'dugong', swarm: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
     },
     skypiea: {
-        hpMult: 0.73, // dificultad del mapa (vida enemiga)
+        hpMult: 0.80, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Guerreros shandia y los sacerdotes de Enel; Wiper y Ohm como minijefes
         base: 'shandia',
         pool: [
@@ -522,7 +522,7 @@ const MAP_ENEMIES = {
         events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'sky_shark', swarm: 'tama', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
-        hpMult: 0.90, // dificultad del mapa (vida enemiga)
+        hpMult: 1.04, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         base: 'inupen',
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
@@ -534,7 +534,7 @@ const MAP_ENEMIES = {
         events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
     },
     enieslobby: {
-        hpMult: 1.00, // dificultad del mapa (vida enemiga)
+        hpMult: 0.96, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Los marines y la guardia de Enies Lobby; Spandam con Funkfreed y Kaku del CP9; Rob Lucci de jefe
         base: 'grunt',
         pool: [
@@ -546,7 +546,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡LA GUARDIA DE ENIES LOBBY TE RODEA!', chargeText: '¡CARGAN LOS 10.000 MARINES!' }
     },
     water7: {
-        hpMult: 0.94, // dificultad del mapa (vida enemiga)
+        hpMult: 0.88, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Familia Franky (piratas de relleno) en el muelle; Kaku y Lucci se quitan la máscara de Galley-La; Franky de jefe
         base: 'krieg_pirate',
         pool: [
@@ -558,7 +558,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
     },
     marineford: {
-        hpMult: 1.00, // dificultad del mapa (vida enemiga)
+        hpMult: 1.14, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // La Guerra en la Cumbre: marines, oficiales de la Marina; Aokiji y Kizaru de minijefes, Akainu de jefe
         base: 'grunt',
         pool: [
@@ -570,7 +570,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡EL CERCO DE LA MARINA SE CIERRA!', chargeText: '¡CARGAN LOS VICEALMIRANTES!' }
     },
     wholecake: {
-        hpMult: 1.30, // dificultad del mapa (vida enemiga): entre Marineford y Wano
+        hpMult: 1.32, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Tottoland: los soldados de ajedrez de Big Mom, Pekoms y el Barón Tamago; Smoothie y Katakuri de minijefes
         base: 'chess_soldier',
         pool: [
@@ -582,7 +582,7 @@ const MAP_ENEMIES = {
         events: { ring: 'chess_soldier', charge: 'chess_soldier_b', runners: 'chess_soldier_b', swarm: 'chess_soldier', ringText: '¡LOS SOLDADOS DE AJEDREZ TE RODEAN!', chargeText: '¡CARGAN LAS PIEZAS NEGRAS!' }
     },
     wano: {
-        hpMult: 1.60, // dificultad del mapa (vida enemiga): el más difícil
+        hpMult: 1.60, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Asalto a Onigashima: piratas de las Bestias y los dibujos de tinta del traidor Kanjuro;
         // los Tobiroppo como élites; X Drake, Hawkins y las Tres Calamidades (Jack, Queen y King) de minijefes, Kaido de jefe
         base: 'krieg_pirate',
@@ -671,7 +671,12 @@ function px(g, col, x, y, w, h) { g.fillStyle = col; g.fillRect(x, y, w, h); }
 let selectedCharacter = 'luffy';
 let selectedMap = 'baratie';
 function selectMap(id) {
-    if (mapLocked(id)) { playSound('muted'); return; }
+    if (mapLocked(id)) {
+        const a = unlockAchievement('map_' + id);
+        playSound('muted');
+        showAchToast('ISLA BLOQUEADA — ' + (a ? a.desc : ''));
+        return;
+    }
     playSound('ui');
     selectedMap = id;
     prefetchRun(id, selectedCharacter);
@@ -679,10 +684,16 @@ function selectMap(id) {
     document.getElementById('map-selected').innerText = 'Mapa: ' + names[id];
     document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('selected', b.dataset.map === id));
 }
-// VS: las etapas se desbloquean por logros — aquí, venciendo al boss del mapa anterior
+// VS: las etapas se desbloquean por logros (ACHIEVEMENTS con unlock 'map_<isla>'); Baratie está abierta desde el inicio.
+// Las islas que ya se jugaron en un guardado anterior siguen abiertas.
 function mapLocked(id) {
-    // Todos los mapas abiertos. Para bloquear uno en desarrollo: return id === '<mapa>';
-    return false;
+    if (!unlockAchievement('map_' + id) || meta.unlocked['map_' + id]) return false;
+    return !((meta.wins[id] || 0) > 0 || (meta.stats.maxTime[id] || 0) > 0);
+}
+// Peligro de cada isla (1 = Baratie ... 9 = Wano), según su orden en la selección: cada una tiene más vida enemiga (hpMult) que la anterior
+function mapDanger(id) {
+    const order = Array.from(document.querySelectorAll('#map-select .map-btn')).map(b => b.dataset.map);
+    return { tier: order.indexOf(id) + 1, total: order.length, hp: (MAP_ENEMIES[id] && MAP_ENEMIES[id].hpMult) || 1 };
 }
 // === CLIMA PELIGROSO (rango de Maldición 0-4, estilo VS) ===
 // Más peligro (enemigos/HP/velocidad) a cambio de más Beli en la singlatura.
@@ -807,14 +818,17 @@ function updateHudPortrait() {
 }
 // Nombre completo como aparece en los carteles de Se Busca
 const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'NAMI', usopp: 'GOD USOPP', chopper: 'CHOPPER', robin: 'NICO ROBIN' };
-// Cómo se desbloquea cada personaje (se muestra en la carta bloqueada)
-const CHAR_LOCK_TEXT = { zoro: 'BLOQUEADO — TIENDA', sanji: 'BLOQUEADO — TIENDA', usopp: 'SOBREVIVE 5 MIN', nami: 'CONQUISTA EL BARATIE', chopper: 'DERROTA 1.500 ENEMIGOS', robin: 'CONQUISTA ALABASTA' };
+// Logro que desbloquea un personaje o una isla (key = 'zoro' o 'map_alabasta'); su lockText es el cartel de la carta bloqueada
+function unlockAchievement(key) { return typeof ACHIEVEMENTS !== 'undefined' ? ACHIEVEMENTS.find(a => a.unlock === key) : null; }
+function lockText(key) { const a = unlockAchievement(key); return a ? a.lockText : 'BLOQUEADO'; }
 // Tripulación aún sin kit completo: visible en la selección pero no jugable (desde el 2026-11-02 todos tienen kit, js/crew.js)
 const CHAR_COMING_SOON = {};
 function selectCharacter(id) {
     if (CHAR_COMING_SOON[id]) { showAchToast('PRÓXIMAMENTE — ' + CHAR_ANIMS[id].name); return; }
     if (!meta.unlocked[id]) {
-        showAchToast('PERSONAJE BLOQUEADO — ' + (CHAR_LOCK_TEXT[id] || 'TIENDA'));
+        const a = unlockAchievement(id);
+        playSound('muted');
+        showAchToast('PERSONAJE BLOQUEADO — ' + (a ? a.desc : 'BLOQUEADO'));
         return;
     }
     playSound('ui');
@@ -843,7 +857,7 @@ function refreshCharCards() {
         if (!unlocked && !overlay) {
             overlay = document.createElement('div');
             overlay.className = 'char-locked-overlay';
-            overlay.innerHTML = '<span class="char-locked-banner">' + (soon ? 'PRÓXIMAMENTE' : (CHAR_LOCK_TEXT[b.dataset.char] || 'BLOQUEADO')) + '</span>';
+            overlay.innerHTML = '<span class="char-locked-banner">' + (soon ? 'PRÓXIMAMENTE' : lockText(b.dataset.char)) + '</span>';
             b.appendChild(overlay);
         } else if (unlocked && overlay) {
             overlay.remove();

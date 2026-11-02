@@ -57,7 +57,25 @@ function updateMetaUI() {
     if (typeof refreshCharCards === 'function') refreshCharCards();
     if (typeof refreshModeButtons === 'function') refreshModeButtons();
     // marca los mapas bloqueados
-    document.querySelectorAll('#map-select .map-btn').forEach(b => b.classList.toggle('locked', mapLocked(b.dataset.map)));
+    // y su peligro: una calavera más por isla, de verde (Baratie) a rojo (Wano), con la vida enemiga en el título
+    document.querySelectorAll('#map-select .map-btn').forEach(b => {
+        const id = b.dataset.map, locked = mapLocked(id), d = mapDanger(id);
+        b.classList.toggle('locked', locked);
+        let tier = b.querySelector('.map-tier');
+        if (!tier) {
+            tier = document.createElement('span');
+            tier.className = 'map-tier';
+            tier.innerHTML = (ICONS.skull || '☠') + '<b></b>';
+            b.appendChild(tier);
+        }
+        tier.querySelector('b').textContent = d.tier;
+        tier.style.setProperty('--hue', Math.round(120 - 120 * (d.tier - 1) / Math.max(1, d.total - 1)));
+        let lock = b.querySelector('.map-lock');
+        if (locked && !lock) { lock = document.createElement('small'); lock.className = 'map-lock'; b.appendChild(lock); }
+        if (lock) { if (locked) lock.textContent = lockText('map_' + id); else lock.remove(); }
+        const a = unlockAchievement('map_' + id);
+        b.title = 'Peligro ' + d.tier + '/' + d.total + ' · vida enemiga x' + d.hp.toFixed(2) + (locked && a ? ' · BLOQUEADA: ' + a.desc : '');
+    });
     // marcas de Clima Peligroso bloqueado (se desbloquea venciendo el rango anterior)
     document.querySelectorAll('#curse-select .curse-btn').forEach(b => {
         const n = parseInt(b.dataset.curse, 10);

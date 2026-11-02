@@ -177,7 +177,8 @@ function render() {
         ctx.translate(e.x, e.y);
         ctx.scale(SPRITE_ZOOM, SPRITE_ZOOM);
 
-        const eState = (e.attackTimer > 0) ? 'attack' : 'idle';
+        const eCfg = ENEMY_ANIMS[e.type];
+        const eState = (eCfg && eCfg.rows4) ? (e._dir || 'down') : ((e.attackTimer > 0) ? 'attack' : 'idle');
         const eSet = (assetsLoaded && ENEMY_IMG[e.type] && ENEMY_IMG[e.type][eState] && ENEMY_IMG[e.type][eState].length) ? ENEMY_IMG[e.type][eState] : (assetsLoaded && ENEMY_IMG[e.type] ? ENEMY_IMG[e.type].idle : null);
         let eImg = null;
         if (eSet && eSet.length) eImg = eSet[e.animIndex % eSet.length];
@@ -194,9 +195,9 @@ function render() {
         if (eImg && eImg.complete && eImg.width) {
             if (flashing) eImg = filteredSprite(eImg, FLASH_FILTER);
             const s = (ENEMY_DRAW_SCALE[e.type] || 1) * (e.isElite ? 1.3 : 1);
-            // sprites con orientación conocida: miran hacia el jugador
-            const fc = ENEMY_ANIMS[e.type] && ENEMY_ANIMS[e.type].faces;
-            const flip = fc && ((fc > 0) !== (player.x >= e.x));
+            // sprites con orientación conocida: miran hacia donde caminan o atacan (enemyFacing en game.js)
+            const fc = eCfg && (eState === 'attack' && eCfg.facesAtk ? eCfg.facesAtk : eCfg.faces);
+            const flip = fc && ((fc > 0) !== ((e._face || (player.x >= e.x ? 1 : -1)) > 0));
             if (flip) ctx.scale(-1, 1);
             ctx.drawImage(eImg, -eImg.width*s/2, -eImg.height*s/2, eImg.width*s, eImg.height*s);
             if (flip) ctx.scale(-1, 1); // deshace el espejo: sin esto, el nombre del élite salía en espejo

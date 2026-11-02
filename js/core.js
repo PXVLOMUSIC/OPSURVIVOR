@@ -178,14 +178,14 @@ let assetsToLoad = Object.keys(SPRITE_PATHS).length;
 
 // --- ENEMY ANIMATIONS ---
 const ENEMY_ANIMS = {
-    grunt: { folder: 'marine_gba', idle: [2,3,4], attack: [19] },
-    elite_marine: { folder: 'marine_gba', idle: [2,3,4], attack: [19] },
-    shooter: { folder: 'marine2_gba', idle: [2,3,4,5,6,7], attack: [9,10] },
-    elite_shooter: { folder: 'marine2_gba', idle: [2,3,4,5,6,7], attack: [9,10] },
-    pacifista: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29] },
-    morgan: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29] },
-    elite_kuma: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29] },
-    boss_krieg: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19] },
+    grunt: { folder: 'marine_gba', idle: [2,3,4], attack: [19], faces: -1 },
+    elite_marine: { folder: 'marine_gba', idle: [2,3,4], attack: [19], faces: -1 },
+    shooter: { folder: 'marine2_gba', idle: [2,3,4,5,6,7], attack: [9,10], faces: -1, facesAtk: 1 },
+    elite_shooter: { folder: 'marine2_gba', idle: [2,3,4,5,6,7], attack: [9,10], faces: -1, facesAtk: 1 },
+    pacifista: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29], faces: -1 },
+    morgan: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29], faces: -1 },
+    elite_kuma: { folder: 'morgan_gba', idle: [0,1,2,3], attack: [29], faces: -1 },
+    boss_krieg: { folder: 'krieg_gba', idle: [0,1,2,3,4], attack: [17,19], faces: -1 },
     boss_crocodile: { folder: 'crocodile', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10, 11], faces: 1 },
     boss_enel: { folder: 'enel', idle: [0, 1, 2, 1], attack: [4, 5, 6, 7], faces: 1 },
     // Enies Lobby: CP9 (DS Gigant Battle)
@@ -196,7 +196,7 @@ const ENEMY_ANIMS = {
     boss_franky: { folder: 'franky', idle: [0, 1], attack: [2, 3, 4, 5], faces: 1 },
     lucci_human: { folder: 'lucci_human', idle: [0, 1, 2, 3], attack: [4], faces: 1 },
     // Marineford: los tres Almirantes (DS Gigant Battle)
-    boss_akainu: { folder: 'akainu', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
+    boss_akainu: { folder: 'akainu', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: -1, facesAtk: 1 },
     aokiji: { folder: 'aokiji', idle: [0, 1, 2, 3, 4, 5, 6], attack: [7, 8, 9, 10], faces: 1 },
     kizaru: { folder: 'kizaru', idle: [0, 1], attack: [2, 3, 4], faces: 1 },
     // Wano (3DS Great Pirate Colosseum): asalto a Onigashima
@@ -207,24 +207,24 @@ const ENEMY_ANIMS = {
     ink_bird: { folder: 'ink_bird', idle: [0, 1, 2], attack: [3], faces: 1 },
     // Wano: las Tres Calamidades y los Tobiroppo (sprites de fans en estilo Gigant Battle; ver SPRITES_SOURCES.md)
     king: { folder: 'king', idle: [0, 1, 2, 3], attack: [4, 5], faces: 1 },
-    queen: { folder: 'queen', idle: [0, 1], attack: [2, 3] },
+    queen: { folder: 'queen', idle: [0, 1], attack: [2, 3], faces: 1 },
     jack: { folder: 'jack', idle: [0, 1], attack: [2, 3] },
     ulti: { folder: 'ulti', idle: [0, 1], attack: [2, 3], faces: -1 },
-    page_one: { folder: 'page_one', idle: [0, 1], attack: [2, 3] },
-    sasaki: { folder: 'sasaki', idle: [0, 1], attack: [2, 3] },
-    black_maria: { folder: 'black_maria', idle: [0, 1], attack: [2, 3] },
+    page_one: { folder: 'page_one', idle: [0, 1], attack: [2, 3], faces: 1 },
+    sasaki: { folder: 'sasaki', idle: [0, 1], attack: [2, 3], faces: -1 },
+    black_maria: { folder: 'black_maria', idle: [0, 1], attack: [2, 3], faces: 1 },
     // Whole Cake: soldados de ajedrez (dibujados por código), la familia Charlotte y Big Mom
     chess_soldier: { folder: 'chess_soldier', idle: [0, 1, 2, 3], attack: [4, 5], faces: 1 },
     chess_soldier_b: { folder: 'chess_soldier_b', idle: [0, 1, 2, 3], attack: [4, 5], faces: 1 },
-    tamago: { folder: 'tamago', idle: [0, 1], attack: [2, 3] },
+    tamago: { folder: 'tamago', idle: [0, 1], attack: [2, 3], faces: -1 },
     pekoms: { folder: 'pekoms', idle: [0, 1], attack: [2, 3], faces: 1 },
     smoothie: { folder: 'smoothie', idle: [0, 1], attack: [2, 3] },
     katakuri: { folder: 'katakuri', idle: [0, 1], attack: [2, 3], faces: 1 },
     boss_bigmom: { folder: 'bigmom', idle: [0, 1, 2, 3], attack: [4, 5] },
     // Shell Town y Arlong Park (GBA One Piece / Grand Battle; source-art/extraer_eastblue.py)
-    boss_morgan: { folder: 'morgan_gba', idle: [0, 1, 2, 3], attack: [27, 28] },
-    helmeppo: { folder: 'helmeppo', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7] },
-    ripper: { folder: 'marine_sword', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    boss_morgan: { folder: 'morgan_gba', idle: [0, 1, 2, 3], attack: [27, 28], faces: -1 },
+    helmeppo: { folder: 'helmeppo', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
+    ripper: { folder: 'marine_sword', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: -1 },
     merman: { folder: 'merman', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
     merman_b: { folder: 'merman_b', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
     fat_merman: { folder: 'fat_merman', idle: [0, 1], attack: [2, 3], faces: -1 },
@@ -234,7 +234,7 @@ const ENEMY_ANIMS = {
     boss_arlong: { folder: 'arlong', idle: [0, 1, 2, 3, 4], attack: [5, 6, 7, 8], faces: -1 },
     // Syrup (GBA One Piece) y Drum (DS Gigant Battle)
     boss_kuro: { folder: 'kuro', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
-    buchi: { folder: 'buchi', idle: [0], attack: [1, 2, 3] },
+    buchi: { folder: 'buchi', idle: [0], attack: [1, 2, 3], faces: 1 },
     sham: { folder: 'sham', idle: [0, 1], attack: [2, 3], faces: 1 },
     boss_wapol: { folder: 'wapol', idle: [0, 1, 2, 3], attack: [4, 5], faces: -1 },
     chess: { folder: 'chess', idle: [0, 1], attack: [2] },
@@ -244,48 +244,48 @@ const ENEMY_ANIMS = {
     // Baratie (GBA One Piece), Alabasta (WonderSwan Color / DS) y Skypiea (DS / 3DS reescalados)
     krieg_pirate: { folder: 'krieg_pirate', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_gunner: { folder: 'krieg_gunner', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7], faces: -1 },
-    krieg_bomber: { folder: 'krieg_bomber', idle: [0, 0, 2, 3, 4], attack: [5, 6], faces: -1 },
+    krieg_bomber: { folder: 'krieg_bomber', idle: [0, 0, 2, 3, 4], attack: [5, 6], faces: 1 },
     pearl: { folder: 'pearl', idle: [0, 1], attack: [2, 3] },
-    gin: { folder: 'gin', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7] },
-    dugong: { folder: 'dugong', idle: [0, 1, 2], attack: [3] },
-    mr5: { folder: 'mr5', idle: [0, 1, 2, 3], attack: [4, 5] },
-    miss_valentine: { folder: 'miss_valentine', idle: [0, 1, 2, 3], attack: [4, 5, 6] },
-    mr4: { folder: 'mr4', idle: [0, 1, 2, 2, 4, 5], attack: [6, 7, 8, 9] },
-    miss_merry: { folder: 'miss_merry', idle: [0, 1, 2, 3], attack: [4, 5, 6] },
+    gin: { folder: 'gin', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: -1 },
+    dugong: { folder: 'dugong', idle: [0, 1, 2], attack: [3], faces: -1 },
+    mr5: { folder: 'mr5', idle: [0, 1, 2, 3], attack: [4, 5], faces: -1 },
+    miss_valentine: { folder: 'miss_valentine', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: -1 },
+    mr4: { folder: 'mr4', idle: [0, 1, 2, 2, 4, 5], attack: [6, 7, 8, 9], faces: -1 },
+    miss_merry: { folder: 'miss_merry', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: -1 },
     miss_doublefinger: { folder: 'miss_doublefinger', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7] },
     mr1: { folder: 'mr1', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
     mr2: { folder: 'mr2', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8, 9], faces: 1 },
     shandia: { folder: 'shandia', idle: [0, 1, 2], attack: [3, 4], faces: -1 },
-    shandia_gunner: { folder: 'shandia_gunner', idle: [0, 1, 2], attack: [3] },
-    satori: { folder: 'satori', idle: [0, 1], attack: [2] },
-    shura: { folder: 'shura', idle: [0, 1, 2, 3], attack: [4] },
+    shandia_gunner: { folder: 'shandia_gunner', idle: [0, 1, 2], attack: [3], faces: -1 },
+    satori: { folder: 'satori', idle: [0, 1], attack: [2], faces: -1 },
+    shura: { folder: 'shura', idle: [0, 1, 2, 3], attack: [4], faces: 1 },
     gedatsu: { folder: 'gedatsu', idle: [0, 1], attack: [2, 3], faces: 1 },
-    ohm: { folder: 'ohm', idle: [0, 1], attack: [2, 3] },
-    wiper: { folder: 'wiper', idle: [0, 1, 2, 3], attack: [4] },
-    boss_moria: { folder: 'moria', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
-    kuma: { folder: 'kuma', idle: [0,1,2,3], attack: [4,5,6,7] },
-    moria: { folder: 'moria', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
+    ohm: { folder: 'ohm', idle: [0, 1], attack: [2, 3], faces: 1 },
+    wiper: { folder: 'wiper', idle: [0, 1, 2, 3], attack: [4], faces: 1 },
+    boss_moria: { folder: 'moria', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7], rows4: true },
+    kuma: { folder: 'kuma', idle: [0,1,2,3], attack: [4,5,6,7], rows4: true },
+    moria: { folder: 'moria', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7], rows4: true },
     tararan: { folder: 'tararan', idle: [0, 1, 2, 3], attack: [4, 1, 2, 3] },
     elite_tararan: { folder: 'tararan', idle: [0, 1, 2, 3], attack: [4, 1, 2, 3] },
-    hogback: { folder: 'hogback', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
-    elite_hogback: { folder: 'hogback', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
-    cindry: { folder: 'cindry', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
-    elite_cindry: { folder: 'cindry', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
-    pellona: { folder: 'pellona', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
-    elite_pellona: { folder: 'pellona', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
-    ryuma: { folder: 'ryuma', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
-    elite_ryuma: { folder: 'ryuma', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5] },
-    inupen: { folder: 'inupen', idle: [0, 1, 0, 3], attack: [4, 5, 4, 5] },
-    elite_inupen: { folder: 'inupen', idle: [0, 1, 0, 3], attack: [4, 5, 4, 5] },
-    kumashi: { folder: 'kumashi', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
-    elite_kumashi: { folder: 'kumashi', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7] },
-    absalom: { folder: 'absalom', idle: [0, 1, 2, 3], attack: [4, 5, 6, 5] },
-    elite_absalom: { folder: 'absalom', idle: [0, 1, 2, 3], attack: [4, 5, 6, 5] },
+    hogback: { folder: 'hogback', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5], rows4: true },
+    elite_hogback: { folder: 'hogback', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5], rows4: true },
+    cindry: { folder: 'cindry', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7], rows4: true },
+    elite_cindry: { folder: 'cindry', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7], rows4: true },
+    pellona: { folder: 'pellona', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5], rows4: true },
+    elite_pellona: { folder: 'pellona', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5], rows4: true },
+    ryuma: { folder: 'ryuma', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5], rows4: true },
+    elite_ryuma: { folder: 'ryuma', idle: [0, 1, 2, 1], attack: [4, 5, 6, 5], rows4: true },
+    inupen: { folder: 'inupen', idle: [0, 1, 0, 3], attack: [4, 5, 4, 5], rows4: true },
+    elite_inupen: { folder: 'inupen', idle: [0, 1, 0, 3], attack: [4, 5, 4, 5], rows4: true },
+    kumashi: { folder: 'kumashi', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7], rows4: true },
+    elite_kumashi: { folder: 'kumashi', idle: [0, 1, 0, 3], attack: [4, 5, 4, 7], rows4: true },
+    absalom: { folder: 'absalom', idle: [0, 1, 2, 3], attack: [4, 5, 6, 5], rows4: true },
+    elite_absalom: { folder: 'absalom', idle: [0, 1, 2, 3], attack: [4, 5, 6, 5], rows4: true },
     // Ampliación de bestiario (GBA One Piece / WSC Treasure Wars 2)
     krieg_starved: { folder: 'krieg_starved', idle: [0, 1, 2, 3, 4, 5], attack: [6, 7, 8], faces: 1 },
     krieg_knife: { folder: 'krieg_knife', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: 1 },
-    marine_sword: { folder: 'marine_sword', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: 1 },
-    jango: { folder: 'jango', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10], faces: 1 },
+    marine_sword: { folder: 'marine_sword', idle: [0, 1, 2, 3], attack: [4, 5, 6, 7], faces: -1 },
+    jango: { folder: 'jango', idle: [0, 1, 2, 3, 4, 5, 6, 7], attack: [8, 9, 10], faces: -1 },
     fullbody: { folder: 'fullbody', idle: [0, 1, 2, 3], attack: [4, 5, 6], faces: -1 },
     tashigi: { folder: 'tashigi', idle: [0, 1, 2, 3, 4], attack: [5, 6, 7, 8], faces: 1 }
 };
@@ -692,13 +692,18 @@ function enemyPath(folder, idx) {
 }
 // Los sprites de cada enemigo se cargan la primera vez que se piden (ENEMY_IMG[tipo]).
 // Así solo se descargan los del mapa que se juega (prefetchRun) y no los ~60 tipos al abrir el juego.
+const ENEMY_DIRS = ['down', 'left', 'right', 'up'];
 function buildEnemyImages(type) {
     const cfg = ENEMY_ANIMS[type];
     if (!cfg || !cfg.folder) return null;
-    return {
+    const set = {
         idle: (cfg.idle || []).map(idx => loadImg(enemyPath(cfg.folder, idx))),
         attack: (cfg.attack || []).map(idx => loadImg(enemyPath(cfg.folder, idx)))
     };
+    // Hojas de RPG de Thriller Bark: 4 filas de paso (abajo, izquierda, derecha, arriba).
+    // Se elige la fila según hacia dónde camina el enemigo (e._dir, ver enemyFacing en game.js).
+    if (cfg.rows4) ENEMY_DIRS.forEach((d, r) => { set[d] = cfg.idle.map(idx => loadImg(enemyPath(cfg.folder, idx + r * 4))); });
+    return set;
 }
 
 // === Enemigos dibujados por código (no hay hojas de sprites de ellos) ===

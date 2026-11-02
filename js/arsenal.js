@@ -223,55 +223,9 @@ function drawArsenalFX(atk) {
     if (!ARSENAL_TYPES.has(atk.type)) return false;
     const p = atk.maxLife ? Math.min(1, Math.max(0, 1 - atk.life / atk.maxLife)) : 0;
     ctx.save();
-    if (atk.type === 'kabuto') {
-        // Kayaku Boshi (bola de pólvora) o Midori Boshi (semilla Pop Green) al evolucionar
-        ctx.globalAlpha = 0.35; ctx.fillStyle = atk.evo ? '#22c55e' : '#f97316';
-        ctx.beginPath(); ctx.arc(atk.x - atk.vx * 0.03, atk.y - atk.vy * 0.03, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = atk.evo ? '#16a34a' : '#3f3f46'; ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(atk.x, atk.y, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = atk.evo ? '#bbf7d0' : '#fdba74';
-        ctx.fillRect(atk.x - 3, atk.y - 4, 2, 2);
-    } else if (atk.type === 'thunder') {
-        // rayo desde la nube de tormenta hasta el enemigo
-        const a = 1 - p;
-        ctx.globalAlpha = 0.85 * a; ctx.fillStyle = '#334155';
-        ctx.beginPath(); ctx.ellipse(atk.x, atk.y - 150, 34, 12, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.strokeStyle = atk.evo ? '#fde047' : '#e0f2fe'; ctx.lineWidth = atk.evo ? 5 : 3; ctx.globalAlpha = a;
-        ctx.beginPath(); ctx.moveTo(atk.x, atk.y - 145);
-        for (let k = 1; k <= 6; k++) ctx.lineTo(atk.x + (k < 6 ? (Math.sin(k * 7.3 + atk.x) * 14) : 0), atk.y - 145 + k * 24);
-        ctx.stroke();
-        const g = ctx.createRadialGradient(atk.x, atk.y, 2, atk.x, atk.y, atk.radius);
-        g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(0.5, atk.evo ? 'rgba(250,204,21,0.5)' : 'rgba(56,189,248,0.5)'); g.addColorStop(1, 'rgba(56,189,248,0)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(atk.x, atk.y, atk.radius, 0, Math.PI * 2); ctx.fill();
-    } else if (atk.type === 'clutch') {
-        // brazos de Robin que brotan alrededor del enemigo y se cierran sobre él
-        const a = 1 - Math.max(0, p - 0.6) / 0.4, grow = Math.min(1, p / 0.45);
-        const n = atk.evo ? 8 : 6, R = (atk.evo ? Math.max(18, atk.radius * 0.6) : 16);
-        ctx.globalAlpha = a;
-        for (let k = 0; k < n; k++) {
-            const ang = k / n * Math.PI * 2;
-            const bx = atk.x + Math.cos(ang) * R, by = atk.y + Math.sin(ang) * R * 0.6 + 8;
-            const tx = atk.x + Math.cos(ang) * R * (1 - 0.7 * grow), ty = by - 22 * grow;
-            ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(tx, ty); ctx.stroke();
-            ctx.strokeStyle = '#f2c39a'; ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(tx, ty); ctx.stroke();
-            ctx.fillStyle = '#f2c39a'; ctx.beginPath(); ctx.arc(tx, ty, 3.2, 0, Math.PI * 2); ctx.fill();
-        }
-        // pétalos (Hana Hana)
-        ctx.fillStyle = '#f9a8d4';
-        for (let k = 0; k < 4; k++) { const ang = gameTime * 3 + k * 1.6; ctx.fillRect(atk.x + Math.cos(ang) * 20, atk.y - 10 + Math.sin(ang) * 12, 3, 3); }
-    } else if (atk.type === 'impact') {
+    // kabuto, thunder, clutch y el impacto de Roseo se dibujan en js/crewfx.js
+    if (atk.type === 'impact') {
         const r = atk.radius * (0.3 + 0.7 * p), a = 1 - p;
-        if (atk.petal) {
-            // Roseo Mirror: flor de cerezo de Drum que se abre en el impacto
-            ctx.globalAlpha = 0.9 * a; ctx.fillStyle = atk.evo ? '#ec4899' : '#f9a8d4';
-            for (let k = 0; k < 5; k++) { const ang = k / 5 * Math.PI * 2 + p; ctx.beginPath(); ctx.ellipse(atk.x + Math.cos(ang) * r * 0.55, atk.y + Math.sin(ang) * r * 0.4, r * 0.32, r * 0.2, ang, 0, Math.PI * 2); ctx.fill(); }
-            ctx.fillStyle = '#fef08a'; ctx.beginPath(); ctx.arc(atk.x, atk.y, 5, 0, Math.PI * 2); ctx.fill();
-            ctx.restore(); return true;
-        }
         ctx.globalAlpha = 0.25 * a; ctx.fillStyle = atk.evo ? '#fca5a5' : '#e2e8f0';
         ctx.beginPath(); ctx.ellipse(atk.x, atk.y + 6, r, r * 0.7, 0, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 0.9 * a; ctx.strokeStyle = atk.evo ? '#ef4444' : '#f8fafc'; ctx.lineWidth = 4;

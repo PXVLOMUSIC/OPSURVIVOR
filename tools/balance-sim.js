@@ -1,7 +1,7 @@
 // Simulador de balance: un bot juega partidas completas en Chromium headless y mide winrate.
 // Requisitos: servir el repo (python3 -m http.server 8765) y tener Playwright.
 // Uso: node tools/balance-sim.js http://localhost:8765/index.html <partidas por combo> <mejoras: 0 nada | 2 medias | 1 todas> [personajes] [mapas] [paralelo] [gear max 2-5] 2> runs.log
-// El bot activa la transformación (Gears, Haki de Zoro, Raid Suit de Sanji) en cuanto el medidor está lleno. [gear max] fija el escalón desbloqueado (por defecto 2; Zoro y Sanji llegan hasta 4).
+// El bot activa la transformación de cada personaje (FORM_CARD) en cuanto el medidor está lleno. [gear max] fija el escalón desbloqueado (por defecto 2; Zoro y Sanji llegan hasta 4).
 //      python3 tools/balance-report.py runs.log
 const { chromium } = require('playwright');
 const URL_ = process.argv[2];
@@ -21,7 +21,7 @@ async function runOne(browser, ch, map, meta) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     await page.addInitScript(({ meta, gear }) => {
-        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, item_dial: true, item_jolly: true }, gear: { unlocked: gear, forms: { zoro: Math.min(gear, 4), sanji: Math.min(gear, 4) }, up: { meter: 0, charge: 0, recover: 0 } } };
+        const m = { beli: 0, upgrades: {}, unlocked: { luffy: true, zoro: true, sanji: true, nami: true, usopp: true, chopper: true, robin: true, item_dial: true, item_jolly: true }, gear: { unlocked: gear, forms: { zoro: Math.min(gear, 4), sanji: Math.min(gear, 4), nami: Math.min(gear, 4), usopp: Math.min(gear, 4), chopper: Math.min(gear, 4), robin: Math.min(gear, 4) }, up: { meter: 0, charge: 0, recover: 0 } } };
         // mejoras: se fijan tras cargar el juego a partir de META_UPGRADES (ver abajo)
         // (meta 1 = todas al máximo; meta 2 = la mitad, redondeando arriba y sin Revivir; la Maldición siempre a 0)
         localStorage.setItem('op_survivor_meta', JSON.stringify(m));
@@ -105,7 +105,7 @@ async function runOne(browser, ch, map, meta) {
             }
             const ml = Math.hypot(mx, my);
             joystick.active = ml > 0.05; joystick.dx = ml ? mx / ml : 0; joystick.dy = ml ? my / ml : 0;
-            const fc = { luffy: 'gear2', zoro: 'zoroform', sanji: 'sanjiform' }[ch];
+            const fc = FORM_CARD[ch];
             if (forceEvo && gameTime > 240 && !skills[fc].evolved) { skills[fc].level = 5; skills[fc].evolved = true; }
             if (typeof gearReady === 'function' && gearReady()) { const gv = gearAvailable(); gearActivate(); gu[gv] = (gu[gv] || 0) + 1; }
             const preHp = player.hp;

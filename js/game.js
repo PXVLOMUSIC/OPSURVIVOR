@@ -186,6 +186,7 @@ function update(dt) {
                 vx -= (edy / edist) * w; vy += (edx / edist) * w;
             }
             if (e._dashT > 0) { vx = e._dashVx; vy = e._dashVy; sp *= 3; }
+            if (e._slowT > gameTime) sp *= e._slowM; // Rain Tempo / Tabasco Boshi (js/crew.js)
             e.x += vx * sp * gearEnemySpeedMult() * dt;
             e.y += vy * sp * gearEnemySpeedMult() * dt;
             // Los enemigos normales rodean rejas y barandillas; jefes y minijefes las atraviesan
@@ -1473,7 +1474,7 @@ function showUpgradeScreen(count, isChest) {
     const container = document.getElementById('upgrade-options');
     container.innerHTML = '';
 
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform'];
+    const weaponIds = CREW_WEAPON_IDS.concat(['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform']);
     const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp','rumble','jolly'];
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
@@ -1528,6 +1529,7 @@ function showUpgradeScreen(count, isChest) {
         { id: 'clutch', type: 'weapon', chars: ['robin'], title: 'Seis Fleur: Clutch', icon: ICONS.clutch, desc: 'Robin: brotan brazos en los enemigos cercanos, los dañan y los inmovilizan.' },
         { id: 'jolly', type: 'passive', chars: 'all', title: 'Bandera Pirata', icon: ICONS.jolly, desc: 'Izas tu Jolly Roger: +10% enemigos y peligro, +10% XP y Berries.' },
     ];
+    possibleUpgrades.push(...CREW_UPGRADES); // kits de Nami, Usopp, Chopper y Robin (js/crew.js), al final por el sesgo del sorteo
     // Quien no usa Haki en el canon (Nami, Chopper, Robin) ve Poder y Armadura sin el nombre de Haki
     if (!itemAllowed('haki_buso', selectedCharacter)) for (const u of possibleUpgrades) {
         if (u.id === 'power') u.title = 'Entrenamiento (Poder %)';
@@ -1971,7 +1973,8 @@ function updateWeaponsHUD() {
         { id: 'rifle', icon: ICONS.rifle, name: 'Rifle' }, { id: 'ballesta', icon: ICONS.ballesta, name: 'Ballesta' },
         { id: 'lanza', icon: ICONS.lanza, name: 'Lanza' }, { id: 'hacha', icon: ICONS.hacha, name: 'Hacha' },
         { id: 'shuriken', icon: ICONS.shuriken, name: 'Shuriken' }, { id: 'hakiPulse', icon: ICONS.hakiPulse, name: 'Haoshoku' },
-        { id: 'kabuto', icon: ICONS.kabuto, name: 'Kabuto' }, { id: 'roseo', icon: ICONS.roseo, name: 'Roseo Mirror' }, { id: 'clutch', icon: ICONS.clutch, name: 'Clutch' }, { id: 'climatact', icon: ICONS.climatact, name: 'Clima-Tact' }, { id: 'dial', icon: ICONS.dial, name: 'Dial de Impacto' }
+        { id: 'kabuto', icon: ICONS.kabuto, name: 'Kabuto' }, { id: 'roseo', icon: ICONS.roseo, name: 'Roseo Mirror' }, { id: 'clutch', icon: ICONS.clutch, name: 'Clutch' }, { id: 'climatact', icon: ICONS.climatact, name: 'Clima-Tact' }, { id: 'dial', icon: ICONS.dial, name: 'Dial de Impacto' },
+        ...CREW_HUD
     );
     // solo se reconstruye si cambian las armas, sus niveles o evoluciones
     let sig = '';

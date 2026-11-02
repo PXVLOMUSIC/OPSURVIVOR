@@ -73,10 +73,10 @@ const CREW_START = {
 // Arma insignia: en manos de su dueño pega más y recarga antes. Sin Gears ni transformaciones,
 // es lo que mantiene a la tripulación a la altura de Luffy, Zoro y Sanji (medido con tools/balance-sim.js).
 const CREW_SIGNATURE = {
-    nami:    { dmg: 2.1, cd: 0.75, extra: sk => { sk.strikes += 2; sk.nearFirst = true; } },
-    usopp:   { dmg: 2.6, cd: 0.65 },
-    chopper: { dmg: 0.4, cd: 1.1 },
-    robin:   { dmg: 2.3, cd: 0.8 }
+    nami:    { dmg: 1.55, cd: 0.75, extra: sk => { sk.strikes += 2; sk.nearFirst = true; } },
+    usopp:   { dmg: 2.8, cd: 0.6, extra: sk => { sk.balls = 2; } }, // dispara dos Kayaku Boshi a la vez
+    chopper: { dmg: 1.0, cd: 0.9 },
+    robin:   { dmg: 2.5, cd: 0.8 }
 };
 function applyCrewStart() {
     const c = CREW_START[selectedCharacter];
@@ -103,9 +103,9 @@ function handleArsenal(dt, cdMult) {
             kb.timer = 0;
             const t = getNearestEnemy();
             const base = t ? Math.atan2(t.y - player.y, t.x - player.x) : Math.random() * Math.PI * 2;
-            const n = kb.evolved ? 2 : 1;
+            const n = (kb.balls || 1) + (kb.evolved ? 1 : 0);
             for (let k = 0; k < n; k++) {
-                const a = base + (k ? Math.PI * 0.6 : 0);
+                const a = base + k * Math.PI * 0.6;
                 activeAttacks.push({ type: 'kabuto', x: player.x, y: player.y, vx: Math.cos(a) * kb.speed, vy: Math.sin(a) * kb.speed,
                     radius: 14 * player.areaBonus, life: kb.life * (player.durationBonus || 1), maxLife: kb.life, baseDamage: kb.baseDamage, hitCd: new Map(), evo: kb.evolved });
             }

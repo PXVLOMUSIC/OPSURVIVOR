@@ -14,6 +14,7 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 | `js/ui.js` | Opciones, pausa y menús |
 | `js/game.js` | Bucle principal, update, armas, aparición de enemigos, XP y evoluciones |
 | `js/arsenal.js` | Armas y pasivas compartidas nuevas, sus evoluciones y el arranque de Nami, Usopp, Chopper y Robin |
+| `js/crew.js` | Kits completos de Nami, Usopp, Chopper y Robin: 4 técnicas más cada uno (`CREW_TECH`, motor por tipo de ataque) y su transformación (`CREW_FORMS`, se registra en `FORMS`) |
 | `js/waves.js` | Oleadas con guion por minuto |
 | `js/loot.js` | Ruleta de los cofres, barriles y faroles que se rompen, y objetos que se desbloquean con logros |
 | `js/modes.js` | Modos Haki e Inverso y tabla de récords |
@@ -102,6 +103,14 @@ Están extraídos de hojas de GBA, en `assets/extracted/<personaje>/`. Los frame
 - Desbloqueo (`meta.gear.forms`): el nivel 2 con una victoria del personaje y el nivel 3 con una victoria en Clima 2 o más.
 - Balance con bot, todo desbloqueado (gear max 5): Luffy 83%, Sanji 78%, Zoro 73% (dentro de ±10). Para ello, Diable Jambe sube su daño base de 16 a 18.
 - Renombrados para no repetir nombres: la evolución de Santoryu pasa a "Rokudo no Tsuji" y la de Concassé a "Bien Cuit: Grill Shot".
+
+## Kits de la tripulación (js/crew.js, 2026-11-02)
+Como Luffy, Zoro y Sanji: 5 técnicas exclusivas (la insignia de arsenal.js + 4) y una transformación de 3 escalones (carta nv1, nv3 + ganar una isla, evolución + ganar con Clima 2).
+- Nami: Thunderbolt Tempo, Gust Sword, Tornado Tempo, Thunder Breed Tempo, Rain Tempo · Sorcery Clima-Tact → Mirage Tempo: Fata Morgana → Zeus Breeze Tempo.
+- Usopp: Kayaku Boshi (Kabuto), Namari Boshi, Kaen Boshi, Tabasco Boshi, Hi no Tori Boshi · Sogeking → Kenbunshoku → God Usopp.
+- Chopper: Kokutei Roseo Mirror, Heavy Gong, Kokutei Cross, Guard Point, Horn Point · Kung Fu Point → Monster Point → Monster Point dominado (3 minutos).
+- Robin: Seis Fleur: Clutch, Cien Fleur: Delphinium, Veinte Fleur: Calendula, Seis Fleur: Slap, Cuerpo Fleur: Doble · Cien Fleur: Wing → Gigante Fleur → Demonio Fleur.
+Bot (54 partidas por personaje y escalón, 9 mapas): 34 / 64 / 84 % sin mejoras / mitad / todas. Los ajustes finos están en `CREW_SIGNATURE` (arsenal.js) y en `CREW_TECH`/`CREW_FORMS`.
 
 ## Rendimiento y compatibilidad
 - Medir con `tools/perf-bench.js` (servir el repo y `node tools/perf-bench.js http://localhost:8765/index.html luffy thrillerbark 6 4 300 high`; el 4 simula una CPU 4 veces más lenta). Es determinista: si cambia `level` o `ent`, ha cambiado la simulación y por tanto el balance.

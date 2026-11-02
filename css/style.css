@@ -837,6 +837,10 @@ input[type="range"]::-moz-range-track {
 .wslot[data-char="luffy"] { --c: var(--luffy); }
 .wslot[data-char="zoro"] { --c: var(--zoro); }
 .wslot[data-char="sanji"] { --c: var(--sanji); }
+.wslot[data-char="nami"] { --c: #f97316; }
+.wslot[data-char="usopp"] { --c: #a16207; }
+.wslot[data-char="chopper"] { --c: #ec4899; }
+.wslot[data-char="robin"] { --c: #7c3aed; }
 .wslot .hud-ico svg.op-ico { color: var(--ink); width: 22px; height: 22px; }
 .wslot-lv { font-family: 'Bangers', sans-serif; font-size: 12px; letter-spacing: 1px; color: var(--ink); line-height: 1.2; }
 .wslot.evo {
@@ -874,6 +878,14 @@ input[type="range"]::-moz-range-track {
 #upgrade-options .upgrade-card[data-char="zoro"]::after { content: 'ZUBA!!'; color: #d6f5dc; }
 #upgrade-options .upgrade-card[data-char="sanji"] { --c: var(--sanji); }
 #upgrade-options .upgrade-card[data-char="sanji"]::after { content: 'DOGA!!'; color: #fff1c2; }
+#upgrade-options .upgrade-card[data-char="nami"] { --c: #f97316; }
+#upgrade-options .upgrade-card[data-char="nami"]::after { content: 'GORO!!'; color: #ffedd5; }
+#upgrade-options .upgrade-card[data-char="usopp"] { --c: #a16207; }
+#upgrade-options .upgrade-card[data-char="usopp"]::after { content: 'BAN!!'; color: #fef3c7; }
+#upgrade-options .upgrade-card[data-char="chopper"] { --c: #ec4899; }
+#upgrade-options .upgrade-card[data-char="chopper"]::after { content: 'DOKAN!!'; color: #fce7f3; }
+#upgrade-options .upgrade-card[data-char="robin"] { --c: #7c3aed; }
+#upgrade-options .upgrade-card[data-char="robin"]::after { content: 'BOKI!!'; color: #ede9fe; }
 #upgrade-options .upgrade-card[data-kind="passive"]::after { content: 'GOGOGO'; color: #fff; }
 #arcana-options .upgrade-card { --c: #7c2d12; }
 #arcana-options .upgrade-card::after { content: 'D'; font-family: 'Pirata One', serif; font-size: 44px; color: #fde68a; }

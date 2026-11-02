@@ -809,8 +809,8 @@ function updateHudPortrait() {
 const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'NAMI', usopp: 'GOD USOPP', chopper: 'CHOPPER', robin: 'NICO ROBIN' };
 // Cómo se desbloquea cada personaje (se muestra en la carta bloqueada)
 const CHAR_LOCK_TEXT = { zoro: 'BLOQUEADO — TIENDA', sanji: 'BLOQUEADO — TIENDA', usopp: 'SOBREVIVE 5 MIN', nami: 'CONQUISTA EL BARATIE', chopper: 'DERROTA 1.500 ENEMIGOS', robin: 'CONQUISTA ALABASTA' };
-// Tripulación aún sin kit completo: visible en la selección pero no jugable
-const CHAR_COMING_SOON = { nami: true, usopp: true, chopper: true, robin: true };
+// Tripulación aún sin kit completo: visible en la selección pero no jugable (desde el 2026-11-02 todos tienen kit, js/crew.js)
+const CHAR_COMING_SOON = {};
 function selectCharacter(id) {
     if (CHAR_COMING_SOON[id]) { showAchToast('PRÓXIMAMENTE — ' + CHAR_ANIMS[id].name); return; }
     if (!meta.unlocked[id]) {

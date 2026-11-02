@@ -53,7 +53,7 @@ function gearMetaInit() {
     if (!meta.gear) meta.gear = { unlocked: 2, up: { meter: 0, charge: 0, recover: 0 } };
     meta.gear.up = Object.assign({ meter: 0, charge: 0, recover: 0 }, meta.gear.up || {});
     if (!meta.gear.unlocked || meta.gear.unlocked < 2) meta.gear.unlocked = 2;
-    meta.gear.forms = Object.assign({ zoro: 2, sanji: 2 }, meta.gear.forms || {});
+    meta.gear.forms = Object.assign({ zoro: 2, sanji: 2, nami: 2, usopp: 2, chopper: 2, robin: 2 }, meta.gear.forms || {});
     if (meta.stats && meta.stats.luffyBestCurse === undefined) meta.stats.luffyBestCurse = -1;
     if (meta.stats && !meta.stats.bestCurseBy) meta.stats.bestCurseBy = { luffy: meta.stats.luffyBestCurse, zoro: -1, sanji: -1 };
 }
@@ -527,9 +527,9 @@ function renderGearShop(container) {
     const head = document.createElement('div');
     head.className = 'gear-shop-head';
     const row = (c, ns) => ns.map(n => FORMS[c][n].short + (n <= gearUnlocked(c) ? ' ✔' : ' 🔒')).join(' ');
-    head.innerHTML = 'TRANSFORMACIONES · Luffy: ' + row('luffy', [2,3,4,5]) + ' · Zoro: ' + row('zoro', [2,3,4]) + ' · Sanji: ' + row('sanji', [2,3,4]);
+    head.innerHTML = 'TRANSFORMACIONES · Luffy: ' + row('luffy', [2,3,4,5]) + Object.keys(FORMS).filter(c => c !== 'luffy').map(c => ' · ' + CHAR_ANIMS[c].name + ': ' + row(c, [2,3,4])).join('');
     container.appendChild(head);
-    const locked = meta.gear.unlocked < 3 && meta.gear.forms.zoro < 3 && meta.gear.forms.sanji < 3;
+    const locked = meta.gear.unlocked < 3 && Object.values(meta.gear.forms).every(v => v < 3);
     GEAR_SHOP.forEach(u => {
         const lvl = gearUp(u.id);
         const cost = gearShopCost(u, lvl);

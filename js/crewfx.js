@@ -9,11 +9,8 @@ const CFX_SKIN = '#f2c39a', CFX_SKIN_D = '#7c2d12', CFX_SKIN_L = '#fde3c8';
 const CFX_PETAL = ['#f9a8d4', '#fbcfe8', '#f472b6', '#fdf2f8'];
 function cfxQ() { return vfxQ() * (lowFx() ? 0.5 : 1); }
 function cfxRate(perSec, dt) { return Math.random() < perSec * dt * cfxQ(); }
-// Las partículas usan su propio generador: así no gastan números del Math.random de la partida
-// (el benchmark y el bot de balance siguen siendo deterministas y comparables con versiones anteriores).
-let _cfxSeed = 0x9e3779b9;
-function cfxRand() { _cfxSeed = (_cfxSeed * 1664525 + 1013904223) >>> 0; return _cfxSeed / 4294967296; }
-function cfxIsolated(fn, a, b) { const r = Math.random; Math.random = cfxRand; try { fn(a, b); } finally { Math.random = r; } }
+// Las partículas usan el generador propio de vfx.js (vfxIsolated): no gastan el Math.random de la partida.
+const cfxIsolated = vfxIsolated;
 function cfxN(n) { return Math.max(1, Math.round(n * cfxQ())); }
 
 // ---------- Partículas propias ----------

@@ -57,13 +57,15 @@ Es un juego estático sin build. Se abre con `index.html` desde cualquier servid
 - Luffy: ataques a distancia (Pistol, Gatling, Bazooka, Gear 2, Muchi y Ono).
 - Zoro: cuerpo a cuerpo con espadas (Santoryu, Oni Giri, Flying Slash, Tatsumaki, 108 Pound Ho y Haki del Rey).
 - Sanji: cuerpo a cuerpo con patadas (Diable Jambe, Collier, Joue Shot, Concassé, Party Table y Raid Suit).
-- Nami, Usopp, Chopper y Robin, al estilo de VS: empiezan con su arma (Clima-Tact, Kabuto, Kokutei Roseo Mirror, Seis Fleur: Clutch) y un bonus propio; su arma es exclusiva y el resto lo sacan del arsenal compartido. Se desbloquean con logros: Usopp sobreviviendo 5 minutos, Nami conquistando el Baratie, Chopper con 1.500 bajas y Robin conquistando Alabasta.
+- Nami, Usopp, Chopper y Robin, al estilo de VS: empiezan con su arma (Clima-Tact, Kabuto, Kokutei Roseo Mirror, Seis Fleur: Clutch) y un bonus propio; su arma es exclusiva y el resto lo sacan del arsenal compartido. Cada personaje se desbloquea conquistando su isla (2026-11-02): Zoro en Shell Town, Nami en Arlong Park, Sanji en el Baratie y Robin en Alabasta; Luffy está libre. Usopp (sobrevivir 5 minutos) y Chopper (2 evoluciones) siguen con logro hasta tener los mapas de Syrup y Drum.
 - Las habilidades tienen que ser fieles al manga y al anime.
 
 ## Mapas
 - Tienen que ser lugares reconocibles de One Piece. Todas las imágenes miden 1408x768 y se dibujan con `MAP_SCALE` 2, sin suavizado.
 - Mapas en HD (decisión de Pablo, 2026-11-01: sin pixelado, para que el fondo no tenga menos definición que los sprites): `assets/maps/<mapa>.jpg` se genera desde el original (`source-art/maps/hd/`, 1408x768) con `source-art/escalar_mapas.py` (x2 Lanczos + enfoque suave, JPEG q85, ~0,9 MB). El código usa el tamaño lógico `MAP_PX_W`x`MAP_PX_H` (1408x768) y dibuja el mapa con suavizado; nunca uses `mapImg.width` para coordenadas. `pixelar_mapas.py` queda solo como referencia.
 - Solo hay colisiones en el borde de la arena, sin obstáculos en el interior (decisión de Pablo del 31-10-2026). Las cápsulas de obstáculos detectadas están en el commit `a863eaa`, y `MAP_OBSTACLES` sigue disponible pero vacío.
+- **Shell Town** (isla 1, abierta desde el inicio): patio de la base 153 (`SHELLTOWN_POLY`). Marines de Morgan, el teniente Ripper (élite), Helmeppo (minijefe, min 3) y el Capitán Morgan de jefe. Conquistarla desbloquea a Zoro; derrotar a Helmeppo abre el Baratie.
+- **Arlong Park** (isla 3): plaza de piedra (`ARLONGPARK_POLY`, `MAP_ORIGIN_Y` 520). Hombres-pez, Chew (élite que dispara agua), Kuroobi (min 3) y Hatchan (min 6) de minijefes, Arlong de jefe. Se abre derrotando a Gin y Pearl; conquistarla desbloquea a Nami y derrotar a Kuroobi, Chew y Hatchan abre Alabasta.
 - **Baratie**: borde detectado por color (madera frente a agua). Jefe Don Krieg (9000 PV) y minijefe el Capitán Morgan (min 3).
 - **Alabasta**, **Skypiea** y **Thriller Bark** comparten el trazado de plaza de palacio (`PALACE_ARENA_POLY`, sacado de la línea verde de Alabasta).
   - Alabasta: jefe Crocodile (14000 PV).

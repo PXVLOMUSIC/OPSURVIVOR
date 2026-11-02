@@ -43,3 +43,9 @@ No existen sprites 2D oficiales de estos arcos (los juegos 2D de spritedatabase.
 - Pekoms: rip oficial de One Piece: Great Pirate Colosseum (3DS), spritedatabase.net 21189, de Megadoomer, reducido a la altura de los demás.
 - Soldados de ajedrez (blancos y negros): dibujados por código en `source-art/dibujar_soldado_ajedrez.py`.
 - Hojas completas sin usar (con andar y más ataques; requieren sesión en DeviantArt): Big Mom de Gameinvader247 (1197000597, subida por Alexis2jj) y Katakuri de drawkars (724495953). Si se descargan, basta con recortarlas en el script.
+
+## Shell Town y Arlong Park (2026-11-02)
+Misma fuente y licencia: spritedatabase.net (One Piece / Grand Battle, GBA), uso exclusivamente no comercial. Recortados y alineados por los pies con `source-art/extraer_eastblue.py`.
+- Shell Town: marines de la GBA ya integrados (marine_gba, marine2_gba, marine_sword), Helmeppo (4045, rip de Grim) y el Capitán Morgan (morgan_gba, rip de harsh29). El teniente Ripper usa el sprite del marine de espada.
+- Arlong Park: hombres-pez (4041, rip de Croix; la variante azul es la misma hoja con la paleta girada), hombre-pez gordo (4042, harsh29), Kuroobi, Chew y Hatchan (4057, Croix) y Arlong (4058, Grim).
+- Mapas: arte de Pablo (`source-art/maps/hd/shelltown.png` y `arlongpark.png`), reescalados con `escalar_mapas.py`. En Shell Town se borraron con IA (`source-art/borrar_con_ia.py`, LaMa) a Zoro atado al poste y el cartel con texto erróneo, y se corrigió «MRRINES» por «MARINES».

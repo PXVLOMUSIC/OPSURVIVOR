@@ -14,7 +14,7 @@ function itemLocked(id) {
 
 // --- Objetos del suelo (los braseros de VS): barriles y faroles que se rompen a golpes ---
 const PROP_TYPES = ['barrel', 'jar', 'lantern'];
-const PROP_BY_MAP = { baratie: 'barrel', alabasta: 'jar', skypiea: 'barrel', thrillerbark: 'lantern', enieslobby: 'barrel', marineford: 'barrel', water7: 'barrel', wholecake: 'jar', wano: 'lantern' };
+const PROP_BY_MAP = { shelltown: 'barrel', arlongpark: 'jar', baratie: 'barrel', alabasta: 'jar', skypiea: 'barrel', thrillerbark: 'lantern', enieslobby: 'barrel', marineford: 'barrel', water7: 'barrel', wholecake: 'jar', wano: 'lantern' };
 // VS (wiki, Light source): cada segundo hay un intento de aparición con un 10% de base que la Suerte
 // sube hasta un tope del 50% (Mad Forest); tope de destructibles por mapa (10 en Mad Forest; aquí 6 por la vista más corta).
 const PROP_MAX = 6, PROP_CHANCE = 0.10, PROP_CHANCE_MAX = 0.5;

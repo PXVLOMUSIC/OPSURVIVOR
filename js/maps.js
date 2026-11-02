@@ -245,7 +245,17 @@ const WHOLECAKE_POLY = [
   [-880,-82], [884,-82], [1168,296], [1236,380], [1224,406],
   [-1228,406], [-1248,390], [-1178,264], [-934,-34]
 ];
+// Shell Town: patio de la base 153 de la Marina (tierra y paseo de piedra; sin la plataforma del poste ni las casas)
+const SHELLTOWN_POLY = [
+  [-608,-300], [672,-300], [699,1], [845,15], [1005,321], [979,548], [-928,561], [-1155,361], [-1115,28], [-781,-252]
+];
+// Arlong Park: plaza de piedra delante del edificio (MAP_ORIGIN_Y 520 para que el jugador salga en el centro)
+const ARLONGPARK_POLY = [
+  [-688,-227], [-181,-240], [-128,-293], [139,-293], [192,-240], [619,-227], [885,-173], [1005,27], [1059,208], [299,213], [85,261], [-395,240], [-1035,213], [-1155,133], [-1008,-27], [-875,-160]
+];
 const WALK_POLYS = {
+  shelltown: SHELLTOWN_POLY,
+  arlongpark: ARLONGPARK_POLY,
   baratie: WALK_POLY,
   alabasta: PALACE_ARENA_POLY,
   skypiea: PALACE_ARENA_POLY,
@@ -281,6 +291,8 @@ function pointInPoly(x, y, poly) {
 // === Obstáculos dentro de la zona caminable (rejas, barandillas, farolas, macetas...) ===
 // Cápsulas { ax, ay, bx, by, r } en coordenadas de mundo. Bloquean al jugador y a los enemigos normales.
 const MAP_OBSTACLES = {
+  shelltown: [],
+  arlongpark: [],
   // Vacío a petición: solo cuenta el borde de la arena. Las cápsulas detectadas (rejas, farolas,
   // palmeras...) están en el commit a863eaa por si se quieren recuperar.
   baratie: [],

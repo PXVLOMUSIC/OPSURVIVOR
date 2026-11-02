@@ -6,7 +6,7 @@ applyOpts();
 // guardados anteriores: sella los logros de desbloqueo (personajes e islas) que ya se cumplían
 try { checkAchievements(); } catch (e) {}
 updateMetaUI();
-selectMap('baratie');
+selectMap('shelltown');
 selectCharacter('luffy');
 updateHudPortrait();
 selectCurse(0);

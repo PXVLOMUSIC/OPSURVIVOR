@@ -258,11 +258,11 @@ const ACHIEVEMENTS = [
     { id: 'endless_15',   name: 'Mareas Infinitas',    desc: 'Navega el Modo Infinito hasta el minuto 15.',   check: s => Math.max(...Object.values(s.maxTime)) >= 900, reward: 1200 },
     { id: 'win_curse4',   name: 'Rey del Mar Peligroso', desc: 'Conquista una isla con el Clima Peligroso 4.', check: s => (s.winsByCurse[4] || 0) >= 1, reward: 2000 },
     { id: 'endless_30',   name: 'Leyenda del Grand Line', desc: 'Navega el Modo Infinito hasta el minuto 30.', check: s => Math.max(...Object.values(s.maxTime)) >= 1800, reward: 2000 },
-    // === DESBLOQUEO DE LA TRIPULACIÓN (orden de llegada al barco; lockText = cartel de la carta bloqueada) ===
+    // === DESBLOQUEO DE LA TRIPULACIÓN (orden de desbloqueo = orden de las islas; lockText = cartel de la carta bloqueada) ===
     { id: 'unlock_zoro',    name: 'El Cazador de Piratas', desc: 'Conquista Shell Town derrotando al Capitán Morgan. Desbloquea a Zoro.', check: s => (meta.wins.shelltown || 0) >= 1, reward: 300, unlock: 'zoro', unlockText: 'ZORO', lockText: 'CONQUISTA SHELL TOWN' },
-    { id: 'unlock_nami',    name: 'La Gata Ladrona',      desc: 'Conquista Arlong Park derrotando a Arlong. Desbloquea a Nami.', check: s => (meta.wins.arlongpark || 0) >= 1, reward: 400, unlock: 'nami', unlockText: 'NAMI', lockText: 'CONQUISTA ARLONG PARK' },
     { id: 'unlock_usopp',   name: 'El Valiente Guerrero del Mar', desc: 'Conquista Syrup derrotando al Capitán Kuro. Desbloquea a Usopp.', check: s => (meta.wins.syrup || 0) >= 1, reward: 400, unlock: 'usopp', unlockText: 'USOPP', lockText: 'CONQUISTA SYRUP' },
     { id: 'unlock_sanji',   name: 'El Cocinero del Baratie', desc: 'Conquista el Baratie derrotando a Don Krieg. Desbloquea a Sanji.', check: s => (meta.wins.baratie || 0) >= 1, reward: 500, unlock: 'sanji', unlockText: 'SANJI', lockText: 'CONQUISTA EL BARATIE' },
+    { id: 'unlock_nami',    name: 'La Gata Ladrona',      desc: 'Conquista Arlong Park derrotando a Arlong. Desbloquea a Nami.', check: s => (meta.wins.arlongpark || 0) >= 1, reward: 400, unlock: 'nami', unlockText: 'NAMI', lockText: 'CONQUISTA ARLONG PARK' },
     { id: 'unlock_chopper', name: 'Doctor del Reino de Drum', desc: 'Conquista Drum derrotando a Wapol. Desbloquea a Chopper.', check: s => (meta.wins.drum || 0) >= 1, reward: 500, unlock: 'chopper', unlockText: 'CHOPPER', lockText: 'CONQUISTA DRUM' },
     { id: 'unlock_robin',   name: 'Miss All Sunday',      desc: 'Conquista Alabasta derrotando a Crocodile. Desbloquea a Robin.', check: s => (meta.wins.alabasta || 0) >= 1, reward: 600, unlock: 'robin', unlockText: 'ROBIN', lockText: 'CONQUISTA ALABASTA' },
     // === DESBLOQUEO DE ISLAS (orden de la historia; cada una más peligrosa que la anterior) ===

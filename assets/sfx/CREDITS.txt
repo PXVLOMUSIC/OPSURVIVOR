@@ -6,4 +6,4 @@ Licencia: CC0 (dominio publico) — uso libre, atribucion no requerida.
 Solo se incluyo una seleccion de 30 efectos renombrados para este proyecto fan-made sin animo de lucro.
 
 Efectos sintetizados para el proyecto (dominio publico, generados con tools/sfx-gen.py):
-heal, ouch, sad, revive, warn, magnet, bell, stretch, whip, wind, thunder, rain, twang, throw, crack, drums.
+heal, ouch, sad, ko, revive, warn, magnet, bell, stretch, whip, wind, thunder, rain, twang, throw, crack, drums.

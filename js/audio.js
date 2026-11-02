@@ -8,7 +8,19 @@ const battleMusic = new Audio('assets/music/battle.mp3');
 menuMusic.loop = true; battleMusic.loop = true;
 // la de batalla no se descarga hasta que suena (ahorra ~2 MB al abrir el juego en datos móviles)
 battleMusic.preload = 'none'; menuMusic.preload = 'auto';
+// cada vez que se entra al menú o a una partida, su canción empieza desde el principio
+let musicMode = null;
+function musicRewind(m) { try { m.pause(); m.currentTime = 0; } catch (e) {} }
 function updateMusic() {
+    const st = gameState;
+    const mode = (st === 'START' || st === 'SHOP') ? 'menu'
+        : (st === 'GAMEOVER') ? 'off' // al morir se corta la música: solo suenan el KO y el lamento
+        : (st === 'PLAYING' || st === 'PAUSED' || st === 'UPGRADE' || st === 'CHEST' || st === 'ARCANA' || st === 'VICTORY') ? 'battle' : 'off';
+    if (mode !== musicMode) {
+        if (mode === 'menu') musicRewind(menuMusic);
+        if (mode === 'battle' && musicMode !== 'battle') musicRewind(battleMusic);
+        musicMode = mode;
+    }
     if (!soundEnabled) { menuMusic.pause(); battleMusic.pause(); return; }
     const vol = masterVolume * (windowOpts ? windowOpts.music : 1) * 0.75;
     if (gameState === 'START' || gameState === 'SHOP') {
@@ -20,7 +32,7 @@ function updateMusic() {
         menuMusic.muted = false;
         menuMusic.volume = vol;
         menuMusic.play().catch(() => {});
-    } else if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'UPGRADE' || gameState === 'CHEST' || gameState === 'GAMEOVER' || gameState === 'VICTORY') {
+    } else if (mode === 'battle') {
         menuMusic.pause();
         battleMusic.muted = false;
         battleMusic.volume = vol;
@@ -39,14 +51,14 @@ function initAudio() {
 
 // === SFX ===
 // Pack CC0 "The Essential Retro Video Game Sound Effects Collection" de Juhani Junkala (assets/sfx/CREDITS.txt)
-// + efectos sintetizados a juego con tools/sfx-gen.py (heal, ouch, sad, revive, warn, magnet, bell, stretch,
+// + efectos sintetizados a juego con tools/sfx-gen.py (heal, ouch, sad, ko, revive, warn, magnet, bell, stretch,
 //   whip, wind, thunder, rain, twang, throw, crack, drums).
 const SFX_FILES = {
     coin: 'coin.wav', gem: 'gem.wav', beli_rush: 'beli_rush.wav', buy: 'buy.wav', meat: 'levelup.wav',
     levelup: 'heal.wav', evolve: 'evolve.wav', achievement: 'achievement.wav',
     victory: 'victory.wav', gameover: 'sad.wav', chest: 'chest.wav', reward: 'reward.wav',
     hit: 'hit.wav', crit: 'crit.wav', hurt: 'ouch.wav', enemydie: 'enemydie.wav',
-    boss: 'boss.wav', boss_die: 'boss_die.wav', death: 'death.wav',
+    boss: 'boss.wav', boss_die: 'boss_die.wav', death: 'ko.wav',
     pistol: 'pistol.wav', gatling: 'gatling.wav', laser: 'laser.wav', slash: 'slash.wav',
     kick: 'kick.wav', boom: 'boom.wav', gear2: 'gear2.wav', haoshoku: 'haoshoku.wav',
     ui: 'ui.wav', select: 'select.wav', error: 'error.wav', muted: 'error.wav',
@@ -61,7 +73,7 @@ const SFX_VOL = {
     enemydie: 0.28, hit: 0.45, crit: 0.5, gem: 0.38, coin: 0.4, gatling: 0.35, pistol: 0.45,
     meat: 0.55, chest: 0.6, reward: 0.55, ui: 0.4, select: 0.5, error: 0.4, muted: 0.35,
     beli_rush: 0.5, buy: 0.5, levelup: 0.6, evolve: 0.6, achievement: 0.55,
-    victory: 0.6, gameover: 0.55, hurt: 0.6, boss: 0.6, boss_die: 0.55, death: 0.55,
+    victory: 0.6, gameover: 0.55, hurt: 0.6, boss: 0.6, boss_die: 0.55, death: 0.7,
     laser: 0.45, slash: 0.45, kick: 0.45, boom: 0.45, gear2: 0.5, haoshoku: 0.55,
     revive: 0.6, warn: 0.55, magnet: 0.5, bell: 0.55, stretch: 0.5, whip: 0.5, wind: 0.5,
     thunder: 0.5, rain: 0.45, twang: 0.5, throw: 0.45, crack: 0.55, drums: 0.75

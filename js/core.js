@@ -827,7 +827,9 @@ const CHAR_SKILLS = {
     zoro: ['santoryu','onigiri','flyingslash','tatsumaki','poundho','zoroform'],
     sanji: ['diablejambe','collier','joueshot','concasse','partycourse','sanjiform'],
     // Tripulación desbloqueable (estilo VS: arma inicial propia + bonificación; el resto del arsenal es compartido)
-    nami: ['climatact'], usopp: ['kabuto'], chopper: ['roseo'], robin: ['clutch']
+    nami: ['climatact'], usopp: ['kabuto'], chopper: ['roseo'], robin: ['clutch'],
+    // Franky, Brook y Jinbe: la insignia y el resto del kit son técnicas de js/crew.js
+    franky: ['weaponsleft'], brook: ['yahazu'], jinbe: ['samegawara']
 };
 // Atributos propios de cada personaje (como en VS), según su lore y su rol. Cada uno tiene un punto fuerte para su build.
 // speed y area multiplican; power, cd y armor son %; crit, luck, greed, pickup y growth se suman; maxHp es absoluto; regen en PV/s.
@@ -838,7 +840,10 @@ const CHAR_STATS = {
     nami:    { maxHp: 80,  speed: 1.05, greed: 0.20, luck: 0.20, text: 'Navegante ladrona: +20% Berries, +20% suerte y +5% velocidad; 80 de vida' },
     usopp:   { maxHp: 80,  crit: 0.10, pickup: 0.30,            text: 'Francotirador: +10% crítico y +30% recogida; 80 de vida' },
     chopper: { maxHp: 120, speed: 0.95, regen: 0.5,             text: 'Médico: 120 de vida y +0,5 PV/s; −5% velocidad' },
-    robin:   { maxHp: 90,  area: 1.15, cd: 5,                   text: 'Hana Hana: +15% área y −5% recarga; 90 de vida' }
+    robin:   { maxHp: 90,  area: 1.15, cd: 5,                   text: 'Hana Hana: +15% área y −5% recarga; 90 de vida' },
+    franky:  { maxHp: 120, speed: 0.95, armor: 10, power: 10,   text: 'Cyborg: 120 de vida, +10% armadura y +10% poder; −5% velocidad' },
+    brook:   { maxHp: 85,  speed: 1.10, cd: 8, revival: 1,      text: 'Yomi Yomi no Mi: revive una vez, +10% velocidad y −8% recarga; 85 de vida' },
+    jinbe:   { maxHp: 140, speed: 0.95, armor: 6, regen: 0.3,   text: 'Caballero del Mar: 140 de vida, +6% armadura y +0,3 PV/s; −5% velocidad' }
 };
 function applyCharStats(p, ch) {
     const s = CHAR_STATS[ch];
@@ -855,13 +860,14 @@ function applyCharStats(p, ch) {
     if (s.pickup) p.pickupBonus += s.pickup;
     if (s.growth) p.growthBonus += s.growth;
     if (s.regen) p.regenRate += s.regen;
+    if (s.revival) p.revives = (p.revives || 0) + s.revival;
 }
 // Objetos que no son técnicas propias, pero que en el canon solo usan algunos personajes.
 const ITEM_CHARS = {
     rumble: ['chopper'],                          // la Rumble Ball altera la Zoan de Chopper; nadie más la toma
     hakiPulse: ['luffy', 'zoro'], haki_hao: ['luffy', 'zoro'], // Haoshoku: Luffy y Zoro (Wano); Sanji no lo tiene
-    haki_buso: ['luffy', 'zoro', 'sanji'],
-    haki_ken: ['luffy', 'zoro', 'sanji', 'usopp']
+    haki_buso: ['luffy', 'zoro', 'sanji', 'jinbe'],
+    haki_ken: ['luffy', 'zoro', 'sanji', 'usopp', 'jinbe']
 };
 // ¿Puede el personaje ch recibir el objeto id? Las técnicas de CHAR_SKILLS son exclusivas de su dueño.
 function itemAllowed(id, ch) {
@@ -880,7 +886,11 @@ const CHAR_ANIMS = {
     nami:    { name: 'Nami',    folder: 'nami_wsc',    idle: [0,1,2,3,4,5], walk: [6,7,8,9,10,11,12,13], attack: [14,15,16,17], hit: [0] },
     usopp:   { name: 'Usopp',   folder: 'usopp_wsc',   idle: [0], walk: [1,2,3,4,5,6,7], attack: [8,9,10,11], hit: [0] },
     chopper: { name: 'Chopper', folder: 'chopper_wsc', idle: [0,1,2,3], walk: [4,5,6,7,8,9], attack: [10,11,12,13], hit: [0] },
-    robin:   { name: 'Robin',   folder: 'robin_wsc',   idle: [0,1,2], walk: [3,4,5,6,7,8,9], attack: [10,11,12,13,14], hit: [0] }
+    robin:   { name: 'Robin',   folder: 'robin_wsc',   idle: [0,1,2], walk: [3,4,5,6,7,8,9], attack: [10,11,12,13,14], hit: [0] },
+    // DS One Piece: Gigant Battle! (espejados; source-art/extraer_franky_brook_jinbe.py). h = alto en pantalla: los tres son más altos que Luffy
+    franky:  { name: 'Franky',  folder: 'franky_gb',   h: 56, idle: [0,1], walk: [0,2,1,2], attack: [3,4,5,6,7,8], hit: [9] },
+    brook:   { name: 'Brook',   folder: 'brook_gb',    h: 60, idle: [0,1,2,3,4,5], walk: [6,7,8,9], attack: [10,11,12,13], hit: [14] },
+    jinbe:   { name: 'Jinbe',   folder: 'jinbe_gb',    h: 56, idle: [0,1,2,3], walk: [4,5,6,7,8], attack: [9,10,11,12,13], hit: [14] }
 };
 
 function animPath(char, idx) {
@@ -892,7 +902,8 @@ const CHAR_PORTRAIT = {
     luffy: 'assets/wanted/luffy.jpg',
     zoro: 'assets/wanted/zoro.jpg',
     sanji: 'assets/wanted/sanji.jpg',
-    nami: 'assets/wanted/nami.jpg', usopp: 'assets/wanted/usopp.jpg', chopper: 'assets/wanted/chopper.jpg', robin: 'assets/wanted/robin.jpg'
+    nami: 'assets/wanted/nami.jpg', usopp: 'assets/wanted/usopp.jpg', chopper: 'assets/wanted/chopper.jpg', robin: 'assets/wanted/robin.jpg',
+    franky: 'assets/wanted/franky.jpg', brook: 'assets/wanted/brook.jpg', jinbe: 'assets/wanted/jinbe.jpg'
 };
 function updateHudPortrait() {
     const img = document.getElementById('hud-portrait');
@@ -901,7 +912,7 @@ function updateHudPortrait() {
     if (name) name.innerText = CHAR_FULLNAME[selectedCharacter] || '';
 }
 // Nombre completo como aparece en los carteles de Se Busca
-const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'NAMI', usopp: 'GOD USOPP', chopper: 'CHOPPER', robin: 'NICO ROBIN' };
+const CHAR_FULLNAME = { luffy: 'MONKEY D. LUFFY', zoro: 'RORONOA ZORO', sanji: 'VINSMOKE SANJI', nami: 'NAMI', usopp: 'GOD USOPP', chopper: 'CHOPPER', robin: 'NICO ROBIN', franky: 'FRANKY', brook: 'SOUL KING BROOK', jinbe: 'JINBE' };
 // Logro que desbloquea un personaje o una isla (key = 'zoro' o 'map_alabasta'); su lockText es el cartel de la carta bloqueada
 function unlockAchievement(key) { return typeof ACHIEVEMENTS !== 'undefined' ? ACHIEVEMENTS.find(a => a.unlock === key) : null; }
 function lockText(key) { const a = unlockAchievement(key); return a ? a.lockText : 'BLOQUEADO'; }

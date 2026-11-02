@@ -53,7 +53,7 @@ function gearMetaInit() {
     if (!meta.gear) meta.gear = { unlocked: 2, up: { meter: 0, charge: 0, recover: 0 } };
     meta.gear.up = Object.assign({ meter: 0, charge: 0, recover: 0 }, meta.gear.up || {});
     if (!meta.gear.unlocked || meta.gear.unlocked < 2) meta.gear.unlocked = 2;
-    meta.gear.forms = Object.assign({ zoro: 2, sanji: 2, nami: 2, usopp: 2, chopper: 2, robin: 2 }, meta.gear.forms || {});
+    meta.gear.forms = Object.assign({ zoro: 2, sanji: 2, nami: 2, usopp: 2, chopper: 2, robin: 2, franky: 2, brook: 2, jinbe: 2 }, meta.gear.forms || {});
     if (meta.stats && meta.stats.luffyBestCurse === undefined) meta.stats.luffyBestCurse = -1;
     if (meta.stats && !meta.stats.bestCurseBy) meta.stats.bestCurseBy = { luffy: meta.stats.luffyBestCurse, zoro: -1, sanji: -1 };
 }

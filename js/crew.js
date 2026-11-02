@@ -1,5 +1,6 @@
-// === KITS DE LA TRIPULACIÓN: NAMI, USOPP, CHOPPER Y ROBIN ===
-// Como Luffy, Zoro y Sanji: 5 técnicas exclusivas (la insignia de js/arsenal.js + 4 de aquí) y una
+// === KITS DE LA TRIPULACIÓN: NAMI, USOPP, CHOPPER, ROBIN, FRANKY, BROOK Y JINBE ===
+// Como Luffy, Zoro y Sanji: 5 técnicas exclusivas (la insignia + 4 más) y una
+// (Nami, Usopp, Chopper y Robin llevan la insignia en js/arsenal.js; Franky, Brook y Jinbe la tienen aquí, con `sig: true`)
 // transformación de 3 escalones con medidor (Espacio o botón), que se desbloquean con hitos.
 // Motor genérico: cada técnica es un tipo de ataque (kind) con parámetros propios.
 // Se carga después de gears.js: amplía CHAR_SKILLS, skills, EVOLUTIONS, FORMS, GEAR_ATTACKS y los ganchos de arsenal.js.
@@ -25,7 +26,28 @@ Object.assign(ICONS, {
     calendula:   SVG(`<g ${S}><circle cx="12" cy="12" r="3"/><path d="M12 9V3M15 12h6M12 15v6M9 12H3M14.1 9.9l4.2-4.2M14.1 14.1l4.2 4.2M9.9 14.1l-4.2 4.2M9.9 9.9 5.7 5.7"/></g>`),
     slap:        SVG(`<g ${F}><path d="M6 21c-1-3-2-6-2-9.5 0-1 1.5-1.2 1.8-.2L7 15V6c0-1.2 1.8-1.2 1.8 0v6V3.8c0-1.2 1.8-1.2 1.8 0V12V5c0-1.2 1.8-1.2 1.8 0v8l1.8-2.6c.7-1 2.2-.3 1.8.8L14 21z"/></g><g ${S}><path d="M18 5l3-2M19 9h3" opacity=".6"/></g>`),
     doble:       SVG(`<g ${F}><circle cx="8" cy="6" r="3"/><path d="M3 21c0-6 2-9 5-9s5 3 5 9z"/></g><g fill="currentColor" fill-opacity=".45"><circle cx="16" cy="6" r="3"/><path d="M11 21c0-6 2-9 5-9s5 3 5 9z"/></g>`),
-    robinform:   SVG(`<g ${F}><path d="M12 7c-2-4-7-5-10-3 2 1 3 3 3 5 2 0 4 0 7-2zM12 7c2-4 7-5 10-3-2 1-3 3-3 5-2 0-4 0-7-2z"/><path d="M10 9h4l1 12h-6z"/></g>`)
+    robinform:   SVG(`<g ${F}><path d="M12 7c-2-4-7-5-10-3 2 1 3 3 3 5 2 0 4 0 7-2zM12 7c2-4 7-5 10-3-2 1-3 3-3 5-2 0-4 0-7-2z"/><path d="M10 9h4l1 12h-6z"/></g>`),
+    // Franky
+    weaponsleft: SVG(`<g ${F}><path d="M3 9h9l3-3h3v12h-3l-3-3H3z"/><circle cx="20.5" cy="12" r="2"/></g>`),
+    strongright: SVG(`<g ${F}><rect x="11" y="6" width="10" height="12" rx="3"/></g><g ${S}><path d="M2 12h9M4 9l-2 3 2 3" opacity=".7"/></g>`),
+    freshfire:   SVG(`<g ${F}><path d="M3 12c4-6 9-7 12-5-3 1-3 3 0 5-3 2-3 4 0 5-3 2-8 1-12-5z"/><path d="M17 8c3 0 5 2 5 4s-2 4-5 4c1-1 1.5-2.5 1.5-4S18 9 17 8z" opacity=".6"/></g>`),
+    coupdevent:  SVG(`<g ${S}><circle cx="6" cy="12" r="3.5"/><path d="M10 9h11M10 12h12M10 15h11" /></g>`),
+    rocket:      SVG(`<g ${F}><path d="M4 20l3-7 8-8c2-2 5-2 5-2s0 3-2 5l-8 8z"/></g><g ${S}><path d="M3 21l2-4M7 21l1-3" opacity=".7"/></g>`),
+    frankyform:  SVG(`<g ${F}><path d="M8 3h8v3l2 3v12H6V9l2-3z"/></g><g fill="#000" fill-opacity=".35"><rect x="8" y="11" width="8" height="5" rx="1"/></g><g ${S}><path d="M3 7l2 1M21 7l-2 1"/></g>`),
+    // Brook
+    yahazu:      SVG(`<g ${S}><path d="M3 20 19 4" stroke-width="2"/><path d="M15 4h5v5"/><path d="M4 9l3 1M8 4l1 3" opacity=".6"/></g>`),
+    gavotte:     SVG(`<g ${S}><path d="M2 12h17" stroke-width="2.2"/><path d="M5 9v6"/></g><g ${F}><path d="M19 10l4 2-4 2z"/></g>`),
+    fubuki:      SVG(`<g ${S}><path d="M12 2v20M3.5 7l17 10M3.5 17l17-10M9 4l3 2 3-2M9 20l3-2 3 2"/></g>`),
+    nemuriuta:   SVG(`<g ${F}><circle cx="7" cy="17" r="3"/><circle cx="17" cy="15" r="3"/></g><g ${S}><path d="M10 17V5l10-2v12"/></g>`),
+    soul:        SVG(`<g ${F}><path d="M12 2c4 0 7 3 7 7v8l-2-2-2 3-3-3-3 3-2-3-2 2V9c0-4 3-7 7-7z"/></g><g fill="#000" fill-opacity=".4"><circle cx="9.5" cy="9" r="1.5"/><circle cx="14.5" cy="9" r="1.5"/></g>`),
+    brookform:   SVG(`<g ${F}><circle cx="12" cy="10" r="6"/><rect x="8" y="2" width="8" height="4"/><rect x="5" y="5.5" width="14" height="1.6"/></g><g fill="#000" fill-opacity=".45"><circle cx="9.7" cy="10" r="1.6"/><circle cx="14.3" cy="10" r="1.6"/><path d="M9 14h6v2H9z"/></g>`),
+    // Jinbe
+    samegawara:  SVG(`<g ${F}><rect x="3" y="8" width="8" height="8" rx="2"/></g><g ${S}><path d="M13 7c2 3 2 7 0 10M16.5 5c3 4 3 10 0 14M20 3.5c4 5 4 12 0 17"/></g>`),
+    buraikan:    SVG(`<g ${F}><circle cx="12" cy="12" r="8"/></g><g stroke="#fff" stroke-opacity=".5" fill="none" stroke-width="1.5"><path d="M7 10c2-3 6-4 9-2M8 15c3 2 6 2 8 0"/></g>`),
+    yarinami:    SVG(`<g ${F}><path d="M2 12l14-3 6 3-6 3z"/></g><g ${S}><path d="M3 17c3-2 5 2 8 0s5 2 8 0" opacity=".6"/></g>`),
+    uchimizu:    SVG(`<g ${F}><path d="M6 4c2 3 3 4 3 6a3 3 0 0 1-6 0c0-2 1-3 3-6zM17 3c2 3 3 4 3 6a3 3 0 0 1-6 0c0-2 1-3 3-6zM11.5 12c2 3 3 4 3 6a3 3 0 0 1-6 0c0-2 1-3 3-6z"/></g>`),
+    mizugokoro:  SVG(`<g ${S}><circle cx="12" cy="12" r="8"/><path d="M5 14c2-2 4 2 7 0s5 2 7 0"/></g><g ${F}><circle cx="12" cy="9" r="2.4"/></g>`),
+    jinbeform:   SVG(`<g ${F}><path d="M12 3c5 0 8 4 8 9 0 5-4 9-8 9s-8-4-8-9c0-5 3-9 8-9z"/></g><g fill="#000" fill-opacity=".35"><path d="M8 14h8l-1 3H9zM9 9h2v2H9zM13 9h2v2h-2z"/></g>`)
 });
 
 // ---------- Técnicas ----------
@@ -117,7 +139,85 @@ const CREW_TECH = {
         desc: 'Robin crea un clon de pétalos que se queda luchando: agarra a los enemigos cercanos.',
         sk: { baseDamage: 20, cooldown: 7.0, dur: 4.5, rate: 0.6, reach: 170, hits: 1 },
         up: s => { s.baseDamage += 7; s.dur += 0.5; },
-        evo: { passive: 'luck', name: 'Cuerpo Fleur: Demonio', fx: s => { s.baseDamage *= 1.7; s.hits = 3; s.dur += 2; } } }
+        evo: { passive: 'luck', name: 'Cuerpo Fleur: Demonio', fx: s => { s.baseDamage *= 1.7; s.hits = 3; s.dur += 2; } } },
+    // ---- FRANKY (insignia: Weapons Left) ----
+    weaponsleft: { char: 'franky', sig: true, title: 'Weapons Left', kind: 'bolt', look: 'cannon', sound: 'pistol',
+        desc: 'Franky: el cañón de su brazo izquierdo dispara balas al enemigo más cercano y las aparta.',
+        sk: { baseDamage: 30, cooldown: 1.1, range: 340, speed: 720, w: 16, pierce: 1, push: 16, shots: 1, spread: 0.16 },
+        up: s => { s.baseDamage += 8; if (s.level === 3 || s.level === 5) s.shots++; },
+        evo: { passive: 'power', name: 'Franky Radical Beam', fx: s => { s.baseDamage *= 1.8; s.pierce = 99; s.w += 8; s.speed += 300; } } },
+    strongright: { char: 'franky', title: 'Strong Right', kind: 'boomerang', look: 'fist', sound: 'kick',
+        desc: 'Lanza el puño derecho unido a una cadena: sale disparado y vuelve golpeando a todos.',
+        sk: { baseDamage: 34, cooldown: 2.8, range: 230, speed: 520, w: 26, shots: 1 },
+        up: s => { s.baseDamage += 11; s.range += 15; if (s.level === 5) s.shots++; },
+        evo: { passive: 'maxhp', name: 'Strong Hammer', fx: s => { s.baseDamage *= 1.8; s.w += 14; s.shots++; } } },
+    freshfire: { char: 'franky', title: 'Fresh Fire', kind: 'cone', look: 'freshfire', sound: 'gear2',
+        desc: 'Escupe una llamarada de cola caliente en abanico delante de él.',
+        sk: { baseDamage: 30, cooldown: 2.4, r: 120, arc: 0.55, push: 10 },
+        up: s => { s.baseDamage += 9; s.r += 10; },
+        evo: { passive: 'area', name: 'Franky Fireball', fx: s => { s.baseDamage *= 1.8; s.r += 30; s.arc = 0.8; } } },
+    coupdevent: { char: 'franky', title: 'Coup de Vent', kind: 'bolt', look: 'coup', sound: 'wind',
+        desc: 'Cañón de aire comprimido de las palmas: una ráfaga enorme que atraviesa y barre a todos.',
+        sk: { baseDamage: 50, cooldown: 5.0, range: 420, speed: 600, w: 40, pierce: 99, push: 55, shots: 1 },
+        up: s => { s.baseDamage += 16; s.w += 4; },
+        evo: { passive: 'cd', name: 'Gaon Cannon', fx: s => { s.baseDamage *= 1.9; s.w += 20; s.range += 160; } } },
+    rocket: { char: 'franky', title: 'Franky Rocket Launcher', kind: 'burst', look: 'rocket', sound: 'boom', target: 'dense',
+        desc: 'Cohete del hombro sobre el grupo más denso: estalla y deja el suelo ardiendo.',
+        sk: { baseDamage: 60, cooldown: 3.6, r: 74, delay: 0.35, reach: 380, fire: 1, fireDmg: 7, fireDur: 2.0 },
+        up: s => { s.baseDamage += 16; s.r += 6; s.fireDmg += 2; },
+        evo: { passive: 'growth', name: 'General Cannon', fx: s => { s.baseDamage *= 1.8; s.r += 26; s.fireDur += 1; } } },
+    // ---- BROOK (insignia: Yahazu Giri) ----
+    yahazu: { char: 'brook', sig: true, title: 'Hanauta Sancho: Yahazu Giri', kind: 'multi', look: 'yahazu', sound: 'slash',
+        desc: 'Brook: pasa tarareando junto a varios enemigos y el corte llega cuando ya ha envainado.',
+        sk: { baseDamage: 20, cooldown: 1.3, targets: 3, reach: 270, r: 0 },
+        up: s => { s.baseDamage += 6; if (s.level % 2) s.targets++; },
+        evo: { passive: 'speed', name: 'Arabesque Brick Fist', fx: s => { s.baseDamage *= 1.7; s.targets += 3; s.r = 36; } } },
+    gavotte: { char: 'brook', title: 'Gavotte Bond en Avant', kind: 'bolt', look: 'gavotte', sound: 'slash',
+        desc: 'Estocada a la velocidad del rayo: atraviesa en línea a todos los que pilla.',
+        sk: { baseDamage: 30, cooldown: 2.2, range: 300, speed: 980, w: 14, pierce: 99, push: 0, stun: 0.2, shots: 1 },
+        up: s => { s.baseDamage += 10; s.range += 25; },
+        evo: { passive: 'crit', name: 'Aubade Coup Droit', fx: s => { s.baseDamage *= 1.8; s.w += 10; s.shots = 3; s.spread = 0.35; } } },
+    fubuki: { char: 'brook', title: 'Kasuriuta: Fubuki Giri', kind: 'cone', look: 'frost', sound: 'slash',
+        desc: 'Tajo con el frío del inframundo: congela un momento a los que tiene delante.',
+        sk: { baseDamage: 32, cooldown: 2.6, r: 105, arc: 0.85, push: 0, stun: 0.6 },
+        up: s => { s.baseDamage += 10; s.r += 8; },
+        evo: { passive: 'area', name: 'Fubuki Giri: Hielo del Inframundo', fx: s => { s.baseDamage *= 1.8; s.r += 28; s.arc = 1.2; s.stun = 1.0; } } },
+    nemuriuta: { char: 'brook', title: 'Nemuri Uta: Flanchet', kind: 'zone', look: 'lullaby', sound: 'bell', target: 'player',
+        desc: 'Toca la nana con el violín: los enemigos cercanos se duermen y se frenan.',
+        sk: { baseDamage: 6, cooldown: 7.0, r: 110, dur: 3.5, tick: 0.6, slow: 0.5, reach: 0, stun: 0.3 },
+        up: s => { s.baseDamage += 3; s.r += 10; s.dur += 0.4; },
+        evo: { passive: 'magnet', name: 'Nemuri Uta: Requiem', fx: s => { s.baseDamage *= 1.8; s.r += 30; s.stun = 0.55; } } },
+    soul: { char: 'brook', title: 'Yomi Yomi: Alma', kind: 'clone', look: 'soul', sound: 'whip',
+        desc: 'Su alma sale del cuerpo y ataca sola: hiela a los enemigos que toca.',
+        sk: { baseDamage: 22, cooldown: 7.0, dur: 4.5, rate: 0.6, reach: 180, hits: 1 },
+        up: s => { s.baseDamage += 7; s.dur += 0.5; },
+        evo: { passive: 'cd', name: 'Soul Parade', fx: s => { s.baseDamage *= 1.7; s.hits = 3; s.dur += 2; } } },
+    // ---- JINBE (insignia: Samegawara Seiken) ----
+    samegawara: { char: 'jinbe', sig: true, title: 'Gyojin Karate: Samegawara Seiken', kind: 'bolt', look: 'seiken', sound: 'kick',
+        desc: 'Jinbe: puñetazo que hace vibrar el agua del aire y el golpe atraviesa a todos en línea.',
+        sk: { baseDamage: 32, cooldown: 1.5, range: 260, speed: 640, w: 24, pierce: 99, push: 24, shots: 1 },
+        up: s => { s.baseDamage += 9; s.range += 15; if (s.level === 4) s.shots++; },
+        evo: { passive: 'power', name: 'Gosenmaigawara Seiken', fx: s => { s.baseDamage *= 1.8; s.w += 14; s.push += 20; } } },
+    buraikan: { char: 'jinbe', title: 'Buraikan', kind: 'burst', look: 'buraikan', sound: 'boom', target: 'dense',
+        desc: 'Lanza una bola de agua del tamaño de un barril que revienta sobre el grupo más denso.',
+        sk: { baseDamage: 58, cooldown: 3.4, r: 78, delay: 0.3, reach: 360 },
+        up: s => { s.baseDamage += 16; s.r += 7; },
+        evo: { passive: 'area', name: 'Ōgi: Buraikan', fx: s => { s.baseDamage *= 1.8; s.r += 30; } } },
+    yarinami: { char: 'jinbe', title: 'Yarinami', kind: 'bolt', look: 'yarinami', sound: 'wind',
+        desc: 'Lanza de agua a presión que cruza la arena atravesando a todos.',
+        sk: { baseDamage: 44, cooldown: 3.6, range: 520, speed: 820, w: 18, pierce: 99, push: 0, shots: 1 },
+        up: s => { s.baseDamage += 14; s.w += 2; },
+        evo: { passive: 'crit', name: 'Senmaigawara Seiken', fx: s => { s.baseDamage *= 1.8; s.w += 12; s.shots = 2; } } },
+    uchimizu: { char: 'jinbe', title: 'Uchimizu', kind: 'multi', look: 'uchimizu', sound: 'pistol',
+        desc: 'Lanza gotas de agua con la fuerza de una bala a varios enemigos a la vez.',
+        sk: { baseDamage: 15, cooldown: 1.2, targets: 3, reach: 300, r: 0 },
+        up: s => { s.baseDamage += 5; if (s.level % 2) s.targets++; },
+        evo: { passive: 'cd', name: 'Uchimizu: Lluvia de Balas', fx: s => { s.baseDamage *= 1.7; s.targets += 3; s.r = 30; } } },
+    mizugokoro: { char: 'jinbe', title: 'Gyojin Jujutsu: Mizugokoro', kind: 'aura', look: 'mizu', sound: 'rain',
+        desc: 'Domina el agua que le rodea: aparta a los cercanos y recibe menos daño unos segundos.',
+        sk: { baseDamage: 16, cooldown: 7.0, r: 90, push: 70, shield: 1.6, shieldMult: 0.5 },
+        up: s => { s.baseDamage += 6; s.r += 8; s.shield += 0.3; },
+        evo: { passive: 'armor', name: 'Kairyu Ippon Zeoi', fx: s => { s.baseDamage *= 1.9; s.r += 25; s.shieldMult = 0.45; } } }
 };
 const CREW_TECH_IDS = Object.keys(CREW_TECH);
 
@@ -166,6 +266,39 @@ const CREW_FORMS = {
             3: { name: 'GIGANTE FLEUR', short: 'GF', color: '#7c3aed', dur: 9, sound: 'boom', dmg: 1.6, cd: 0.8, spd: 1, taken: 0.7, area: 1.3, atk: 'gigante', atkCd: 1.2 },
             // Demonio Fleur (Onigashima): la forma de demonio contra Black Maria
             4: { name: 'DEMONIO FLEUR', short: 'DF', color: '#4c1d95', dur: 12, sound: 'haoshoku', dmg: 1.85, cd: 0.7, spd: 1.2, taken: 0.55, atk: 'demonio', atkCd: 1.2, pen: ['exhausted', 6], penText: 'DEMONIO FLEUR SE DESHACE... AGOTADA' }
+        } },
+    franky: { card: 'frankyform', meter: 'COLA', title: 'Cyborg de Cola (Franky)',
+        desc: 'Llena el medidor y pulsa ESPACIO o el botón. Nv1: Súper Cola · Nv3: General Franky · Evolución: Franky Shogun (si están desbloqueados).',
+        evoName: 'Franky Shogun', evoPassive: 'armor',
+        forms: {
+            // Tres botellas de cola en la nevera del estómago: ¡SUPER! (Water 7)
+            2: { name: 'SÚPER COLA', short: 'SC', color: '#38bdf8', dur: 8, sound: 'gear2', dmg: 1.2, cd: 0.7, spd: 1.15, taken: 0.8 },
+            // General Franky (Dressrosa): la armadura robot del Iron Pirate
+            3: { name: 'GENERAL FRANKY', short: 'GF', color: '#2563eb', dur: 9, sound: 'boom', dmg: 1.55, cd: 0.8, spd: 1, taken: 0.6, area: 1.2, atk: 'general', atkCd: 1.1 },
+            // Franky Shogun (Punk Hazard / Wano): el robot gigante; acaba sin cola
+            4: { name: 'FRANKY SHOGUN', short: 'FS', color: '#1d4ed8', dur: 12, sound: 'haoshoku', dmg: 1.8, cd: 0.7, spd: 1.05, taken: 0.5, area: 1.25, atk: 'shogun', atkCd: 1.3, pen: ['exhausted', 6], penText: 'SE ACABA LA COLA... AGOTADO' }
+        } },
+    brook: { card: 'brookform', meter: 'ALMA', title: 'Yomi Yomi no Mi (Brook)',
+        desc: 'Llena el medidor y pulsa ESPACIO o el botón. Nv1: Soul King · Nv3: Alma fuera del cuerpo · Evolución: Soul Solid (si están desbloqueados).',
+        evoName: 'Soul Solid', evoPassive: 'crit',
+        forms: {
+            // Soul King (tras los dos años): el concierto le acelera
+            2: { name: 'SOUL KING', short: 'SK', color: '#a855f7', dur: 8, sound: 'bell', dmg: 1.15, cd: 0.7, spd: 1.3, taken: 0.85 },
+            // El alma sale del cuerpo (Isla Gyojin / Whole Cake): casi no le tocan y hiela a quien atraviesa
+            3: { name: 'ALMA FUERA DEL CUERPO', short: 'AL', color: '#93c5fd', dur: 9, sound: 'whip', dmg: 1.45, cd: 0.8, spd: 1.2, taken: 0.45, atk: 'soulfreeze', atkCd: 1.1 },
+            // Soul Solid: la espada cargada con el frío del inframundo (Whole Cake / Wano)
+            4: { name: 'SOUL SOLID: FRÍO DEL INFRAMUNDO', short: 'SS', color: '#38bdf8', dur: 12, sound: 'haoshoku', dmg: 1.85, cd: 0.7, spd: 1.2, taken: 0.6, atk: 'soulsolid', atkCd: 1.2, pen: ['exhausted', 6], penText: 'EL ALMA SE AGOTA... YOHOHOHO' }
+        } },
+    jinbe: { card: 'jinbeform', meter: 'MAREA', title: 'Karate de Hombre-Pez (Jinbe)',
+        desc: 'Llena el medidor y pulsa ESPACIO o el botón. Nv1: Shichibukai · Nv3: Timonel de los Sombrero de Paja · Evolución: Caballero del Mar (si están desbloqueados).',
+        evoName: 'Caballero del Mar', evoPassive: 'maxhp',
+        forms: {
+            // Shichibukai (Impel Down / Marineford)
+            2: { name: 'SHICHIBUKAI', short: 'SH', color: '#0ea5e9', dur: 8, sound: 'kick', dmg: 1.2, cd: 0.75, spd: 1.1, taken: 0.75 },
+            // Timonel de los Sombrero de Paja (Whole Cake): domina la corriente del mar
+            3: { name: 'TIMONEL DE LOS SOMBRERO DE PAJA', short: 'TI', color: '#0284c7', dur: 9, sound: 'rain', dmg: 1.5, cd: 0.8, spd: 1.15, taken: 0.6, atk: 'marea', atkCd: 1.2 },
+            // Caballero del Mar (Wano): Karate de Hombre-Pez a plena potencia
+            4: { name: 'CABALLERO DEL MAR', short: 'CM', color: '#1e3a8a', dur: 12, sound: 'haoshoku', dmg: 1.8, cd: 0.7, spd: 1.1, taken: 0.5, atk: 'ogi', atkCd: 1.2, pen: ['exhausted', 6], penText: 'JINBE SE QUEDA SIN AIRE... AGOTADO' }
         } }
 };
 const CREW_FORM_IDS = Object.values(CREW_FORMS).map(f => f.card);
@@ -174,7 +307,7 @@ const CREW_WEAPON_IDS = CREW_TECH_IDS.concat(CREW_FORM_IDS);
 // ---------- Registro en las tablas del juego ----------
 for (const c in CREW_FORMS) {
     const f = CREW_FORMS[c];
-    CHAR_SKILLS[c].push(...CREW_TECH_IDS.filter(id => CREW_TECH[id].char === c), f.card);
+    CHAR_SKILLS[c].push(...CREW_TECH_IDS.filter(id => CREW_TECH[id].char === c && !CHAR_SKILLS[c].includes(id)), f.card);
     FORM_CARD[c] = f.card; FORM_METER[c] = f.meter; FORMS[c] = f.forms;
     EVOLUTIONS[f.card] = { passive: f.evoPassive, name: f.evoName };
     SHARED_EVO_FX[f.card] = () => {}; // desbloquea el tercer escalón
@@ -287,7 +420,7 @@ function crewFire(id, sk) {
         const e = crewTarget('nearest', sk.r * ab + 30);
         if (!e) return false;
         const a = Math.atan2(e.y - player.y, e.x - player.x);
-        activeAttacks.push(Object.assign({}, base, { x: player.x, y: player.y, ang: a, r: sk.r * ab, arc: sk.arc, push: sk.push, life: 0.3, maxLife: 0.3, done: false }));
+        activeAttacks.push(Object.assign({}, base, { x: player.x, y: player.y, ang: a, r: sk.r * ab, arc: sk.arc, push: sk.push, stun: sk.stun || 0, life: 0.3, maxLife: 0.3, done: false }));
         return true;
     }
     if (t.kind === 'aura') {
@@ -387,7 +520,7 @@ function updateCrewAttack(atk, dt) {
             else forEnemiesNear(atk.x, atk.y, atk.r, e => { if (!e.isProp || atk.look === 'kaen') crewHit(atk, e, 1, atk.push, 0); });
             if (atk.look === 'kaen') { fxSpark(atk.x, atk.y, '#fb923c', 10, 180, 0.4, 3, 40); cameraShake = Math.max(cameraShake, 0.8); }
             if (atk.fire) activeAttacks.push({ type: 'crew', k: 'zone', look: 'fire', id: atk.id, x: atk.x, y: atk.y, ox: atk.x, oy: atk.y, r: atk.r * 0.85,
-                baseDamage: atk.fire.dmg, life: atk.fire.dur, maxLife: atk.fire.dur, tick: 0.4, tt: 0.4, slow: 0, stun: 0, evo: atk.evo });
+                baseDamage: atk.fire.dmg, life: atk.fire.dur, maxLife: atk.fire.dur, tick: 0.4, tt: 0.4, slow: 0, stun: 0, evo: atk.evo && atk.look === 'kaen' }); // fuego verde solo en el Midori Boshi de Usopp
         }
         return atk.life <= 0;
     }
@@ -397,7 +530,7 @@ function updateCrewAttack(atk, dt) {
             forEnemiesNear(player.x, player.y, atk.r, e => {
                 let d = Math.abs(Math.atan2(e.y - player.y, e.x - player.x) - atk.ang);
                 if (d > Math.PI) d = Math.PI * 2 - d;
-                if (d < atk.arc) crewHit(atk, e, 1, atk.push, 0);
+                if (d < atk.arc) crewHit(atk, e, 1, atk.push, atk.stun);
             });
         }
         atk.x = player.x; atk.y = player.y;
@@ -517,6 +650,61 @@ Object.assign(GEAR_ATTACKS, {
         forEnemiesNear(player.x, player.y, r, e => { if (!e.isBoss && !e.isMiniboss) e._stun = Math.max(e._stun || 0, 1); });
         gearHitArea(player.x, player.y, r, 160, 0);
         playSound('haoshoku'); cameraShake = Math.max(cameraShake, 2);
+    },
+    // Franky · General Franky: General Cannon sobre el objetivo
+    general() {
+        const t = gearTarget(); if (!t) { gearState.atkTimer = 0.3; return; }
+        const r = 100 * player.areaBonus;
+        gearState.fx.push({ kind: 'fist', x0: player.x, y0: player.y, x: t.x, y: t.y, r: 9, color: '#2563eb', life: 0.3, max: 0.3 });
+        gearState.fx.push({ kind: 'wave', x: t.x, y: t.y, r, color: '#f97316', life: 0.45, max: 0.45 });
+        gearHitArea(t.x, t.y, r, 75 + 15 * gearCardLevel(), 40);
+        playSound('boom'); cameraShake = Math.max(cameraShake, 1.6);
+    },
+    // Franky · Franky Shogun: rayo que barre la arena hacia el enemigo más cercano
+    shogun() {
+        const t = gearTarget(); if (!t) { gearState.atkTimer = 0.3; return; }
+        const a = Math.atan2(t.y - player.y, t.x - player.x), L = 600, w = 46 * player.areaBonus;
+        gearState.fx.push({ kind: 'beam', x0: player.x, y0: player.y - 10, a, L, w, color: '#7dd3fc', life: 0.45, max: 0.45 });
+        for (let s = 0; s <= L; s += w) forEnemiesNear(player.x + Math.cos(a) * s, player.y + Math.sin(a) * s, w, e => {
+            if (e._fs === gameTime) return; e._fs = gameTime;
+            const di = calculateDamage(165); e.hp -= di.amount * e.damageTaken; spawnDamageText(e.x, e.y, di);
+            if (e.hp <= 0) killEnemy(e);
+        });
+        playSound('laser'); cameraShake = Math.max(cameraShake, 2.2);
+    },
+    // Brook · Alma fuera del cuerpo: el frío del alma hiela a los que la rodean
+    soulfreeze() {
+        const r = 115 * player.areaBonus;
+        gearState.fx.push({ kind: 'wave', x: player.x, y: player.y, r, color: '#bae6fd', life: 0.45, max: 0.45 });
+        forEnemiesNear(player.x, player.y, r, e => { if (!e.isBoss && !e.isMiniboss) e._stun = Math.max(e._stun || 0, 0.8); });
+        gearHitArea(player.x, player.y, r, 70 + 15 * gearCardLevel(), 0);
+        playSound('whip');
+    },
+    // Brook · Soul Solid: tajo helado gigante sobre el objetivo
+    soulsolid() {
+        const t = gearTarget(); if (!t) { gearState.atkTimer = 0.3; return; }
+        const r = 140 * player.areaBonus;
+        gearState.fx.push({ kind: 'slashes', x: t.x, y: t.y, r, n: 2, rot: Math.atan2(t.y - player.y, t.x - player.x) + Math.PI / 2, color: '#7dd3fc', life: 0.45, max: 0.45 });
+        gearState.fx.push({ kind: 'wave', x: t.x, y: t.y, r, color: '#e0f2fe', life: 0.5, max: 0.5 });
+        forEnemiesNear(t.x, t.y, r, e => { if (!e.isBoss && !e.isMiniboss) e._stun = Math.max(e._stun || 0, 1.2); });
+        gearHitArea(t.x, t.y, r, 165, 0);
+        playSound('slash'); cameraShake = Math.max(cameraShake, 2);
+    },
+    // Jinbe · Timonel: ola que sale de él y arrastra a los enemigos
+    marea() {
+        const r = 125 * player.areaBonus;
+        gearState.fx.push({ kind: 'wave', x: player.x, y: player.y, r, color: '#38bdf8', life: 0.5, max: 0.5 });
+        gearHitArea(player.x, player.y, r, 75 + 15 * gearCardLevel(), 80);
+        playSound('rain'); cameraShake = Math.max(cameraShake, 1.4);
+    },
+    // Jinbe · Caballero del Mar: Ōgi Buraikan, una bola de agua colosal sobre el grupo más denso
+    ogi() {
+        const t = crewTarget('dense', 420); if (!t) { gearState.atkTimer = 0.3; return; }
+        const r = 150 * player.areaBonus;
+        gearState.fx.push({ kind: 'fist', x0: player.x, y0: player.y, x: t.x, y: t.y, r: 14, color: '#0ea5e9', life: 0.3, max: 0.3 });
+        gearState.fx.push({ kind: 'wave', x: t.x, y: t.y, r, color: '#0284c7', life: 0.55, max: 0.55 });
+        gearHitArea(t.x, t.y, r, 170, 70);
+        playSound('boom'); cameraShake = Math.max(cameraShake, 2.4);
     }
 });
 
@@ -538,11 +726,16 @@ gearSpriteTransform = function (ctx) {
     else if (c === 'robin' && g === 2) ctx.translate(0, -10 + Math.sin(t * 5) * 3); // vuela con las alas de brazos
     else if (c === 'nami' && g === 4) ctx.filter = 'brightness(1.15) saturate(1.3)';
     else if (c === 'usopp' && g === 4) ctx.filter = 'saturate(1.4) brightness(1.1)';
+    else if (c === 'franky' && g === 3) ctx.scale(1.2, 1.2);   // armadura de General Franky
+    else if (c === 'franky' && g === 4) { ctx.translate(0, -12); ctx.scale(1.6, 1.6); ctx.filter = 'saturate(1.3) brightness(1.05)'; } // Franky Shogun
+    else if (c === 'brook' && g === 4) ctx.filter = 'brightness(1.1) hue-rotate(160deg) saturate(0.7)'; // frío del inframundo
+    else if (c === 'jinbe' && g === 4) ctx.filter = 'saturate(1.3) brightness(1.08)';
     if (gearState.penalty === 'exhausted') ctx.filter = 'grayscale(0.6) brightness(0.85)';
 };
 const _crewSpriteAlpha = gearSpriteAlpha;
 gearSpriteAlpha = function () {
     if (gearChar() === 'nami' && gearState.active === 3) return 0.45 + 0.25 * Math.sin(performance.now() / 70);
+    if (gearChar() === 'brook' && gearState.active === 3) return 0.5 + 0.15 * Math.sin(performance.now() / 120); // alma fuera del cuerpo
     return _crewSpriteAlpha();
 };
 const _crewDrawAura = gearDrawAura;
@@ -583,10 +776,19 @@ const _crewDrawWorld = gearDrawWorld;
 gearDrawWorld = function (ctx) {
     _crewDrawWorld(ctx);
     for (const f of gearState.fx) {
-        if (f.kind !== 'hand' && f.kind !== 'demonarms') continue;
+        if (f.kind !== 'hand' && f.kind !== 'demonarms' && f.kind !== 'beam') continue;
         const a = Math.max(0, f.life / f.max), p = 1 - a;
         ctx.save();
-        if (f.kind === 'hand') {
+        if (f.kind === 'beam') {
+            // Franky Shogun: rayo con halo y núcleo blanco
+            ctx.translate(f.x0, f.y0); ctx.rotate(f.a);
+            const L = f.L * Math.min(1, p * 4), w = f.w * (0.6 + 0.4 * a);
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = a * 0.5; ctx.fillStyle = f.color; ctx.fillRect(0, -w / 2, L, w);
+            ctx.globalAlpha = a; ctx.fillStyle = '#e0f2fe'; ctx.fillRect(0, -w * 0.22, L, w * 0.44);
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, -w * 0.08, L, w * 0.16);
+            ctx.globalCompositeOperation = 'source-over';
+        } else if (f.kind === 'hand') {
             // mano gigante que cae desde arriba y aplasta
             const y = f.y - (1 - Math.min(1, p * 3)) * 120;
             ctx.globalAlpha = Math.min(1, a * 2);

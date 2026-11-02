@@ -21,7 +21,7 @@ const CROP = 230, ZOOM = 2; // recorte lógico alrededor del jugador, ampliado x
     await page.addInitScript((q) => {
         let s = 777;
         Math.random = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-        const all = { luffy: 1, zoro: 1, sanji: 1, nami: 1, usopp: 1, chopper: 1, robin: 1, map_alabasta: 1 };
+        const all = { luffy: 1, zoro: 1, sanji: 1, nami: 1, usopp: 1, chopper: 1, robin: 1, franky: 1, brook: 1, jinbe: 1, map_alabasta: 1 };
         localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: 0, upgrades: {}, unlocked: all }));
         localStorage.setItem('op_survivor_opts', JSON.stringify({ quality: q, shake: false }));
         window.requestAnimationFrame = () => 0;

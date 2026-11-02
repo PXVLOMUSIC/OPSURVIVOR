@@ -49,7 +49,7 @@ function modeTimeScale() { return (gameState === 'PLAYING' && RUN_MODES[runMode]
 // --- Tabla de récords: la mejor singladura de cada personaje en cada isla ---
 const RECORD_MAPS = ['shelltown', 'syrup', 'baratie', 'arlongpark', 'drum', 'alabasta', 'skypiea', 'water7', 'enieslobby', 'thrillerbark', 'marineford', 'wholecake', 'wano'];
 const RECORD_MAP_NAMES = { shelltown: 'Shell Town', syrup: 'Syrup', drum: 'Drum', arlongpark: 'Arlong Park', baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7', wholecake: 'Whole Cake', wano: 'Wano' };
-const RECORD_CHARS = ['luffy', 'zoro', 'sanji', 'usopp', 'nami', 'chopper', 'robin'];
+const RECORD_CHARS = ['luffy', 'zoro', 'sanji', 'usopp', 'nami', 'chopper', 'robin', 'franky', 'brook', 'jinbe'];
 
 function recordScore(r) { return (r.won ? 1e9 : 0) + (r.curse || 0) * 1e8 + Math.round(r.time) * 1e4 + Math.min(9999, r.kills); }
 function recordRun(won) {
@@ -80,7 +80,7 @@ function renderRecords() {
     const box = document.getElementById('records-table');
     if (!box) return;
     const rec = meta.records || {};
-    const names = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji', usopp: 'Usopp', nami: 'Nami', chopper: 'Chopper', robin: 'Robin' };
+    const names = { luffy: 'Luffy', zoro: 'Zoro', sanji: 'Sanji', usopp: 'Usopp', nami: 'Nami', chopper: 'Chopper', robin: 'Robin', franky: 'Franky', brook: 'Brook', jinbe: 'Jinbe' };
     const cell = r => {
         if (!r) return '<td class="rec-empty">—</td>';
         const badge = (r.won ? '<span class="rec-win">★</span> ' : '') + formatTime(r.time);

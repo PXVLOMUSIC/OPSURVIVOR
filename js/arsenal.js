@@ -68,7 +68,11 @@ const CREW_START = {
     nami:    { weapon: 'climatact' },
     usopp:   { weapon: 'kabuto' },
     chopper: { weapon: 'roseo' },
-    robin:   { weapon: 'clutch' }
+    robin:   { weapon: 'clutch' },
+    // Franky, Brook y Jinbe: su insignia es una técnica de js/crew.js (motor genérico)
+    franky:  { weapon: 'weaponsleft' },
+    brook:   { weapon: 'yahazu' },
+    jinbe:   { weapon: 'samegawara' }
 };
 // Arma insignia: en manos de su dueño pega más y recarga antes. Sin Gears ni transformaciones,
 // es lo que mantiene a la tripulación a la altura de Luffy, Zoro y Sanji (medido con tools/balance-sim.js).
@@ -76,7 +80,10 @@ const CREW_SIGNATURE = {
     nami:    { dmg: 1.55, cd: 0.75, extra: sk => { sk.strikes += 2; sk.nearFirst = true; } },
     usopp:   { dmg: 2.8, cd: 0.6, extra: sk => { sk.balls = 2; } }, // dispara dos Kayaku Boshi a la vez
     chopper: { dmg: 1.0, cd: 0.9 },
-    robin:   { dmg: 2.5, cd: 0.8 }
+    robin:   { dmg: 2.5, cd: 0.8 },
+    franky:  { dmg: 1.7, cd: 0.8 },
+    brook:   { dmg: 2.5, cd: 0.75, extra: sk => { sk.targets += 1; } },
+    jinbe:   { dmg: 1.8, cd: 0.8 }
 };
 function applyCrewStart() {
     const c = CREW_START[selectedCharacter];

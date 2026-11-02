@@ -923,6 +923,184 @@ def _():
     d.ellipse([7, 4, 14, 11], outline=None)
     return im
 
+# ===== FRANKY =====
+@icon('weaponsleft')
+def _():
+    im, d = new()
+    # Weapons Left: el antebrazo de cañón (piel cyborg) disparando una bala
+    d.rectangle([0, 7, 4, 13], fill=P['cya']); d.line([(0, 7), (4, 7)], fill=P['cyaL'])
+    d.rectangle([5, 6, 12, 14], fill=P['skin']); d.line([(5, 6), (12, 6)], fill=P['skinL']); d.line([(5, 14), (12, 14)], fill=P['skinD'])
+    d.rectangle([12, 8, 14, 12], fill=P['stlD']); d.rectangle([13, 9, 14, 11], fill=P['blk'])
+    d.ellipse([15, 8, 19, 12], fill=P['blk']); px(d, [(16, 9)], P['gry'])
+    d.line([(6, 3), (11, 3)], fill=P['wht']); d.line([(6, 17), (11, 17)], fill=P['wht'])
+    return im
+
+@icon('strongright')
+def _():
+    im, d = new()
+    # Strong Right: puño de hierro con cadena
+    for x in range(0, 9, 3): d.ellipse([x, 9, x + 2, 11], outline=P['stlD'])
+    d.rounded_rectangle([9, 4, 19, 16], 2, fill=P['bluL']); d.line([(10, 4), (17, 4)], fill=P['cyaL'])
+    for k in (12, 15, 18): d.line([(k, 5), (k, 9)], fill=P['bluD'])
+    d.line([(10, 12), (17, 12)], fill=P['bluD'])
+    return im
+
+@icon('freshfire')
+def _():
+    im, d = new()
+    # Fresh Fire: botella de cola y llamarada
+    d.rectangle([1, 8, 4, 17], fill=C('7a2e12')); d.rectangle([2, 5, 3, 8], fill=C('7a2e12')); d.rectangle([1, 11, 4, 13], fill=P['red'])
+    flame(d, 13, 18, 16, 12)
+    return im
+
+@icon('coupdevent')
+def _():
+    im, d = new()
+    # Coup de Vent: palmas juntas y aire comprimido
+    d.rounded_rectangle([0, 5, 6, 15], 2, fill=P['skin']); d.line([(1, 5), (5, 5)], fill=P['skinL'])
+    for r, col in ((4, 'wht'), (7, 'cyaL'), (10, 'cya')):
+        arc_lines(d, [8 - r + 4, 10 - r, 8 + r + 4, 10 + r], -70, 70, col)
+    return im
+
+@icon('rocket')
+def _():
+    im, d = new()
+    # Franky Rocket Launcher: cohete en diagonal con estela
+    d.polygon([(6, 13), (15, 4), (18, 1), (17, 5), (8, 15)], fill=P['stl'])
+    d.polygon([(15, 4), (18, 1), (17, 5)], fill=P['red'])
+    d.line([(7, 13), (15, 5)], fill=P['wht'])
+    flame(d, 4, 19, 6, 5)
+    return im
+
+@icon('frankyform')
+def _():
+    im, d = new()
+    # Franky Shogun: cabeza de robot con visera y tupé azul
+    d.rectangle([3, 6, 16, 18], fill=P['stl']); d.line([(3, 6), (16, 6)], fill=P['wht'])
+    d.rectangle([5, 9, 14, 12], fill=P['blk']); d.line([(6, 10), (13, 10)], fill=P['cya'])
+    d.rectangle([6, 14, 13, 16], fill=P['stlD'])
+    d.polygon([(5, 6), (9, 0), (15, 1), (14, 6)], fill=P['cya']); d.line([(9, 1), (14, 2)], fill=P['cyaL'])
+    d.rectangle([2, 10, 3, 14], fill=P['red']); d.rectangle([16, 10, 17, 14], fill=P['red'])
+    return im
+
+# ===== BROOK =====
+@icon('yahazu')
+def _():
+    im, d = new()
+    # Yahazu Giri: espada bastón y el tajo que llega después
+    sword(d, (17, 3), (3, 17), 'brnD', guard='yelD')
+    d.line([(2, 6), (8, 2)], fill=P['wht']); d.line([(12, 18), (18, 14)], fill=P['wht'])
+    return im
+
+@icon('gavotte')
+def _():
+    im, d = new()
+    # Gavotte Bond en Avant: estocada recta
+    d.line([(0, 10), (16, 10)], fill=P['stl']); d.line([(0, 9), (16, 9)], fill=P['wht'])
+    d.polygon([(16, 8), (19, 10), (16, 11)], fill=P['wht'])
+    d.rectangle([3, 7, 4, 12], fill=P['yel'])
+    for y in (5, 15): d.line([(7, y), (13, y)], fill=P['cyaL'])
+    return im
+
+@icon('fubuki')
+def _():
+    im, d = new()
+    # Kasuriuta: Fubuki Giri — copo de hielo
+    for a in range(0, 180, 60):
+        x = math.cos(math.radians(a)) * 9; y = math.sin(math.radians(a)) * 9
+        d.line([(10 - x, 10 - y), (10 + x, 10 + y)], fill=P['cyaL'], width=2)
+    d.ellipse([7, 7, 13, 13], fill=P['wht'])
+    px(d, [(10, 1), (10, 19), (2, 5), (18, 15), (2, 15), (18, 5)], P['wht'])
+    return im
+
+@icon('nemuriuta')
+def _():
+    im, d = new()
+    # Nemuri Uta: notas musicales
+    d.ellipse([1, 13, 6, 18], fill=P['pur']); d.ellipse([11, 11, 16, 16], fill=P['pur'])
+    d.line([(6, 15), (6, 3)], fill=P['purD'], width=2); d.line([(16, 13), (16, 1)], fill=P['purD'], width=2)
+    d.line([(6, 3), (16, 1)], fill=P['purD'], width=2); d.line([(6, 6), (16, 4)], fill=P['purD'], width=1)
+    px(d, [(2, 14), (12, 12)], P['purL'])
+    return im
+
+@icon('soul')
+def _():
+    im, d = new()
+    # Yomi Yomi: el alma de Brook con sombrero de copa
+    d.ellipse([4, 5, 16, 16], fill=P['wht']); d.rectangle([4, 11, 16, 17], fill=P['wht'])
+    for x in (4, 8, 12): d.polygon([(x, 17), (x + 2, 19), (x + 4, 17)], fill=P['wht'])
+    px(d, [(8, 10), (12, 10), (8, 11), (12, 11)], P['blk'])
+    d.rectangle([6, 1, 14, 4], fill=P['blk']); d.line([(4, 5), (16, 5)], fill=P['blk'])
+    return im
+
+@icon('brookform')
+def _():
+    im, d = new()
+    # Soul King: calavera con afro y sombrero de copa
+    d.ellipse([1, 4, 19, 15], fill=P['blk'])
+    d.ellipse([5, 7, 15, 18], fill=P['wht'])
+    d.rectangle([6, 0, 14, 4], fill=P['blkL']); d.line([(4, 5), (16, 5)], fill=P['blkL'])
+    d.ellipse([7, 10, 9, 12], fill=P['blk']); d.ellipse([11, 10, 13, 12], fill=P['blk'])
+    for x in (8, 10, 12): d.line([(x, 15), (x, 17)], fill=P['gry'])
+    return im
+
+# ===== JINBE =====
+@icon('samegawara')
+def _():
+    im, d = new()
+    # Samegawara Seiken: puño azul de hombre-pez y ondas en el agua
+    fist(d, 1, 6, base='blu', light='bluL', dark='bluD')
+    for r, col in ((3, 'cyaL'), (6, 'cya'), (9, 'bluL')):
+        arc_lines(d, [10 - r + 2, 10 - r, 10 + r + 2, 10 + r], -60, 60, col)
+    return im
+
+@icon('buraikan')
+def _():
+    im, d = new()
+    # Buraikan: bola de agua
+    d.ellipse([2, 2, 18, 18], fill=P['sea']); d.ellipse([3, 3, 17, 17], fill=P['blu'])
+    d.ellipse([5, 5, 10, 9], fill=P['bluL']); px(d, [(6, 6)], P['wht'])
+    arc_lines(d, [5, 6, 15, 16], 30, 150, 'cyaL')
+    return im
+
+@icon('yarinami')
+def _():
+    im, d = new()
+    # Yarinami: lanza de agua
+    d.polygon([(0, 9), (14, 7), (19, 10), (14, 13), (0, 11)], fill=P['blu'])
+    d.line([(1, 10), (17, 10)], fill=P['cyaL'])
+    for x in (2, 7): d.line([(x, 15), (x + 3, 16)], fill=P['cya']); d.line([(x + 1, 4), (x + 4, 3)], fill=P['cya'])
+    return im
+
+@icon('uchimizu')
+def _():
+    im, d = new()
+    # Uchimizu: tres gotas como balas
+    for (x, y) in ((1, 2), (11, 1), (6, 10)):
+        d.polygon([(x + 3, y), (x + 6, y + 5), (x, y + 5)], fill=P['blu'])
+        d.ellipse([x, y + 3, x + 6, y + 8], fill=P['blu']); px(d, [(x + 2, y + 4)], P['cyaL'])
+    return im
+
+@icon('mizugokoro')
+def _():
+    im, d = new()
+    # Mizugokoro: remolino de agua
+    d.ellipse([1, 4, 19, 16], outline=P['blu'], width=2)
+    d.ellipse([5, 6, 15, 14], outline=P['cya'], width=2)
+    d.ellipse([8, 8, 12, 12], fill=P['cyaL'])
+    return im
+
+@icon('jinbeform')
+def _():
+    im, d = new()
+    # Jinbe: cara azul de tiburón ballena con colmillos y la coleta
+    d.ellipse([2, 3, 18, 19], fill=P['blu']); d.ellipse([4, 4, 16, 10], fill=P['bluL'])
+    d.rectangle([8, 0, 11, 3], fill=P['blk'])
+    px(d, [(7, 9), (12, 9)], P['blk'])
+    d.rectangle([5, 13, 14, 15], fill=P['wht']); px(d, [(5, 12), (14, 12)], P['wht'])
+    d.line([(2, 16), (18, 16)], fill=P['red'])
+    return im
+
 # ---------- hoja + js ----------
 def build():
     names = list(ICONS)

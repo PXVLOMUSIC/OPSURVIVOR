@@ -848,6 +848,9 @@ input[type="range"]::-moz-range-track {
 .wslot[data-char="usopp"] { --c: #a16207; }
 .wslot[data-char="chopper"] { --c: #ec4899; }
 .wslot[data-char="robin"] { --c: #7c3aed; }
+.wslot[data-char="franky"] { --c: #0ea5e9; }
+.wslot[data-char="brook"] { --c: #6b21a8; }
+.wslot[data-char="jinbe"] { --c: #1d4ed8; }
 .wslot .hud-ico svg.op-ico { color: var(--ink); width: 22px; height: 22px; }
 .wslot-lv { font-family: 'Bangers', sans-serif; font-size: 12px; letter-spacing: 1px; color: var(--ink); line-height: 1.2; }
 .wslot.evo {
@@ -893,6 +896,12 @@ input[type="range"]::-moz-range-track {
 #upgrade-options .upgrade-card[data-char="chopper"]::after { content: 'DOKAN!!'; color: #fce7f3; }
 #upgrade-options .upgrade-card[data-char="robin"] { --c: #7c3aed; }
 #upgrade-options .upgrade-card[data-char="robin"]::after { content: 'BOKI!!'; color: #ede9fe; }
+#upgrade-options .upgrade-card[data-char="franky"] { --c: #0ea5e9; }
+#upgrade-options .upgrade-card[data-char="franky"]::after { content: 'SUPER!!'; color: #e0f2fe; }
+#upgrade-options .upgrade-card[data-char="brook"] { --c: #6b21a8; }
+#upgrade-options .upgrade-card[data-char="brook"]::after { content: 'YOHOHO!!'; color: #f3e8ff; }
+#upgrade-options .upgrade-card[data-char="jinbe"] { --c: #1d4ed8; }
+#upgrade-options .upgrade-card[data-char="jinbe"]::after { content: 'DOOON!!'; color: #dbeafe; }
 #upgrade-options .upgrade-card[data-kind="passive"]::after { content: 'GOGOGO'; color: #fff; }
 #arcana-options .upgrade-card { --c: #7c2d12; }
 #arcana-options .upgrade-card::after { content: 'D'; font-family: 'Pirata One', serif; font-size: 44px; color: #fde68a; }
@@ -1367,6 +1376,9 @@ body.q-low .overlay-screen { -webkit-backdrop-filter: none !important; backdrop-
 .pz-slot[data-char="usopp"] { --c: #a16207; }
 .pz-slot[data-char="chopper"] { --c: #ec4899; }
 .pz-slot[data-char="robin"] { --c: #7c3aed; }
+.pz-slot[data-char="franky"] { --c: #0ea5e9; }
+.pz-slot[data-char="brook"] { --c: #6b21a8; }
+.pz-slot[data-char="jinbe"] { --c: #1d4ed8; }
 .pz-slot[data-kind="passive"] { --c: #2563eb; }
 .pz-slot.evo { background: linear-gradient(160deg, #fde68a, #f59e0b); box-shadow: 0 0 10px rgba(250,204,21,0.6), 2px 2px 0 rgba(0,0,0,0.35); }
 .pz-ico svg.op-ico { width: 24px; height: 24px; color: var(--ink); }

@@ -311,11 +311,12 @@ function render() {
         const gi = filteredSprite(gearFrame.img, takeCtxFilter(ctx)), ph = gearFrame.h, pw = ph * (gi.width / gi.height);
         ctx.drawImage(gi, -pw / 2, 24 - ph, pw, ph);
     } else if (img && img.complete && img.width) {
-        const ph = 48;
+        // alto propio (Franky, Brook y Jinbe son más altos); los pies siempre en y = 24
+        const ph = (CHAR_ANIMS[selectedCharacter] && CHAR_ANIMS[selectedCharacter].h) || 48;
         const pw = ph * (img.width / img.height);
         // respeta el filtro que haya puesto el Gear (agotado, Gear 2); se aplica con la caché de sprites filtrados
         const pf = takeCtxFilter(ctx) || playerSpriteFilter();
-        ctx.drawImage(filteredSprite(img, pf), -pw/2, -ph/2, pw, ph);
+        ctx.drawImage(filteredSprite(img, pf), -pw/2, 24 - ph, pw, ph);
     } else if (assetsLoaded && IMG.player && IMG.player.complete) {
         const ph = 48;
         const pw = ph * (IMG.player.width / IMG.player.height);

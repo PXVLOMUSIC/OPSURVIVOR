@@ -1428,6 +1428,8 @@ const EVOLUTIONS = {
     concasse:    { passive: 'speed',  name: 'Bien Cuit: Grill Shot' },
     partycourse: { passive: 'crit',   name: 'Anti-Manner Kick Course' }
 };
+// Icono propio de la técnica evolucionada (source-art/dibujar_iconos_evoluciones.py); si no hay, el del arma
+function evoIcon(id, fallback) { return (typeof pxIcon === 'function' && pxIcon('evo_' + id)) || fallback || ''; }
 function evolveWeapon(id) {
     const sk = skills[id];
     if (!sk || sk.evolved) return;
@@ -1615,7 +1617,7 @@ function showUpgradeScreen(count, isChest) {
         const lvTag = curLv <= 0 ? `<span class="lvl-tag new">NUEVO</span>`
             : `<span class="lvl-tag">Nv ${curLv} → ${curLv + 1}${up.type === 'weapon' ? '<small>/5</small>' : ''}</span>`;
         card.innerHTML = `
-            <div class="upgrade-icon">${up.icon}</div>
+            <div class="upgrade-icon">${cardEvo ? evoIcon(up.id, up.icon) : up.icon}</div>
             <div class="upgrade-info">
                 <h4>${up.title} ${lvTag}</h4>
                 <p>${desc}</p>
@@ -2019,7 +2021,7 @@ function updateWeaponsHUD() {
         div.className = 'wslot' + (sk.evolved ? ' evo' : '');
         div.dataset.char = owner;
         div.title = sk.evolved ? (sk.evolvedName || w.name) : w.name;
-        div.innerHTML = `<div class="hud-ico">${w.icon}</div><div class="wslot-lv">${sk.evolved ? '◆' : 'Nv ' + sk.level}</div>`;
+        div.innerHTML = `<div class="hud-ico">${sk.evolved ? evoIcon(w.id, w.icon) : w.icon}</div><div class="wslot-lv">${sk.evolved ? '◆' : 'Nv ' + sk.level}</div>`;
         el.appendChild(div);
     });
 }

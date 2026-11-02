@@ -109,7 +109,7 @@ function handleArsenal(dt, cdMult) {
                 activeAttacks.push({ type: 'kabuto', x: player.x, y: player.y, vx: Math.cos(a) * kb.speed, vy: Math.sin(a) * kb.speed,
                     radius: 14 * player.areaBonus, life: kb.life * (player.durationBonus || 1), maxLife: kb.life, baseDamage: kb.baseDamage, hitCd: new Map(), evo: kb.evolved });
             }
-            playSound('pistol');
+            playSound('twang');
         }
     }
     // Clima-Tact: Thunderbolt Tempo, rayos sobre enemigos al azar en pantalla (como el Lightning Ring de VS)
@@ -126,7 +126,7 @@ function handleArsenal(dt, cdMult) {
                 activeAttacks.push({ type: 'thunder', x: e.x, y: e.y, radius: (ct.evolved ? 46 : 30) * player.areaBonus,
                     life: 0.35 * (player.durationBonus || 1), maxLife: 0.35, baseDamage: ct.baseDamage, done: false, evo: ct.evolved });
             }
-            playSound('laser');
+            playSound('thunder');
         }
     }
     // Chopper — Kokutei Roseo Mirror: pezuñazo en Heavy Point sobre el más cercano (flor de cerezo, Drum)
@@ -154,7 +154,7 @@ function handleArsenal(dt, cdMult) {
                 cl.timer = 0; player.attackTimer = 0.3;
                 for (const e of near) activeAttacks.push({ type: 'clutch', target: e, x: e.x, y: e.y, life: 0.5, maxLife: 0.5, hitDelay: 0.22,
                     baseDamage: cl.baseDamage, done: false, evo: cl.evolved, radius: (cl.evolved ? 60 : 0) * player.areaBonus });
-                playSound('slash');
+                playSound('crack');
             }
         }
     }

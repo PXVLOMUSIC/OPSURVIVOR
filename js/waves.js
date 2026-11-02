@@ -54,7 +54,7 @@ function runWave(w) {
         playSound('boss');
         return;
     }
-    playSound('levelup');
+    playSound('warn');
     if (w.kind === 'swarm') {
         window.spawnBanner = { text: txt.swarm, life: 1.8, color: '#a78bfa' };
         const sides = w.both ? [1, -1] : [Math.random() < 0.5 ? 1 : -1];

@@ -18,7 +18,7 @@ const FORMS = {
         3: { name: 'GEAR THIRD',  short: 'G3', color: '#fb923c', dur: 9,  sound: 'boom',     dmg: 1.45,  cd: 1.0, spd: 1,   taken: 1,   area: 1.6, atk: 'elephant', atkCd: 1.6, pen: ['chibi', 4], penText: '¡LUFFY ENCOGIDO!' },
         4: { name: 'GEAR FOURTH: BOUNDMAN', short: 'G4', color: '#dc2626', dur: 12, sound: 'haoshoku', dmg: 1.85, cd: 0.7, spd: 1.2, taken: 0.6, atk: 'kong', atkCd: 1.3, pen: ['exhausted', 8], penText: '¡SIN HAKI! AGOTADO' },
         // canon: el coste de Nika es el agotamiento (Luffy arrugado y sin fuerzas), no perder vida
-        5: { name: 'GEAR FIFTH: NIKA', short: 'G5', color: '#f8fafc', dur: 15, sound: 'haoshoku', dmg: 2.1, cd: 0.6, spd: 1.3, taken: 0.3, enemySpd: 0.5, atk: 'dawn', atkCd: 1.2, pen: ['exhausted', 12], penText: 'NIKA SE APAGA... AGOTADO' }
+        5: { name: 'GEAR FIFTH: NIKA', short: 'G5', color: '#f8fafc', dur: 15, sound: 'drums', dmg: 2.1, cd: 0.6, spd: 1.3, taken: 0.3, enemySpd: 0.5, atk: 'dawn', atkCd: 1.2, pen: ['exhausted', 12], penText: 'NIKA SE APAGA... AGOTADO' }
     },
     zoro: {
         // Ryuo (Wano): Haki que fluye por las espadas sin tocar → corta mas y mas rapido

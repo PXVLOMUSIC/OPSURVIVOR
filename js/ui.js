@@ -25,10 +25,11 @@ function applyOpts() {
     if (checkF) checkF.checked = windowOpts.fewerFlashes;
     if (checkD) checkD.checked = windowOpts.showDamageNumbers;
     if (checkA) checkA.checked = windowOpts.autoPause;
+    if (typeof syncVolLabels === 'function') syncVolLabels();
     masterVolume = (typeof windowOpts.master === 'number') ? windowOpts.master : 0.8;
     if (typeof windowOpts.master !== 'number') windowOpts.master = masterVolume;
 }
-function showOptions() { document.getElementById('start-screen').style.display = 'none'; document.getElementById('options-screen').style.display = 'flex'; }
+function showOptions() { applyOpts(); document.getElementById('options-screen').style.display = 'flex'; }
 function closeOptions() {
     const sliderMa = document.getElementById('opt-master'), sliderM = document.getElementById('opt-music'), sliderS = document.getElementById('opt-sfx');
     const checkSh = document.getElementById('opt-shake'), checkP = document.getElementById('opt-particles');
@@ -78,9 +79,20 @@ var soundEnabled = true;
 // sliders de opciones independiente: masterVolume es el volumen global heredado
 var masterVolume = 0.8;
 function setVolume(v) { masterVolume = Math.max(0, Math.min(1, v / 100)); updateMusic(); }
-function setVolMaster(v) { windowOpts.master = Math.max(0, Math.min(1, v / 100)); masterVolume = windowOpts.master; saveOpts(); updateMusic(); const a=document.getElementById('opt-master'), b=document.getElementById('vol-master'); if(a) a.value=v; if(b) b.value=v; const va=document.getElementById('opt-master-val'); if(va) va.innerText=Math.round(windowOpts.master*100); }
-function setVolMusic(v) { windowOpts.music = Math.max(0, Math.min(1, v / 100)); saveOpts(); updateMusic(); const a=document.getElementById('opt-music'), b=document.getElementById('vol-music'); if(a) a.value=v; if(b) b.value=v; const va=document.getElementById('opt-music-val'); if(va) va.innerText=Math.round(windowOpts.music*100); }
-function setVolSfx(v) { windowOpts.sfx = Math.max(0, Math.min(1, v / 100)); saveOpts(); const a=document.getElementById('opt-sfx'), b=document.getElementById('vol-sfx'); if(a) a.value=v; if(b) b.value=v; const va=document.getElementById('opt-sfx-val'); if(va) va.innerText=Math.round(windowOpts.sfx*100); }
+function setVolMaster(v) { windowOpts.master = Math.max(0, Math.min(1, v / 100)); masterVolume = windowOpts.master; saveOpts(); updateMusic(); const a=document.getElementById('opt-master'), b=document.getElementById('vol-master'); if(a) a.value=v; if(b) b.value=v; syncVolLabels(); }
+function setVolMusic(v) { windowOpts.music = Math.max(0, Math.min(1, v / 100)); saveOpts(); updateMusic(); const a=document.getElementById('opt-music'), b=document.getElementById('vol-music'); if(a) a.value=v; if(b) b.value=v; syncVolLabels(); }
+function setVolSfx(v) { windowOpts.sfx = Math.max(0, Math.min(1, v / 100)); saveOpts(); const a=document.getElementById('opt-sfx'), b=document.getElementById('vol-sfx'); if(a) a.value=v; if(b) b.value=v; syncVolLabels(); }
+// Números junto a los deslizadores (Opciones y Pausa) y relleno dorado de la pista hasta el valor
+function syncVolLabels() {
+    const vals = { master: windowOpts.master, music: windowOpts.music, sfx: windowOpts.sfx };
+    for (const k in vals) {
+        const n = Math.round((typeof vals[k] === 'number' ? vals[k] : 0.8) * 100);
+        ['opt-' + k, 'vol-' + k].forEach(id => {
+            const r = document.getElementById(id); if (r) { r.value = n; r.style.setProperty('--fill', n + '%'); }
+            const l = document.getElementById(id + '-val'); if (l) l.textContent = n;
+        });
+    }
+}
 function togglePause() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSED';
@@ -91,52 +103,94 @@ function togglePause() {
     if (vm) vm.value = Math.round((windowOpts.master || 0.8) * 100);
     if (vmu) vmu.value = Math.round((windowOpts.music || 0.8) * 100);
     if (vs) vs.value = Math.round((windowOpts.sfx || 0.8) * 100);
+    syncVolLabels();
 }
 // VS: auto-pausa al cambiar de pestaña/minimizar — nadie muere por cambiar de ventana
 document.addEventListener('visibilitychange', () => {
     if (document.hidden && gameState === 'PLAYING' && windowOpts && windowOpts.autoPause !== false) togglePause();
 });
+// Pausa: bitácora de la partida. Armas y objetos como fichas (mismo estilo que el HUD) y todas las
+// estadísticas del jugador con su icono, como en VS.
+const PAUSE_WEAPONS = ['pistol','gatling','bazooka','gear2','muchi','ono','santoryu','onigiri','flyingslash','tatsumaki','poundho','diablejambe','collier','joueshot','concasse','partycourse','kabuto','climatact','roseo','clutch','zoroform','sanjiform','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','dial'];
+const PAUSE_NAMES = {
+    pistol: 'Pistol', gatling: 'Gatling', bazooka: 'Bazooka', gear2: 'Gears', muchi: 'Muchi', ono: 'Ono',
+    santoryu: 'Santoryu', onigiri: 'Oni Giri', flyingslash: 'Flying Slash', tatsumaki: 'Tatsumaki', poundho: '108 Pound Ho',
+    diablejambe: 'Diable Jambe', collier: 'Collier', joueshot: 'Joue Shot', concasse: 'Concassé', partycourse: 'Party Table',
+    kabuto: 'Kabuto', climatact: 'Clima-Tact', roseo: 'Roseo Mirror', clutch: 'Clutch', zoroform: 'Haki del Rey', sanjiform: 'Raid Suit',
+    cuchillo: 'Cuchillo', granada: 'Granada', rifle: 'Rifle', ballesta: 'Ballesta', lanza: 'Lanza', hacha: 'Hacha', shuriken: 'Shuriken',
+    hakiPulse: 'Haoshoku', dial: 'Dial',
+    power: 'Poder', crit: 'Crítico', cd: 'Recarga', armor: 'Armadura', haki_buso: 'Busoshoku', haki_ken: 'Kenbunshoku', haki_hao: 'Haoshoku',
+    area: 'Área', speed: 'Velocidad', pickup: 'Recogida', growth: 'Crecimiento', luck: 'Suerte', maxhp: 'Vitalidad', regen: 'Regeneración',
+    evasion: 'Esquiva', magnet: 'Imán', greed: 'Avaricia', vamp: 'Vampirismo', rumble: 'Rumble Ball', jolly: 'Bandera Pirata'
+};
+const PAUSE_PASSIVE_ICO = { maxhp: 'heart', regen: 'meat', evasion: 'dodge', magnet: 'pickup', greed: 'coin', vamp: 'drop' };
+function pauseSlot(id, lvl, evo, owner, kind) {
+    const div = document.createElement('div');
+    div.className = 'pz-slot' + (evo ? ' evo' : '');
+    div.dataset.char = owner;
+    div.dataset.kind = kind;
+    const sk = skills[id];
+    const name = evo && sk && sk.evolvedName ? sk.evolvedName : (PAUSE_NAMES[id] || id);
+    div.title = name;
+    div.innerHTML = `<div class="pz-ico">${ICONS[PAUSE_PASSIVE_ICO[id] || id] || ICONS.up}</div><div class="pz-name"></div><div class="pz-lv">${evo ? 'EVO' : 'Nv ' + lvl}</div>`;
+    div.querySelector('.pz-name').textContent = name;
+    return div;
+}
 function renderPauseWeapons() {
     const wEl = document.getElementById('pause-weapons');
     const pEl = document.getElementById('pause-passives');
+    const sEl = document.getElementById('pause-stats');
     if (!wEl || !pEl) return;
-    const weaponIds = ['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform'];
-    const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp'];
-    const icons = ICONS;
-    wEl.innerHTML = '';
-    passiveIds.forEach(id => {
-        const sk = skills[id];
-        if (!sk || (sk.level !== undefined && sk.level <= 0) && id !== 'power' && id !== 'crit' && id !== 'cd' && id !== 'armor') {
-            // passives from upgrades don't have level in skills; skip
-        }
-    });
-    // weapons
-    weaponIds.forEach(id => {
+    wEl.innerHTML = ''; pEl.innerHTML = '';
+    let nw = 0, np = 0;
+    PAUSE_WEAPONS.forEach(id => {
         const sk = skills[id];
         if (!sk || sk.level <= 0) return;
-        const ev = sk.evolved ? ' (EVO)' : (sk.level >= 5 ? ' (EVO posible)' : '');
-        const div = document.createElement('div');
-        div.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:4px 6px;font-size:11px;font-family:Segoe UI,Verdana,sans-serif;font-weight:700;color:#3d2314;min-width:56px;text-align:center;';
-        div.innerHTML = `<div style="font-size:16px;">${icons[id]||'?'}</div><div>${id} Lv${sk.level}${ev}</div>`;
-        wEl.appendChild(div);
+        const owner = Object.keys(CHAR_SKILLS).find(c => CHAR_SKILLS[c].includes(id)) || 'all';
+        wEl.appendChild(pauseSlot(id, sk.level, sk.evolved, owner, 'weapon')); nw++;
     });
-    // passives from player stats (show counts)
-    const passives = [];
-    if (player.powerPct > 0) passives.push({ name: 'Poder', val: player.powerPct + '%' });
-    if (player.critChance > 0.05) passives.push({ name: 'Crit', val: Math.round(player.critChance*100) + '%' });
-    if (player.cdReduction > 0) passives.push({ name: 'CD', val: '-' + player.cdReduction + '%' });
-    if (player.armor > 0) passives.push({ name: 'Armadura', val: player.armor + '%' });
-    if (player.areaBonus > 1) passives.push({ name: 'Área', val: '+' + Math.round((player.areaBonus-1)*100) + '%' });
-    if (player.speed > BALANCE.playerSpeed) passives.push({ name: 'Velocidad', val: '+' + Math.round((player.speed/BALANCE.playerSpeed-1)*100) + '%' });
-    pEl.innerHTML = '';
-    passives.forEach(p => {
-        const div = document.createElement('div');
-        div.style.cssText = 'background:#faedcd;border:2px solid #8b5e3c;border-radius:8px;padding:4px 6px;font-size:11px;font-family:Segoe UI,Verdana,sans-serif;font-weight:700;color:#3d2314;min-width:56px;text-align:center;';
-        div.innerHTML = `<div style="font-size:14px;">${ICONS.up}</div><div>${p.name}</div><div>${p.val}</div>`;
-        pEl.appendChild(div);
+    Object.keys(player.passives || {}).forEach(id => {
+        const lv = player.passives[id];
+        if (!lv) return;
+        pEl.appendChild(pauseSlot(id, lv, false, 'all', 'passive')); np++;
     });
-    if (wEl.children.length === 0) wEl.innerHTML = '<p style="color:#6c584c;font-size:12px;">Sin armas</p>';
-    if (pEl.children.length === 0) pEl.innerHTML = '<p style="color:#6c584c;font-size:12px;">Sin pasivas</p>';
+    if (!nw) wEl.innerHTML = '<p class="pz-empty">Sin armas</p>';
+    if (!np) pEl.innerHTML = '<p class="pz-empty">Aún no has recogido objetos</p>';
+    const setT = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    setT('pz-wcount', nw); setT('pz-pcount', np);
+    // cabecera: personaje, isla, tiempo, nivel y botín
+    const ch = (typeof CHAR_ANIMS !== 'undefined' && CHAR_ANIMS[selectedCharacter]) ? CHAR_ANIMS[selectedCharacter].name : selectedCharacter;
+    setT('pz-char', ch);
+    const mb = document.querySelector(`#map-select .map-btn[data-map="${selectedMap}"]`);
+    setT('pz-map', mb ? mb.textContent.trim() : selectedMap);
+    setT('pz-time', formatTime(gameTime));
+    setT('pz-level', player.level);
+    setT('pz-beli', fmtBeli(scoreBeli));
+    const ico = document.querySelector('#pause-screen .pz-chip [data-ico="ship"]');
+    if (ico && mb) { const m = mb.querySelector('[data-ico]'); if (m) ico.innerHTML = ICONS[m.getAttribute('data-ico')] || ''; }
+    if (!sEl) return;
+    // estadísticas al estilo VS: icono, nombre y valor (en dorado lo que sube respecto a la base)
+    const pct = v => Math.round(v * 100);
+    const sign = v => (v > 0 ? '+' : '') + v + '%';
+    const base = BALANCE.playerSpeed;
+    const rows = [
+        ['heart', 'Vida máx.', Math.round(player.maxHp), player.maxHp > 100],
+        ['meat', 'Regeneración', (player.regenRate || 0).toFixed(1).replace('.', ',') + '/s', (player.regenRate || 0) > 0],
+        ['armor', 'Armadura', (player.armor || 0) + '%', player.armor > 0],
+        ['dodge', 'Esquiva', pct(player.evasion || 0) + '%', (player.evasion || 0) > 0],
+        ['speed', 'Velocidad', sign(Math.round((player.speed / base - 1) * 100)), player.speed > base],
+        ['power', 'Poder', sign(player.powerPct || 0), player.powerPct > 0],
+        ['area', 'Área', sign(Math.round((player.areaBonus - 1) * 100)), player.areaBonus > 1],
+        ['cd', 'Recarga', '-' + (player.cdReduction || 0) + '%', player.cdReduction > 0],
+        ['crit', 'Crítico', pct(player.critChance) + '%', player.critChance > 0.05],
+        ['pickup', 'Recogida', sign(Math.round((player.pickupBonus - 1) * 100)), player.pickupBonus > 1],
+        ['luck', 'Suerte', sign(Math.round((player.luckBonus - 1) * 100)), player.luckBonus > 1],
+        ['growth', 'Crecimiento', sign(Math.round((player.growthBonus - 1) * 100)), player.growthBonus > 1],
+        ['coin', 'Avaricia', sign(Math.round((player.greedBonus - 1) * 100)), player.greedBonus > 1],
+        ['drop', 'Vampirismo', pct(player.vampirism || 0) + '%', (player.vampirism || 0) > 0],
+        ['skull', 'Maldición', sign(Math.round((player.curse - 1) * 100)), player.curse > 1]
+    ];
+    sEl.innerHTML = rows.map(([ic, n, v, up]) => `<div class="pz-stat${up ? ' up' : ''}"><span class="op-ic">${ICONS[ic] || ''}</span><span class="pz-sn">${n}</span><b>${v}</b></div>`).join('');
 }
 function resumeGame() {
     if (gameState !== 'PAUSED') return;
@@ -290,3 +344,18 @@ function resetGame() {
     applyCrewStart(); // arma inicial y bonus de Nami, Usopp, Chopper y Robin (js/arsenal.js)
     updateUI();
 }
+// Las casillas y la calidad se guardan al cambiarlas. Antes solo se leían al pulsar VOLVER, y mover
+// un volumen (que guarda y repinta las opciones) devolvía las casillas a su valor anterior.
+(function () {
+    const map = { 'opt-shake': 'shake', 'opt-particles': 'fewerParticles', 'opt-flashes': 'fewerFlashes', 'opt-dmgnums': 'showDamageNumbers', 'opt-autopause': 'autoPause' };
+    Object.keys(map).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => {
+            windowOpts[map[id]] = el.checked;
+            if (id === 'opt-flashes') document.body.classList.toggle('opt-calm', !!windowOpts.fewerFlashes);
+            saveOpts();
+        });
+    });
+    const q = document.getElementById('opt-quality');
+    if (q) q.addEventListener('change', () => { windowOpts.quality = q.value; saveOpts(); });
+})();

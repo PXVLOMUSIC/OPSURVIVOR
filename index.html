@@ -68,67 +68,45 @@
     <!-- Weapons HUD -->
     <div id="weapons-hud"></div>
 
-    <!-- Pause Screen -->
+    <!-- Pause Screen: cartel con la bitácora de la partida (armas, objetos y estadísticas) y los ajustes -->
     <div id="pause-screen" class="overlay-screen" style="display: none;">
-        <div id="pause-info-panel" style="position:absolute; top:16px; left:16px; max-width: 340px; max-height: none; overflow: visible; background: rgba(28,17,7,0.95); border: 2px solid #b45309; border-radius: 12px; padding: 12px 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.75); z-index: 2;">
-            <div style="max-height: none; overflow: visible; margin-bottom: 10px;">
-                <h3 style="color:#f6e2b8; font-size:13px; margin-bottom:6px; letter-spacing:1px;">ARMAS</h3>
-                <div id="pause-weapons" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-start;"></div>
-                <h3 style="color:#f6e2b8; font-size:13px; margin:10px 0 6px; letter-spacing:1px;">PASIVAS</h3>
-                <div id="pause-passives" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-start;"></div>
-            </div>
-            <div class="stats-panel" style="margin: 0; max-width: 100%;">
-                <div><span class="op-slot" data-ico="power"></span> Poder: <b id="stat-power">+0%</b></div>
-                <div><span class="op-slot" data-ico="crit"></span> Crítico: <b id="stat-crit">5%</b></div>
-                <div><span class="op-slot" data-ico="cd"></span> Cooldown: <b id="stat-cd">-0%</b></div>
-                <div><span class="op-slot" data-ico="armor"></span> Armadura: <b id="stat-armor">0%</b></div>
-            </div>
-        </div>
-        <div class="wanted-board" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
-            <div class="wanted-subtitle">JUEGO EN PAUSA</div>
-            <div class="upgrade-list">
-                <div class="upgrade-card" onclick="resumeGame()">
-                    <div class="upgrade-icon" data-ico="play"></div>
-                    <div class="upgrade-info"><h4>Reanudar</h4><p>Continuar la partida</p></div>
-                </div>
-                <div class="upgrade-card" onclick="toggleSound()">
-                    <div class="upgrade-icon" id="sound-icon" data-ico="sound"></div>
-                    <div class="upgrade-info"><h4>Sonido</h4><p id="sound-label">Activado</p></div>
-                </div>
-                <div class="upgrade-card">
-                    <div class="upgrade-icon" data-ico="gauge"></div>
-                    <div class="upgrade-info">
-                        <h4>Volumen maestro</h4>
-                        <input type="range" min="0" max="100" value="80" id="vol-master" oninput="setVolMaster(this.value)" style="width:100%;">
-                    </div>
-                </div>
-                <div class="upgrade-card">
-                    <div class="upgrade-icon" data-ico="gauge"></div>
-                    <div class="upgrade-info">
-                        <h4>Música</h4>
-                        <input type="range" min="0" max="100" value="80" id="vol-music" oninput="setVolMusic(this.value)" style="width:100%;">
-                    </div>
-                </div>
-                <div class="upgrade-card">
-                    <div class="upgrade-icon" data-ico="gauge"></div>
-                    <div class="upgrade-info">
-                        <h4>Efectos (SFX)</h4>
-                        <input type="range" min="0" max="100" value="80" id="vol-sfx" oninput="setVolSfx(this.value)" onchange="playSound('ui')" style="width:100%;">
-                    </div>
-                </div>
-                <div class="upgrade-card" id="fs-card" onclick="toggleFullscreen()">
-                    <div class="upgrade-icon" data-ico="full"></div>
-                    <div class="upgrade-info"><h4>Pantalla completa</h4><p>Activar/desactivar</p></div>
-                </div>
-                <div class="upgrade-card" onclick="showControls()">
-                    <div class="upgrade-icon" data-ico="pad"></div>
-                    <div class="upgrade-info"><h4>Controles</h4><p>Ver ayuda</p></div>
-                </div>
-                <div class="upgrade-card" onclick="backToMenu()">
-                    <div class="upgrade-icon" data-ico="home"></div>
-                    <div class="upgrade-info"><h4>Volver al menú</h4><p>Abandonar partida</p></div>
+        <div class="wanted-board op-board pz-board">
+            <div class="op-head">
+                <div class="wanted-title op-title">PAUSA</div>
+                <div class="pz-chips">
+                    <span class="pz-chip" id="pz-char">Luffy</span>
+                    <span class="pz-chip"><span class="op-slot" data-ico="ship"></span> <span id="pz-map">Baratie</span></span>
+                    <span class="pz-chip"><span class="op-slot" data-ico="clock"></span> <span id="pz-time">00:00</span></span>
+                    <span class="pz-chip">Nv <span id="pz-level">1</span></span>
+                    <span class="pz-chip pz-gold">฿ <span id="pz-beli">0</span></span>
                 </div>
             </div>
+            <div class="op-scroll pz-body">
+                <div class="pz-log" id="pause-info-panel">
+                    <div class="op-section"><span>ARMAS</span><small id="pz-wcount">0</small></div>
+                    <div class="pz-slots" id="pause-weapons"></div>
+                    <div class="op-section"><span>OBJETOS</span><small id="pz-pcount">0</small></div>
+                    <div class="pz-slots" id="pause-passives"></div>
+                    <div class="op-section"><span>ESTADÍSTICAS</span></div>
+                    <div class="pz-stats" id="pause-stats"></div>
+                </div>
+                <div class="pz-side">
+                    <div class="op-section"><span>AJUSTES</span></div>
+                    <div class="op-row op-slider"><span class="op-ic" data-ico="gauge"></span><label for="vol-master">General</label>
+                        <input type="range" min="0" max="100" value="80" id="vol-master" oninput="setVolMaster(this.value)"><b class="op-val" id="vol-master-val">80</b></div>
+                    <div class="op-row op-slider"><span class="op-ic" data-ico="sound"></span><label for="vol-music">Música</label>
+                        <input type="range" min="0" max="100" value="80" id="vol-music" oninput="setVolMusic(this.value)"><b class="op-val" id="vol-music-val">80</b></div>
+                    <div class="op-row op-slider"><span class="op-ic" data-ico="crit"></span><label for="vol-sfx">Efectos</label>
+                        <input type="range" min="0" max="100" value="80" id="vol-sfx" oninput="setVolSfx(this.value)" onchange="playSound('ui')"><b class="op-val" id="vol-sfx-val">80</b></div>
+                    <div class="pz-actions">
+                        <button class="op-btn" onclick="toggleSound()"><span class="op-ic" id="sound-icon" data-ico="sound"></span><span>Sonido: <b id="sound-label">Activado</b></span></button>
+                        <button class="op-btn" id="fs-card" onclick="toggleFullscreen()"><span class="op-ic" data-ico="full"></span><span>Pantalla completa</span></button>
+                        <button class="op-btn" onclick="showControls()"><span class="op-ic" data-ico="pad"></span><span>Controles</span></button>
+                        <button class="op-btn op-btn-danger" onclick="backToMenu()"><span class="op-ic" data-ico="home"></span><span>Abandonar partida</span></button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-start op-foot" onclick="resumeGame()"><span class="op-slot" data-ico="play"></span> REANUDAR</button>
         </div>
     </div>
 
@@ -332,32 +310,41 @@
         </div>
     </div>
 
-    <!-- Options Screen -->
+    <!-- Options Screen: mismo cartel que la pausa, con secciones y controles propios -->
     <div id="options-screen" class="overlay-screen" style="display: none;">
-        <div class="wanted-board" style="max-width: 460px;">
-            <div class="wanted-title">OPCIONES</div>
-            <div class="wanted-subtitle">AJUSTES DE NAVEGACIÓN</div>
-            <div style="display:flex; flex-direction:column; gap:14px; margin:14px 6px; font-family:'Segoe UI',sans-serif; color:#3d2314; font-size:14px; text-align:left;">
-                <label>Volumen maestro: <span id="opt-master-val">80</span>%</label>
-                <input type="range" id="opt-master" min="0" max="100" value="80" style="width:100%;" oninput="setVolMaster(this.value)">
-                <label>Música: <span id="opt-music-val">80</span>%</label>
-                <input type="range" id="opt-music" min="0" max="100" value="80" style="width:100%;" oninput="setVolMusic(this.value)">
-                <label>EFECTOS (SFX): <span id="opt-sfx-val">80</span>%</label>
-                <input type="range" id="opt-sfx" min="0" max="100" value="80" style="width:100%;" oninput="setVolSfx(this.value)">
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-shake" checked> Sacudida de cámara</label>
-                <label style="display:flex; align-items:center; gap:8px; justify-content:space-between;">Calidad gráfica
-                    <select id="opt-quality" style="font:inherit; padding:2px 6px;">
-                        <option value="auto">Automática</option>
-                        <option value="high">Alta</option>
-                        <option value="medium">Media</option>
-                        <option value="low">Baja (móviles lentos)</option>
-                    </select></label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-particles"> Partículas reducidas (dispositivos lentos)</label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-flashes"> Menos destellos (fotosensibilidad)</label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-dmgnums" checked> Mostrar números de daño</label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="opt-autopause" checked> Auto-pausa al cambiar de pestaña</label>
+        <div class="wanted-board op-board opt-board">
+            <div class="op-head">
+                <div class="wanted-title op-title">OPCIONES</div>
+                <div class="wanted-subtitle">AJUSTES DE NAVEGACIÓN</div>
             </div>
-            <button class="btn-start" onclick="closeOptions()">VOLVER</button>
+            <div class="op-scroll opt-body">
+                <div class="opt-col">
+                    <div class="op-section"><span>SONIDO</span></div>
+                    <div class="op-row op-slider"><span class="op-ic" data-ico="gauge"></span><label for="opt-master">General</label>
+                        <input type="range" id="opt-master" min="0" max="100" value="80" oninput="setVolMaster(this.value)"><b class="op-val" id="opt-master-val">80</b></div>
+                    <div class="op-row op-slider"><span class="op-ic" data-ico="sound"></span><label for="opt-music">Música</label>
+                        <input type="range" id="opt-music" min="0" max="100" value="80" oninput="setVolMusic(this.value)"><b class="op-val" id="opt-music-val">80</b></div>
+                    <div class="op-row op-slider"><span class="op-ic" data-ico="crit"></span><label for="opt-sfx">Efectos</label>
+                        <input type="range" id="opt-sfx" min="0" max="100" value="80" oninput="setVolSfx(this.value)" onchange="playSound('ui')"><b class="op-val" id="opt-sfx-val">80</b></div>
+                    <div class="op-section"><span>PARTIDA</span></div>
+                    <label class="op-row op-toggle"><span class="op-ic" data-ico="pauseIco"></span><span class="op-lbl">Auto-pausa al cambiar de pestaña</span><input type="checkbox" id="opt-autopause" checked><i></i></label>
+                    <label class="op-row op-toggle"><span class="op-ic" data-ico="power"></span><span class="op-lbl">Números de daño</span><input type="checkbox" id="opt-dmgnums" checked><i></i></label>
+                </div>
+                <div class="opt-col">
+                    <div class="op-section"><span>GRÁFICOS</span></div>
+                    <div class="op-row op-select"><span class="op-ic" data-ico="full"></span><label for="opt-quality" class="op-lbl">Calidad</label>
+                        <select id="opt-quality">
+                            <option value="auto">Automática</option>
+                            <option value="high">Alta</option>
+                            <option value="medium">Media</option>
+                            <option value="low">Baja (móviles lentos)</option>
+                        </select></div>
+                    <label class="op-row op-toggle"><span class="op-ic" data-ico="area"></span><span class="op-lbl">Sacudida de cámara</span><input type="checkbox" id="opt-shake" checked><i></i></label>
+                    <label class="op-row op-toggle"><span class="op-ic" data-ico="fastforward"></span><span class="op-lbl">Partículas reducidas <small>dispositivos lentos</small></span><input type="checkbox" id="opt-particles"><i></i></label>
+                    <label class="op-row op-toggle"><span class="op-ic" data-ico="dodge"></span><span class="op-lbl">Menos destellos <small>fotosensibilidad</small></span><input type="checkbox" id="opt-flashes"><i></i></label>
+                </div>
+            </div>
+            <button class="btn-start op-foot" onclick="closeOptions()">VOLVER</button>
         </div>
     </div>
 </div>

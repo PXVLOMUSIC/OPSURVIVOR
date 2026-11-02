@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="60%">
+      <stop offset="0" stop-color="#1b2a44"/><stop offset="1" stop-color="#070d18"/>
+    </radialGradient>
+    <linearGradient id="straw" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#e2a92c"/>
+    </linearGradient>
+  </defs>
+  <g id="fondo"><rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="236" fill="none" stroke="#c99a45" stroke-width="10"/></g>
+  <g id="bandera" transform="translate(256 262) scale(0.92) translate(-256 -262)">
+  <!-- tibias cruzadas -->
+  <g stroke="#111" stroke-width="10" stroke-linejoin="round" fill="#f5efe0">
+    <g transform="rotate(38 256 300)">
+      <rect x="86" y="284" width="340" height="32" rx="14"/>
+      <circle cx="86" cy="280" r="24"/><circle cx="86" cy="320" r="24"/>
+      <circle cx="426" cy="280" r="24"/><circle cx="426" cy="320" r="24"/>
+    </g>
+    <g transform="rotate(-38 256 300)">
+      <rect x="86" y="284" width="340" height="32" rx="14"/>
+      <circle cx="86" cy="280" r="24"/><circle cx="86" cy="320" r="24"/>
+      <circle cx="426" cy="280" r="24"/><circle cx="426" cy="320" r="24"/>
+    </g>
+  </g>
+  <g stroke="none" fill="#f5efe0">
+    <g transform="rotate(38 256 300)"><rect x="80" y="289" width="352" height="22" rx="10"/></g>
+    <g transform="rotate(-38 256 300)"><rect x="80" y="289" width="352" height="22" rx="10"/></g>
+  </g>
+  <!-- calavera -->
+  <path d="M256 150 C178 150 142 204 146 262 C148 296 166 318 186 330 L186 362 C186 376 196 384 210 384 L302 384 C316 384 326 376 326 362 L326 330 C346 318 364 296 366 262 C370 204 334 150 256 150 Z"
+        fill="#f5efe0" stroke="#111" stroke-width="10" stroke-linejoin="round"/>
+  <ellipse cx="212" cy="268" rx="30" ry="34" fill="#111"/>
+  <ellipse cx="300" cy="268" rx="30" ry="34" fill="#111"/>
+  <path d="M256 296 L242 322 L270 322 Z" fill="#111"/>
+  <!-- sonrisa con dientes -->
+  <path d="M196 340 Q256 362 316 340" fill="none" stroke="#111" stroke-width="8" stroke-linecap="round"/>
+  <g stroke="#111" stroke-width="6" stroke-linecap="round">
+    <line x1="216" y1="344" x2="216" y2="372"/><line x1="236" y1="349" x2="236" y2="378"/>
+    <line x1="256" y1="351" x2="256" y2="380"/><line x1="276" y1="349" x2="276" y2="378"/>
+    <line x1="296" y1="344" x2="296" y2="372"/>
+  </g>
+  <!-- sombrero de paja -->
+  <ellipse cx="256" cy="196" rx="168" ry="34" fill="url(#straw)" stroke="#111" stroke-width="10"/>
+  <path d="M168 196 C168 120 206 92 256 92 C306 92 344 120 344 196 Z" fill="url(#straw)" stroke="#111" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M172 160 C200 168 312 168 340 160 L344 194 C312 202 200 202 168 194 Z" fill="#d22b2b" stroke="#111" stroke-width="8" stroke-linejoin="round"/>
+  <g stroke="#b9831f" stroke-width="3" fill="none" opacity="0.7">
+    <path d="M200 118 C222 108 290 108 312 118"/><path d="M186 140 C220 130 292 130 326 140"/>
+    <path d="M120 206 C180 220 332 220 392 206"/>
+  </g>
+  </g>
+</svg>

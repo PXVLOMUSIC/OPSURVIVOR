@@ -3,7 +3,7 @@
 // - HTML, JS, CSS y manifest: red primero y caché si no hay conexión, para que siempre llegue la última versión.
 // - La música (.mp3) no pasa por aquí: el navegador la pide por rangos y la cachea él mismo.
 // Sube CACHE_VER si cambias un asset sin cambiar su nombre y quieres forzar que se descargue de nuevo.
-const CACHE_VER = 'opsurvivor-v12';
+const CACHE_VER = 'opsurvivor-v13';
 
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => {

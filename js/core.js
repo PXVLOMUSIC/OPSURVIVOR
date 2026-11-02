@@ -443,8 +443,8 @@ const BOSS_HP = { boss_kuro: 6000, boss_wapol: 7500, boss_morgan: 4500, boss_arl
 // === Balance global (referencia: Vampire Survivors, ajustado con simulaciones de bot) ===
 // Cambia aquí la dificultad sin tocar la lógica.
 const BALANCE = {
-    contactMult: 0.62,    // daño por contacto = daño del enemigo x esto (por segundo); 1.0 con la velocidad antigua (185)
-    hpGrowth: 1.28,        // multiplicador de vida enemiga por minuto (continuo); 1.32 con la velocidad antigua (185)
+    contactMult: 0.64,    // daño por contacto = daño del enemigo x esto (por segundo); 1.0 con la velocidad antigua (185)
+    hpGrowth: 1.33,        // multiplicador de vida enemiga por minuto (continuo); 1.32 con la velocidad antigua (185)
     minSpawnInterval: 0.07, // intervalo mínimo entre spawns (s); antes 0.04
     firstEventAt: 120,    // primer evento de oleada (s); antes 70
     maxEnemies: 300,      // tope de enemigos vivos (VS usa ~300): el spawn normal espera si se llega
@@ -519,7 +519,7 @@ const FODDER_ELITE = {
 // events: tipos de las oleadas sorpresa (anillo, carga y corredores) y sus carteles.
 const MAP_ENEMIES = {
     shelltown: {
-        hpMult: 0.66, // primera isla (Romance Dawn): la más fácil
+        hpMult: 0.71, // primera isla (Romance Dawn): la más fácil
         // Base 153 de la Marina: los marines del Capitán Morgan; Helmeppo de minijefe, el teniente Ripper como élite y Morgan de jefe
         base: 'grunt',
         pool: [
@@ -530,7 +530,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'grunt', ringText: '¡LOS MARINES DE MORGAN TE RODEAN!', chargeText: '¡CARGAN LOS FUSILEROS DE LA BASE 153!' }
     },
     syrup: {
-        hpMult: 0.69, // segunda isla: el pueblo de Syrup, donde se une Usopp
+        hpMult: 0.75, // segunda isla: el pueblo de Syrup, donde se une Usopp
         // Piratas del Gato Negro (piratas genéricos de la GBA), Sham como élite; Buchi y Jango de minijefes, el Capitán Kuro de jefe
         base: 'krieg_pirate',
         pool: [
@@ -541,7 +541,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_knife', runners: 'krieg_knife', swarm: 'krieg_pirate', ringText: '¡LOS PIRATAS DEL GATO NEGRO TE RODEAN!', chargeText: '¡CARGAN LOS PIRATAS DEL GATO NEGRO!' }
     },
     baratie: {
-        hpMult: 0.72, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 0.78, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Flota de Don Krieg: piratas de espada, de pistola y de bomba; Pearl y Gin como minijefes
         base: 'krieg_pirate',
         pool: [
@@ -554,7 +554,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡EMBOSCADA DE LA FLOTA DE KRIEG!', chargeText: '¡CARGAN LOS TIRADORES DE KRIEG!' }
     },
     arlongpark: {
-        hpMult: 0.74, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 0.80, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Piratas de Arlong: hombres-pez rasos, embestidas y gordos; Chew como élite que dispara agua;
         // Kuroobi y Hatchan de minijefes, Arlong de jefe
         base: 'merman',
@@ -567,7 +567,7 @@ const MAP_ENEMIES = {
         events: { ring: 'merman', charge: 'merman_b', runners: 'merman_b', swarm: 'merman', ringText: '¡LOS HOMBRES-PEZ TE RODEAN!', chargeText: '¡CARGAN LOS PIRATAS DE ARLONG!' }
     },
     drum: {
-        hpMult: 0.75, // isla de Drum, donde se une Chopper (en el canon va antes de Alabasta)
+        hpMult: 0.84, // isla de Drum, donde se une Chopper (en el canon va antes de Alabasta)
         // Lapahn (conejos de las nieves) en manada; Chess y Kuromarimo de minijefes, Wapol de jefe
         base: 'lapahn',
         pool: [ { type: 'lapahn_big', min: 1, p: 0.42 } ],
@@ -576,7 +576,7 @@ const MAP_ENEMIES = {
         events: { ring: 'lapahn', charge: 'lapahn_big', runners: 'lapahn', swarm: 'lapahn', ringText: '¡UNA MANADA DE LAPAHN TE RODEA!', chargeText: '¡CARGAN LOS LAPAHN!' }
     },
     alabasta: {
-        hpMult: 0.76, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 0.86, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Dugongos kung-fu del desierto, fusileros de la Marina de Smoker y los agentes de Baroque Works
         base: 'dugong',
         pool: [
@@ -589,7 +589,7 @@ const MAP_ENEMIES = {
         events: { ring: 'dugong', charge: 'marine_sword', runners: 'dugong', swarm: 'dugong', ringText: '¡EMBOSCADA DE BAROQUE WORKS!', chargeText: '¡CARGA DE LA MARINA DE SMOKER!' }
     },
     skypiea: {
-        hpMult: 0.80, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 0.89, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Guerreros shandia y los sacerdotes de Enel; Wiper y Ohm como minijefes
         base: 'shandia',
         pool: [
@@ -601,7 +601,7 @@ const MAP_ENEMIES = {
         events: { ring: 'shandia', charge: 'shandia_gunner', runners: 'sky_shark', swarm: 'tama', ringText: '¡EMBOSCADA SHANDIA!', chargeText: '¡CARGAN LOS GUERREROS DE LAS NUBES!' }
     },
     thrillerbark: {
-        hpMult: 1.04, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 1.12, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         base: 'inupen',
         pool: [
             { type: 'ryuma', min: 6, p: 0.07 }, { type: 'absalom', min: 5, p: 0.14 }, { type: 'pellona', min: 5, p: 0.21 },
@@ -610,10 +610,10 @@ const MAP_ENEMIES = {
         ],
         minibosses: [ { type: 'absalom', min: 4, hp: 650, speed: 45, damage: 30 }, { type: 'kuma', min: 6, hp: 800, speed: 45, damage: 35 } ],
         boss: 'boss_moria',
-        events: { ring: 'kumashi', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
+        events: { ring: 'inupen', charge: 'tararan', runners: 'inupen', swarm: 'negative_hollow', ringText: '¡HORDA DE ZOMBIS!', chargeText: '¡CARGAN LOS ZOMBIS DE MORIA!' }
     },
     enieslobby: {
-        hpMult: 0.96, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 1.04, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Los marines y la guardia de Enies Lobby; Spandam con Funkfreed y Kaku del CP9; Rob Lucci de jefe
         base: 'grunt',
         pool: [
@@ -625,7 +625,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡LA GUARDIA DE ENIES LOBBY TE RODEA!', chargeText: '¡CARGAN LOS 10.000 MARINES!' }
     },
     water7: {
-        hpMult: 0.88, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 0.95, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Familia Franky (piratas de relleno) en el muelle; Kaku y Lucci se quitan la máscara de Galley-La; Franky de jefe
         base: 'krieg_pirate',
         pool: [
@@ -637,7 +637,7 @@ const MAP_ENEMIES = {
         events: { ring: 'krieg_pirate', charge: 'krieg_gunner', runners: 'krieg_starved', swarm: 'krieg_starved', ringText: '¡LA FAMILIA FRANKY TE RODEA!', chargeText: '¡CARGAN LOS MATONES DE FRANKY!' }
     },
     marineford: {
-        hpMult: 1.14, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 0.98, // Marineford: los Almirantes y los tiradores la hacen más dura que su vida enemiga sugiere (bot)
         // La Guerra en la Cumbre: marines, oficiales de la Marina; Aokiji y Kizaru de minijefes, Akainu de jefe
         base: 'grunt',
         pool: [
@@ -649,7 +649,7 @@ const MAP_ENEMIES = {
         events: { ring: 'grunt', charge: 'marine_sword', runners: 'grunt', swarm: 'marine_sword', ringText: '¡EL CERCO DE LA MARINA SE CIERRA!', chargeText: '¡CARGAN LOS VICEALMIRANTES!' }
     },
     wholecake: {
-        hpMult: 1.32, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 1.38, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Tottoland: los soldados de ajedrez de Big Mom, Pekoms y el Barón Tamago; Smoothie y Katakuri de minijefes
         base: 'chess_soldier',
         pool: [
@@ -661,7 +661,7 @@ const MAP_ENEMIES = {
         events: { ring: 'chess_soldier', charge: 'chess_soldier_b', runners: 'chess_soldier_b', swarm: 'chess_soldier', ringText: '¡LOS SOLDADOS DE AJEDREZ TE RODEAN!', chargeText: '¡CARGAN LAS PIEZAS NEGRAS!' }
     },
     wano: {
-        hpMult: 1.60, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
+        hpMult: 1.62, // dificultad del mapa (vida enemiga): sube en cada isla, en el orden de la historia
         // Asalto a Onigashima: piratas de las Bestias y los dibujos de tinta del traidor Kanjuro;
         // los Tobiroppo como élites; X Drake, Hawkins y las Tres Calamidades (Jack, Queen y King) de minijefes, Kaido de jefe
         base: 'krieg_pirate',

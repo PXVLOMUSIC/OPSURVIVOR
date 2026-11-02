@@ -70,7 +70,7 @@ function render() {
         if (ex > sx && ey > sy) ctx.drawImage(mapImg, sx, sy, ex - sx, ey - sy, mx0 + sx * f, my0 + sy * f, (ex - sx) * f, (ey - sy) * f);
         ctx.imageSmoothingEnabled = false;
     } else {
-        const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#bfe3f5', thrillerbark: '#2e1f47', enieslobby: '#d9c48f', marineford: '#7a8a80', water7: '#8a9098', wholecake: '#f9a8d4', wano: '#1e3a8a' };
+        const fallback = { baratie: '#0284c7', alabasta: '#d4a373', skypiea: '#9fbfdc', thrillerbark: '#2e1f47', enieslobby: '#d9c48f', marineford: '#7a8a80', water7: '#8a9098', wholecake: '#f9a8d4', wano: '#1e3a8a' };
         ctx.fillStyle = fallback[selectedMap] || '#0284c7';
         ctx.fillRect(MAP_BOUNDS.minX - 1200, MAP_BOUNDS.minY - 1200, (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) + 2400, (MAP_BOUNDS.maxY - MAP_BOUNDS.minY) + 2400);
     }

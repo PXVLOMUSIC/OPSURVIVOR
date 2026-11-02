@@ -325,6 +325,32 @@
         </div>
     </div>
 
+    <!-- Partida guardada: exportar e importar (js/savefile.js) -->
+    <div id="save-screen" class="overlay-screen" style="display: none;">
+        <div class="wanted-board op-board save-board">
+            <div class="op-head">
+                <div class="wanted-title op-title">BITÁCORA</div>
+                <div class="wanted-subtitle">LLEVA TU PARTIDA A OTRO NAVEGADOR</div>
+            </div>
+            <div class="op-scroll">
+                <p class="save-current" id="save-current"></p>
+                <div class="op-section"><span>EXPORTAR</span></div>
+                <div class="save-row">
+                    <button class="op-btn" onclick="saveDownload()"><span class="op-ic" data-ico="up"></span><span>Descargar archivo</span></button>
+                    <button class="op-btn" onclick="saveCopy()"><span class="op-ic" data-ico="drop"></span><span>Copiar código</span></button>
+                </div>
+                <div class="op-section"><span>IMPORTAR</span></div>
+                <div class="save-row">
+                    <label class="op-btn"><span class="op-ic" data-ico="ship"></span><span>Cargar archivo</span><input type="file" accept=".json,application/json,text/plain" onchange="saveImportFile(this)" hidden></label>
+                    <button class="op-btn" onclick="saveImportCode()"><span class="op-ic" data-ico="play"></span><span>Importar código</span></button>
+                </div>
+                <textarea id="save-code" class="save-code" spellcheck="false" aria-label="Código de la partida" placeholder="Pega aquí el código de una partida"></textarea>
+                <p class="save-msg" id="save-msg" aria-live="polite"></p>
+            </div>
+            <button class="btn-start op-foot" onclick="closeSavePanel()">VOLVER</button>
+        </div>
+    </div>
+
     <!-- Options Screen: mismo cartel que la pausa, con secciones y controles propios -->
     <div id="options-screen" class="overlay-screen" style="display: none;">
         <div class="wanted-board op-board opt-board">
@@ -344,6 +370,7 @@
                     <div class="op-section"><span>PARTIDA</span></div>
                     <label class="op-row op-toggle"><span class="op-ic" data-ico="pauseIco"></span><span class="op-lbl">Auto-pausa al cambiar de pestaña</span><input type="checkbox" id="opt-autopause" checked><i></i></label>
                     <label class="op-row op-toggle"><span class="op-ic" data-ico="power"></span><span class="op-lbl">Números de daño</span><input type="checkbox" id="opt-dmgnums" checked><i></i></label>
+                    <button class="op-btn" onclick="showSavePanel()"><span class="op-ic" data-ico="ship"></span><span>Exportar / importar partida</span></button>
                 </div>
                 <div class="opt-col">
                     <div class="op-section"><span>GRÁFICOS</span></div>
@@ -385,6 +412,7 @@
 <script src="js/arsenalfx.js"></script>
 <script src="js/pixicons.js"></script>
 <script src="js/collection.js"></script>
+<script src="js/savefile.js"></script>
 <script src="js/main.js"></script>
 <button id="gear-btn" onclick="gearActivate()" aria-label="Activar Gear">G2</button>
 <div id="ach-toast"></div>

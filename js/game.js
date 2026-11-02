@@ -176,6 +176,7 @@ function update(dt) {
         }
         const beh = e.fixedDir ? null : ENEMY_BEHAVIOR[e.type];
         if (beh && enemyBehavior(e, beh, edx, edy, edist, dt)) { enemies.splice(i, 1); continue; }
+        let mvx = e.fixedDir ? e.fixedDir[0] : 0, mvy = e.fixedDir ? e.fixedDir[1] : 0;
         if (edist > 0 && !e.fixedDir) {
             let vx = edx / edist, vy = edy / edist, sp = e.speed;
             if (beh === 'zigzag' || beh === 'hollow') {
@@ -185,6 +186,7 @@ function update(dt) {
                 vx -= (edy / edist) * w; vy += (edx / edist) * w;
             }
             if (e._dashT > 0) { vx = e._dashVx; vy = e._dashVy; sp *= 3; }
+            mvx = vx; mvy = vy;
             if (e._slowT > gameTime) sp *= e._slowM; // Rain Tempo / Tabasco Boshi (js/crew.js)
             e.x += vx * sp * gearEnemySpeedMult() * dt;
             e.y += vy * sp * gearEnemySpeedMult() * dt;
@@ -194,6 +196,7 @@ function update(dt) {
         if (e.isBoss && edist < 40) e.attackTimer = 0.4;
         if (e.attackTimer > 0) { e.attackTimer -= dt; e.animState = 'attack'; }
         else e.animState = 'idle';
+        enemyFacing(e, mvx, mvy, edx, edy);
         e.animTimer += dt;
         const eSet = (ENEMY_IMG[e.type] && ENEMY_IMG[e.type][e.animState] && ENEMY_IMG[e.type][e.animState].length) ? ENEMY_IMG[e.type][e.animState] : (ENEMY_IMG[e.type] ? ENEMY_IMG[e.type].idle : null);
         if (eSet && eSet.length && e.animTimer > 0.12) {
@@ -1157,6 +1160,23 @@ function updateEventsRandom(dt) {
             enemies.push(makeEnemy(ev.runners, ex, ey, hpScale, { speed: 130, isEvent: true }));
         }
     }
+}
+
+// Orientación del sprite: al atacar mira al objetivo (o hacia donde embiste); si no, hacia donde camina.
+// e._face: 1 derecha / -1 izquierda (render.js lo cruza con ENEMY_ANIMS[tipo].faces).
+// e._dir: fila de las hojas de 4 direcciones (rows4). Hay un margen para que no parpadee al moverse en vertical.
+function enemyFacing(e, mvx, mvy, edx, edy) {
+    let fx = mvx, fy = mvy;
+    if (e.attackTimer > 0) {
+        if (e._dashT > 0) { fx = e._dashVx; fy = e._dashVy; }
+        else { const d = Math.hypot(edx, edy) || 1; fx = edx / d; fy = edy / d; }
+    }
+    if (fx > 0.2) e._face = 1; else if (fx < -0.2) e._face = -1;
+    else if (e._face === undefined) e._face = edx >= 0 ? 1 : -1;
+    if (fx === 0 && fy === 0) return;
+    const ax = Math.abs(fx), ay = Math.abs(fy), side = e._dir === 'left' || e._dir === 'right';
+    if (side ? ax > ay * 0.8 : ax > ay * 1.25) e._dir = fx > 0 ? 'right' : 'left';
+    else e._dir = fy > 0 ? 'down' : 'up';
 }
 
 // Comportamientos especiales (ENEMY_BEHAVIOR en core.js). Devuelve true si el enemigo desaparece.

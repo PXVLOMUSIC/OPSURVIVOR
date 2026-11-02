@@ -69,11 +69,21 @@ def hurt():
 # Fin de partida: "wah-wah" descendente (entra tras el sonido de muerte)
 def sad():
     seq = [(392, 0.17), (370, 0.17), (349, 0.17)]
-    parts = []; t = 0.35
+    parts = []; t = 1.0  # entra cuando acaba el KO (ko.wav)
     for f, d in seq: parts.append((t, note(f, d, square, 0.5, r=0.04) * 0.6 + note(f / 2, d, tri, r=0.04) * 0.5)); t += d + 0.02
     n = int(SR * 0.75); fr = 330 + 7 * np.sin(2 * np.pi * 6 * np.arange(n) / SR)
     parts.append((t, (square(fr, 0.5) * 0.6 + tri(fr / 2) * 0.5) * adsr(n, 0.01, 0.4)))
     return mix(t + 0.76, *parts)
+
+# Muerte del jugador (KO): golpe seco, eco grave y caída descendente "fiuuu" hasta el suelo
+def ko():
+    n = int(SR * 0.12); thump = sine(150 * np.exp(-np.arange(n) / SR * 18) + 40) * env(n, 0.001, 0.05)
+    hitn = lowpass(noise(0.06), 3000) * env(int(SR * 0.06), 0.0005, 0.015)
+    n2 = int(SR * 0.75); tt = np.arange(n2) / SR
+    f = (700 * np.exp(-tt * 3.2) + 60) * (1 + 0.04 * np.sin(2 * np.pi * 9 * tt))
+    fall = (square(f, 0.25) * 0.5 + tri(f) * 0.5) * adsr(n2, 0.01, 0.25)
+    n3 = int(SR * 0.2); land = lowpass(noise(0.2), 500) * env(n3, 0.002, 0.07) * 2.5
+    return mix(1.0, (0, thump * 1.2), (0, hitn), (0.08, fall * 0.7), (0.8, land))
 
 # Revivir (Voluntad de D): barrido ascendente + destello
 def revive():
@@ -163,7 +173,7 @@ def drums():
         return (sine(f) + 0.25 * tri(f * 2)) * env(n, 0.001, 0.09) * g + lowpass(noise(0.22), 900) * env(n, 0.001, 0.02) * 0.4 * g
     return mix(1.05, (0, kick()), (0.17, kick(0.85)), (0.52, kick()), (0.69, kick(0.85)))
 
-for fn in (heal, hurt, sad, revive, warn, magnet, bell, stretch, whip, wind, thunder, rain, twang, throw, crack, drums):
+for fn in (heal, hurt, sad, revive, warn, magnet, bell, stretch, whip, wind, thunder, rain, twang, throw, crack, drums, ko):
     name = {'hurt': 'ouch'}.get(fn.__name__, fn.__name__)
     save(name, fn())
     print('ok', name)

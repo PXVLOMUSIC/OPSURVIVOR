@@ -125,14 +125,57 @@ function takeCtxFilter(c) {
 
 // === Carga de imágenes bajo demanda ===
 // Cada ruta se descarga y decodifica una sola vez (varios frames y enemigos comparten archivos).
+// Los frames de assets/extracted y de los Gears vienen empaquetados en atlas (tools/build-atlas.py, js/atlas-index.js):
+// loadImg devuelve un canvas con el frame recortado, que se usa igual que una imagen (complete, width, naturalWidth, src).
 const IMG_CACHE = {};
+const ATLAS_IMG = [];
+function atlasPage(i) {
+    let p = ATLAS_IMG[i];
+    if (!p) {
+        p = ATLAS_IMG[i] = { img: new Image(), waiting: [] };
+        p.ready = new Promise(res => {
+            const done = ok => { p.ok = ok; p.waiting.forEach(f => f(ok)); p.waiting = null; res(ok); };
+            p.img.onload = () => done(true);
+            p.img.onerror = () => { console.warn('No se pudo cargar', ATLAS_PAGES[i]); done(false); };
+        });
+        p.img.decoding = 'async';
+        p.img.src = ATLAS_PAGES[i];
+    }
+    return p;
+}
+function atlasFrame(path, rect) {
+    const c = document.createElement('canvas');
+    c.width = 0; c.height = 0; c.complete = false; c.naturalWidth = 0; c.naturalHeight = 0;
+    let url = null;
+    Object.defineProperty(c, 'src', { get() { return c.complete ? (url || (url = c.toDataURL())) : ''; } });
+    const page = atlasPage(rect[0]);
+    const cut = ok => {
+        if (!ok) { c.onerror && c.onerror(); return; }
+        const [, x, y, w, h] = rect;
+        c.width = c.naturalWidth = w; c.height = c.naturalHeight = h;
+        c.getContext('2d').drawImage(page.img, x, y, w, h, 0, 0, w, h);
+        c.complete = true;
+        c.onload && c.onload();
+    };
+    page.waiting ? page.waiting.push(cut) : cut(page.ok);
+    c.ready = page.ready;
+    return c;
+}
 function loadImg(path) {
     let img = IMG_CACHE[path];
     if (img) return img;
+    const rect = typeof ATLAS_FRAMES !== 'undefined' && ATLAS_FRAMES[path];
+    if (rect) return IMG_CACHE[path] = atlasFrame(path, rect);
     img = IMG_CACHE[path] = new Image();
     img.decoding = 'async';
     img.src = path;
     return img;
+}
+// Espera a que un frame (imagen o recorte de atlas) esté listo
+function imgReady(img) {
+    if (!img || img.complete) return Promise.resolve(img);
+    if (img.ready) return img.ready.then(() => img);
+    return new Promise(res => { img.addEventListener('load', () => res(img), { once: true }); img.addEventListener('error', () => res(img), { once: true }); });
 }
 
 // --- SPRITE IMAGE LOADING ---
@@ -977,9 +1020,11 @@ function preloadSprites() {
     for (const [key, path] of Object.entries(SPRITE_PATHS)) {
         // los mapas pesan mucho: solo se cargan al elegirlos (ensureMapImage)
         if (/Map$/.test(key)) { IMG[key] = new Image(); continue; }
+        const done = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
+        if (typeof ATLAS_FRAMES !== 'undefined' && ATLAS_FRAMES[path]) { IMG[key] = loadImg(path); imgReady(IMG[key]).then(done); continue; }
         const img = new Image();
-        img.onload = () => { assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
-        img.onerror = () => { console.warn('No se pudo cargar', path); assetsToLoad--; if (assetsToLoad <= 0) assetsLoaded = true; };
+        img.onload = done;
+        img.onerror = () => { console.warn('No se pudo cargar', path); done(); };
         img.src = path;
         IMG[key] = img;
     }

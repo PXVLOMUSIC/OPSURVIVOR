@@ -66,8 +66,8 @@ function gearUnlocked(c) {
 // G4 Boundman: Great Pirate Colosseum (3DS). G5: hoja de TheCube513 (fan sprite).
 // G3: puño gigante y Luffy encogido de Gigant Battle (DS). G2 usa el sprite base con piel rosada y vapor, como en el anime.
 const GEAR_SPR = (function () {
-    const L = (n, c) => Array.from({ length: c }, (_, i) => { const im = new Image(); im.src = 'assets/sprites/gears/' + n + '_' + i + '.png'; return im; });
-    const fist = new Image(); fist.src = 'assets/sprites/gears/g3_fist.png';
+    const L = (n, c) => Array.from({ length: c }, (_, i) => loadImg('assets/sprites/gears/' + n + '_' + i + '.png'));
+    const fist = loadImg('assets/sprites/gears/g3_fist.png');
     return {
         4: { idle: L('g4_idle', 6), walk: L('g4_idle', 6), attack: L('g4_attack', 3), h: 78, fps: 9 },
         5: { idle: L('g5_idle', 3), walk: L('g5_walk', 8), attack: L('g5_attack', 3), h: 76, fps: 8 },

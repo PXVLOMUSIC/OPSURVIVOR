@@ -111,14 +111,30 @@ function collKills(type, map) {
     if (km[map]) return km[map][type] || 0;
     return (meta.stats.maxTime[map] || 0) > 0 ? (meta.stats.killsByType[type] || 0) : 0;
 }
+// Miniatura: los frames salen de un atlas y pueden no estar listos; entonces la <img> lleva data-thumb
+// y collHydrate le pone la imagen en cuanto se recorta.
+const COLL_BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 function collThumb(type) {
     const cfg = ENEMY_ANIMS[type];
     try {
-        if (cfg && cfg.folder) return loadImg(enemyPath(cfg.folder, (cfg.idle && cfg.idle.length) ? cfg.idle[0] : 0)).src;
+        if (cfg && cfg.folder) {
+            const img = loadImg(enemyPath(cfg.folder, (cfg.idle && cfg.idle.length) ? cfg.idle[0] : 0));
+            return img.complete ? img.src : COLL_BLANK + '" data-thumb="' + type;
+        }
         const img = ENEMY_IMG[type] && ENEMY_IMG[type].idle && ENEMY_IMG[type].idle[0];
         if (img && img.toDataURL) return img.toDataURL();
     } catch (e) {}
     return '';
+}
+function collHydrate(root) {
+    if (!root) return;
+    root.querySelectorAll('img[data-thumb]').forEach(el => {
+        const cfg = ENEMY_ANIMS[el.dataset.thumb];
+        imgReady(loadImg(enemyPath(cfg.folder, (cfg.idle && cfg.idle.length) ? cfg.idle[0] : 0))).then(img => {
+            if (img.complete && img.src) el.src = img.src;
+            el.removeAttribute('data-thumb');
+        });
+    });
 }
 function collFlip(type) { const cfg = ENEMY_ANIMS[type]; return cfg && cfg.faces === -1; }
 
@@ -151,6 +167,7 @@ function renderCollection() {
         `<button class="cl-tab${collTab === id ? ' on' : ''}" role="tab" aria-selected="${collTab === id}" onclick="collSetTab('${id}')">${lbl} <small>${a}/${b}</small></button>`).join('');
     const body = document.getElementById('coll-body');
     body.innerHTML = collTab === 'enemies' ? collEnemiesHTML() : collTab === 'arsenal' ? collArsenalHTML() : collEvosHTML();
+    collHydrate(body);
     body.scrollTop = 0;
     collDetail(null);
 }
@@ -265,6 +282,7 @@ function collDetail(key) {
         text = u.title + ' (Nv 5) + ' + p.title + ' + cofre de minijefe o jefe.' + (c.evos[a] ? ' ¡Conseguida!' : '');
     }
     el.innerHTML = `<span class="cl-d-ico">${ico}</span><span class="cl-d-txt"><b>${collEsc(title)}</b><span>${collEsc(text)}</span></span>`;
+    collHydrate(el);
 }
 
 // ---------- Pantalla de Logros ----------

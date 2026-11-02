@@ -47,7 +47,9 @@ function vfxMap() { return VFX_MAP[selectedMap] || VFX_MAP.baratie; }
 function vfxQ() { return (windowOpts && windowOpts.fewerParticles) ? 0.5 : 1; }
 function vfxPick(arr) { return arr[(Math.random() * arr.length) | 0]; }
 function vfxHash(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-function vfxEvolved(atk) { return !atk.vis && skills[atk.type] && skills[atk.type].evolved; }
+// Armas compartidas: atk.vis indica el aspecto y la habilidad de la que salen (su evolución se mira ahí)
+const VFX_VIS_SKILL = { knife: 'cuchillo', grenade: 'granada', rifle: 'rifle', bolt: 'ballesta', spear: 'lanza', axe: 'hacha', shuriken: 'shuriken', haki: 'hakiPulse' };
+function vfxEvolved(atk) { const id = atk.vis ? VFX_VIS_SKILL[atk.vis] : atk.type; return !!(id && skills[id] && skills[id].evolved); }
 function vfxProgress(atk) { return atk.maxLife ? Math.min(1, Math.max(0, 1 - atk.life / atk.maxLife)) : 0; }
 function vfxTip(atk) {
     return [atk.startX + Math.cos(atk.angle) * atk.currentRange, atk.startY + Math.sin(atk.angle) * atk.currentRange];
@@ -323,6 +325,8 @@ function vfxTickAttack(atk, dt) {
         fxDebris(player.x + Math.cos(a) * atk.radius * 0.8, player.y + 12 + Math.sin(a) * atk.radius * 0.35, 1, 90);
     } else if (k === 'partycourse' && Math.random() < dt * 14) {
         fxDust(player.x, player.y + 14, 1, atk.radius * 0.5, 10);
+    } else if (k === 'bazooka' && evo && !atk.vis && Math.random() < dt * 20) {
+        fxSteam(player.x, player.y, 1);
     } else if (k === 'gatling' && evo && Math.random() < dt * 18) {
         fxSteam(player.x, player.y, 1);
     } else if (k === 'pistol' && evo && Math.random() < dt * 40) {
@@ -481,26 +485,6 @@ function drawAttackFX(atk) {
             }
             break;
         }
-        case 'knife': {
-            // Cuchillo arrojadizo girando
-            const [tx, ty] = vfxTip(atk);
-            ctx.strokeStyle = 'rgba(226,232,240,0.35)'; ctx.lineWidth = 2;
-            vfxLine(tx - Math.cos(atk.angle) * 26, ty - Math.sin(atk.angle) * 26, tx, ty);
-            ctx.translate(tx, ty); ctx.rotate(gameTime * 22);
-            ctx.fillStyle = '#e5e7eb'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(0, -2.5); ctx.lineTo(13, 0); ctx.lineTo(0, 2.5); ctx.closePath(); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = '#6b3f1f'; ctx.fillRect(-8, -2, 8, 4);
-            break;
-        }
-        case 'rifle': {
-            // Bala con trazadora
-            const [tx, ty] = vfxTip(atk);
-            const g = ctx.createLinearGradient(tx - Math.cos(atk.angle) * 40, ty - Math.sin(atk.angle) * 40, tx, ty);
-            g.addColorStop(0, 'rgba(253,230,138,0)'); g.addColorStop(1, 'rgba(255,251,235,1)');
-            ctx.strokeStyle = g; ctx.lineWidth = 3; ctx.lineCap = 'round';
-            vfxLine(tx - Math.cos(atk.angle) * 40, ty - Math.sin(atk.angle) * 40, tx, ty);
-            break;
-        }
         case 'gatling': {
             // Gomu Gomu no Gatling: decenas de puñetazos a la vez (imágenes residuales a 30 fps)
             const n = Math.round((evo ? 16 : 11) * (atk.radius / 85));
@@ -526,10 +510,20 @@ function drawAttackFX(atk) {
         case 'bazooka': {
             // Gomu Gomu no Bazooka: dos palmas a la vez contra el objetivo y onda de aire
             const ang = atk.angle;
-            const ext = Math.min(1, p / 0.3);
+            // Jet Bazooka (Gear 2): piel rosada, las palmas llegan casi al instante y dejan estela
+            const ext = Math.min(1, p / (evo ? 0.12 : 0.3));
             const back = p > 0.55 ? 1 - (p - 0.55) / 0.45 : 1;
             const reach = ext * back;
-            const skin = skills.gear2.active ? SKIN_G2 : SKIN;
+            const skin = (evo || skills.gear2.active) ? SKIN_G2 : SKIN;
+            if (evo && reach > 0.05 && p < 0.55) {
+                const [sx, sy] = vfxShoulder(ang);
+                ctx.globalAlpha = 0.55 * (1 - p / 0.55); ctx.strokeStyle = '#ffe4e6'; ctx.lineWidth = 1.5;
+                for (let s = -2; s <= 2; s++) {
+                    const ox = -Math.sin(ang) * s * 7, oy = Math.cos(ang) * s * 7, L = Math.hypot(atk.x - sx, atk.y - sy) * reach;
+                    vfxLine(sx + ox + Math.cos(ang) * L * 0.2, sy + oy + Math.sin(ang) * L * 0.2, sx + ox + Math.cos(ang) * L * 0.85, sy + oy + Math.sin(ang) * L * 0.85);
+                }
+                ctx.globalAlpha = 1;
+            }
             if (reach > 0.05) {
                 for (let s = -1; s <= 1; s += 2) {
                     const ox = -Math.sin(ang) * 7 * s, oy = Math.cos(ang) * 7 * s;
@@ -553,37 +547,6 @@ function drawAttackFX(atk) {
                 ctx.beginPath(); ctx.ellipse(atk.x, atk.y, atk.radius, atk.radius * 0.7, 0, 0, Math.PI * 2); ctx.stroke();
                 ctx.setLineDash([]);
             }
-            break;
-        }
-        case 'grenade': {
-            // Granada: vuela en parábola y estalla en bola de fuego
-            if (p < 0.35) {
-                const q = p / 0.35;
-                const gx = atk.ox + (atk.x - atk.ox) * q, gy = atk.oy + (atk.y - atk.oy) * q - Math.sin(q * Math.PI) * 50;
-                ctx.fillStyle = '#1f2937'; ctx.beginPath(); ctx.arc(gx, gy, 4.5, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#fde68a'; ctx.fillRect(gx - 1, gy - 7, 2, 3);
-            } else {
-                const q = (p - 0.35) / 0.65;
-                ctx.globalCompositeOperation = 'lighter';
-                const r = atk.radius * (0.5 + 0.5 * q);
-                const g = ctx.createRadialGradient(atk.x, atk.y, 0, atk.x, atk.y, r);
-                g.addColorStop(0, `rgba(255,247,194,${0.9 * (1 - q)})`);
-                g.addColorStop(0.4, `rgba(251,146,60,${0.75 * (1 - q)})`);
-                g.addColorStop(1, 'rgba(220,38,38,0)');
-                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(atk.x, atk.y, r, 0, Math.PI * 2); ctx.fill();
-            }
-            break;
-        }
-        case 'axe': {
-            // Hacha pirata: cae desde arriba y parte el suelo
-            const q = Math.min(1, p / 0.45);
-            const rot = -1.9 + q * 2.1;
-            ctx.globalAlpha = p > 0.75 ? (1 - p) / 0.25 : 1;
-            ctx.translate(atk.x - 6, atk.y + 6); ctx.rotate(rot);
-            ctx.fillStyle = '#7c4a24'; ctx.fillRect(-2, -40, 4, 40);
-            ctx.fillStyle = '#cbd5e1'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(2, -40); ctx.quadraticCurveTo(18, -34, 16, -20); ctx.lineTo(2, -26); ctx.closePath(); ctx.fill(); ctx.stroke();
-            if (q < 1) { ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 36, -Math.PI / 2 - 0.9, -Math.PI / 2 + 0.1); ctx.stroke(); }
             break;
         }
         case 'muchi': {
@@ -722,16 +685,6 @@ function drawAttackFX(atk) {
             drawCrescent(tx, ty, atk.angle, evo ? 28 : 23, evo ? 10 : 8, evo ? 'rgba(125,211,252,0.85)' : 'rgba(186,230,253,0.8)', '#ffffff');
             break;
         }
-        case 'shuriken': {
-            const [tx, ty] = vfxTip(atk);
-            ctx.translate(tx, ty); ctx.rotate(gameTime * 18);
-            ctx.fillStyle = '#cbd5e1'; ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
-            ctx.beginPath();
-            for (let s = 0; s < 8; s++) { const r = s % 2 ? 3 : 10; const a = s * Math.PI / 4; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
-            ctx.closePath(); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.arc(0, 0, 1.5, 0, Math.PI * 2); ctx.fill();
-            break;
-        }
         case 'poundho': {
             // 108 Pound Ho: tres medias lunas superpuestas (una por espada), enorme y perforante
             const [tx, ty] = vfxTip(atk);
@@ -747,15 +700,6 @@ function drawAttackFX(atk) {
                 drawCrescent(tx - Math.cos(atk.angle) * back, ty - Math.sin(atk.angle) * back, atk.angle,
                     (26 - s * 3) * big, 9 * big, s === 0 ? 'rgba(186,230,253,0.95)' : 'rgba(147,197,253,0.55)', s === 0 ? '#ffffff' : null);
             }
-            break;
-        }
-        case 'bolt': {
-            // Virote de ballesta
-            const [tx, ty] = vfxTip(atk);
-            ctx.translate(tx, ty); ctx.rotate(atk.angle);
-            ctx.strokeStyle = '#8b5a2b'; ctx.lineWidth = 2.5; vfxLine(-22, 0, 0, 0);
-            ctx.fillStyle = '#cbd5e1'; ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-1, -3.5); ctx.lineTo(-1, 3.5); ctx.closePath(); ctx.fill();
-            ctx.fillStyle = '#e11d48'; ctx.beginPath(); ctx.moveTo(-22, 0); ctx.lineTo(-17, -4); ctx.lineTo(-15, 0); ctx.lineTo(-17, 4); ctx.closePath(); ctx.fill();
             break;
         }
         case 'tatsumaki': {
@@ -778,18 +722,6 @@ function drawAttackFX(atk) {
                 ctx.beginPath(); ctx.ellipse(player.x, cy, rx, ry, 0, spin + 3.1, spin + 4.1); ctx.stroke();
             }
             ctx.lineCap = 'butt';
-            break;
-        }
-        case 'haki': {
-            // Haoshoku Haki: onda de voluntad que se expande, oscura con borde rojo
-            const fade = 1 - p;
-            const r = atk.radius * (0.25 + 0.75 * Math.min(1, p * 1.6));
-            ctx.globalAlpha = 0.22 * fade; ctx.fillStyle = '#0b0710';
-            ctx.beginPath(); ctx.ellipse(player.x, player.y + 6, r, r * 0.7, 0, 0, Math.PI * 2); ctx.fill();
-            ctx.globalAlpha = 0.9 * fade; ctx.strokeStyle = '#0b0710'; ctx.lineWidth = 5;
-            ctx.beginPath(); ctx.ellipse(player.x, player.y + 6, r, r * 0.7, 0, 0, Math.PI * 2); ctx.stroke();
-            ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.ellipse(player.x, player.y + 6, r, r * 0.7, 0, 0, Math.PI * 2); ctx.stroke();
             break;
         }
         case 'diablejambe': {
@@ -823,16 +755,6 @@ function drawAttackFX(atk) {
             if (evo) { ctx.globalCompositeOperation = 'lighter'; drawFlameDir(fx, fy, atk.angle + Math.PI, 16, 6); ctx.globalCompositeOperation = 'source-over'; }
             drawShoe(fx, fy, atk.angle, 5.5, evo);
             if (atk.currentRange > legLen + 4) drawCrescent(tx, ty, atk.angle, 12, 5, evo ? 'rgba(234,88,12,0.75)' : 'rgba(226,232,240,0.7)', '#ffffff');
-            break;
-        }
-        case 'spear': {
-            // Lanza de abordaje: estocada
-            const [tx, ty] = vfxTip(atk);
-            ctx.strokeStyle = '#7c4a24'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-            vfxLine(tx - Math.cos(atk.angle) * 60, ty - Math.sin(atk.angle) * 60, tx, ty);
-            ctx.translate(tx, ty); ctx.rotate(atk.angle);
-            ctx.fillStyle = '#e2e8f0'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(0, -4); ctx.lineTo(0, 4); ctx.closePath(); ctx.fill(); ctx.stroke();
             break;
         }
         case 'joueshot': {
@@ -1004,10 +926,20 @@ function drawParticle(p) {
         const a = Math.max(0, p.life / (p.maxLife || 0.4));
         switch (p.shape) {
             case 'ring':
+                // onda en perspectiva (elipse sobre el suelo) que se afina al abrirse
                 ctx.globalAlpha = a * 0.85;
-                ctx.strokeStyle = p.color; ctx.lineWidth = 3.5;
-                ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.5, p.size), 0, Math.PI * 2); ctx.stroke();
+                ctx.strokeStyle = p.color; ctx.lineWidth = 1 + 3 * a;
+                ctx.beginPath(); ctx.ellipse(p.x, p.y, Math.max(0.5, p.size), Math.max(0.5, p.size * 0.72), 0, 0, Math.PI * 2); ctx.stroke();
                 break;
+            case 'spark': {
+                // chispa alargada en la dirección del movimiento (más viva cuanto más rápida)
+                const sp = Math.hypot(p.vx, p.vy), len = Math.min(10, sp * 0.035) + 0.5;
+                ctx.globalAlpha = Math.min(1, a * 1.4); ctx.strokeStyle = p.color; ctx.lineCap = 'round';
+                ctx.lineWidth = Math.max(0.8, (p.size || 2) * (0.5 + 0.5 * a));
+                if (sp < 1) { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, ctx.lineWidth * 0.6, 0, Math.PI * 2); ctx.fill(); break; }
+                vfxLine(p.x, p.y, p.x - p.vx / sp * len, p.y - p.vy / sp * len);
+                break;
+            }
             case 'orb':
                 ctx.globalAlpha = a * 0.9;
                 ctx.fillStyle = p.color;
@@ -1076,6 +1008,8 @@ function drawParticle(p) {
                 ctx.closePath();
                 ctx.fillStyle = p.color; ctx.fill();
                 ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 1.2; ctx.stroke();
+                // núcleo blanco del golpe al principio
+                if (t < 0.5) { ctx.globalAlpha = a * (1 - t * 2); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2); ctx.fill(); }
                 ctx.restore();
                 break;
             }

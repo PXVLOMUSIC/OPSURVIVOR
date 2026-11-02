@@ -88,6 +88,7 @@ const RANDOM = [/^win\.nextEventAt$/];
         { ch: 'chopper', map: 'skypiea', how: 'restart-after-gameover', play: 400 },
         { ch: 'robin', map: 'baratie',  how: 'menu-from-pause', play: 150, extra: 'gear' },
         { ch: 'franky', map: 'water7',  how: 'menu-from-pause', play: 150, extra: 'gear' },
+        { ch: 'brook', map: 'thrillerbark', how: 'menu-after-gameover', play: 150, extra: 'gear' },
         { ch: 'brook', map: 'thrillerbark', how: 'restart-after-gameover', play: 200, extra: 'gear' },
         { ch: 'jinbe', map: 'wholecake', how: 'menu-after-gameover', play: 150, extra: 'gear' },
         { ch: 'luffy', map: 'baratie',  how: 'menu-after-gameover', play: 150 },

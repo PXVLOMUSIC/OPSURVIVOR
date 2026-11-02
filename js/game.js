@@ -1481,20 +1481,9 @@ function checkEvolutions() {
     }
 }
 
-let currentUpgradeCount = 3, upgradeIsChest = false, _banishing = false;
-
-function showUpgradeScreen(count, isChest) {
-    upgradeIsChest = !!isChest;
-    if (isChest) playSound('chest'); // la subida de nivel ya suena en levelUp()
-    // VS: en subidas de nivel hay una 4ta opción con probabilidad (1 - 1/SuerteTotal)
-    if (count === undefined || count === null) count = 3 + (Math.random() < (1 - 1 / player.luckBonus) ? 1 : 0);
-    currentUpgradeCount = count;
-    _banishing = false;
-    const container = document.getElementById('upgrade-options');
-    container.innerHTML = '';
-
-    const weaponIds = CREW_WEAPON_IDS.concat(['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform']);
-    const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp','rumble','jolly'];
+// Catálogo completo de cartas (armas y pasivas). Lo usan las subidas de nivel y la Colección (js/collection.js).
+// El orden importa: el sorteo de cartas favorece a los primeros (ver showUpgradeScreen).
+function upgradeCatalog() {
     const possibleUpgrades = [
         { id: 'pistol', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Pistol', icon: ICONS.pistol, desc: 'Sube el daño base de puñetazo (+22) y su alcance.' },
         { id: 'gatling', type: 'weapon', chars: ['luffy'], title: 'Gomu Gomu no Gatling', icon: ICONS.gatling, desc: 'Desbloquea o mejora la ráfaga continua en área.' },
@@ -1550,6 +1539,24 @@ function showUpgradeScreen(count, isChest) {
     ];
     possibleUpgrades.push(...CREW_UPGRADES); // kits de Nami, Usopp, Chopper y Robin (js/crew.js), al final por el sesgo del sorteo
     if (typeof pxIcon === 'function') for (const u of possibleUpgrades) u.icon = pxIcon(u.id) || u.icon; // iconos pixel art (js/pixicons.js)
+    return possibleUpgrades;
+}
+
+let currentUpgradeCount = 3, upgradeIsChest = false, _banishing = false;
+
+function showUpgradeScreen(count, isChest) {
+    upgradeIsChest = !!isChest;
+    if (isChest) playSound('chest'); // la subida de nivel ya suena en levelUp()
+    // VS: en subidas de nivel hay una 4ta opción con probabilidad (1 - 1/SuerteTotal)
+    if (count === undefined || count === null) count = 3 + (Math.random() < (1 - 1 / player.luckBonus) ? 1 : 0);
+    currentUpgradeCount = count;
+    _banishing = false;
+    const container = document.getElementById('upgrade-options');
+    container.innerHTML = '';
+
+    const weaponIds = CREW_WEAPON_IDS.concat(['pistol','gatling','bazooka','gear2','santoryu','onigiri','flyingslash','diablejambe','collier','joueshot','muchi','ono','tatsumaki','poundho','concasse','partycourse','cuchillo','granada','rifle','ballesta','lanza','hacha','shuriken','hakiPulse','kabuto','climatact','dial','roseo','clutch','zoroform','sanjiform']);
+    const passiveIds = ['power','crit','cd','armor','haki_buso','haki_ken','haki_hao','area','speed','pickup','growth','luck','maxhp','regen','evasion','magnet','greed','vamp','rumble','jolly'];
+    const possibleUpgrades = upgradeCatalog();
     // Quien no usa Haki en el canon (Nami, Chopper, Robin) ve Poder y Armadura sin el nombre de Haki
     if (!itemAllowed('haki_buso', selectedCharacter)) for (const u of possibleUpgrades) {
         if (u.id === 'power') u.title = 'Entrenamiento (Poder %)';

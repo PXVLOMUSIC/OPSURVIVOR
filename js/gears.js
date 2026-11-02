@@ -522,13 +522,43 @@ function gearOnVictory() {
 
 // ---- tienda ----
 function gearShopCost(u, lvl) { return u.cost * Math.pow(2, lvl); }
+// ---- tienda: tabla de transformaciones (escalón, cuándo se activa en partida y cómo se desbloquea) ----
+const GEAR_WHEN = { 2: 'Carta Nv 1', 3: 'Carta Nv 3', 4: 'Carta evolucionada', 5: 'Evolucionada + minuto 6' };
+function gearFormsPanel() {
+    gearMetaInit();
+    const wrap = document.createElement('div');
+    wrap.className = 'gx-wrap';
+    const order = ['luffy', 'zoro', 'usopp', 'sanji', 'nami', 'chopper', 'robin', 'franky', 'brook', 'jinbe'].filter(c => FORMS[c]);
+    const total = order.reduce((t, c) => t + Object.keys(FORMS[c]).length, 0);
+    const got = order.reduce((t, c) => t + Object.keys(FORMS[c]).filter(n => +n <= gearUnlocked(c)).length, 0);
+    let html = `<div class="op-section gx-band"><span>TRANSFORMACIONES</span><small>${got}/${total}</small></div>`
+        + `<p class="gx-note">Cada pirata se transforma con su carta propia: llena el medidor y pulsa <b>ESPACIO</b> o el botón. `
+        + `La 1.ª forma está abierta desde el principio; las demás se desbloquean con un logro y después se activan en partida según el nivel de la carta.</p>`;
+    for (const c of order) {
+        const charLocked = c !== 'luffy' && !meta.unlocked[c];
+        const unl = gearUnlocked(c);
+        html += `<div class="gx-row${charLocked ? ' gx-charlock' : ''}">`
+            + `<div class="gx-who"><img src="assets/wanted/${c}.jpg" alt=""><span>${CHAR_ANIMS[c].name}</span></div><div class="gx-tiers">`;
+        for (const n of Object.keys(FORMS[c]).map(Number).sort((a, b) => a - b)) {
+            const f = FORMS[c][n], open = n <= unl;
+            const a = ACHIEVEMENTS.find(x => x.gear === n && (x.formChar || 'luffy') === c);
+            const how = open ? (n === 2 ? 'De inicio' : 'Desbloqueada') : (a ? a.desc.replace(/\s*Desbloquea .*$/, '') : 'Bloqueada');
+            html += `<div class="gx-tier${open ? ' open' : ''}" style="--fc:${f.color}">`
+                + `<span class="gx-lock">${open ? '✔' : ICONS.lock}</span>`
+                + `<span class="gx-txt"><b>${f.name}</b><small class="gx-when">En partida: ${GEAR_WHEN[n] || ''}</small>`
+                + `<small class="gx-how">${open ? how : '<em>Para desbloquearla:</em> ' + how}</small></span></div>`;
+        }
+        html += '</div>';
+        if (charLocked) html += `<div class="gx-charmsg">${ICONS.lock} Primero desbloquea a ${CHAR_ANIMS[c].name}: ${lockText(c).toLowerCase()}</div>`;
+        html += '</div>';
+    }
+    html += `<div class="op-section gx-band"><span>MEJORAS DE TRANSFORMACIÓN</span><small>para todos</small></div>`;
+    wrap.innerHTML = html;
+    return wrap;
+}
 function renderGearShop(container) {
     gearMetaInit();
-    const head = document.createElement('div');
-    head.className = 'gear-shop-head';
-    const row = (c, ns) => ns.map(n => FORMS[c][n].short + (n <= gearUnlocked(c) ? ' ✔' : ' 🔒')).join(' ');
-    head.innerHTML = 'TRANSFORMACIONES · Luffy: ' + row('luffy', [2,3,4,5]) + Object.keys(FORMS).filter(c => c !== 'luffy').map(c => ' · ' + CHAR_ANIMS[c].name + ': ' + row(c, [2,3,4])).join('');
-    container.appendChild(head);
+    container.appendChild(gearFormsPanel());
     const locked = meta.gear.unlocked < 3 && Object.values(meta.gear.forms).every(v => v < 3);
     GEAR_SHOP.forEach(u => {
         const lvl = gearUp(u.id);
@@ -541,7 +571,7 @@ function renderGearShop(container) {
             <div class="upgrade-icon">${ICONS.gear2}</div>
             <div class="upgrade-info" style="flex:1;">
                 <h4>${u.name} (Nv ${lvl}/${u.max})</h4>
-                <p>${locked ? 'Requiere desbloquear un segundo nivel (conquista una isla con cualquier personaje).' : u.desc}</p>
+                <p>${locked ? '🔒 Se abre al desbloquear la 2.ª forma de cualquier pirata (conquista una isla con él).' : u.desc}</p>
             </div>
             <div class="upgrade-buy" style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:90px;">
                 <div style="font-family:'Bangers',sans-serif; font-size:16px; color:#b45309; letter-spacing:1px;">${maxed ? 'MÁX' : cost.toLocaleString('en-US') + ' ฿'}</div>

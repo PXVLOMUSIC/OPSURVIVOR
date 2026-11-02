@@ -133,6 +133,7 @@ function loadMeta() {
             if (parsed.achievements) meta.achievements = parsed.achievements;
             if (parsed.gear) meta.gear = parsed.gear;
             if (parsed.records) meta.records = parsed.records;
+            if (parsed.collection) meta.collection = parsed.collection;
             meta.curseUnlocked = parsed.curseUnlocked || 0;
             if (parsed.stats) meta.stats = { ...meta.stats, ...parsed.stats,
                 maxTime: { ...meta.stats.maxTime, ...(parsed.stats.maxTime || {}) },
@@ -143,7 +144,7 @@ function loadMeta() {
     } catch (e) {}
 }
 function saveMeta() {
-    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats, curseUnlocked: meta.curseUnlocked, gear: meta.gear, records: meta.records || {} })); } catch (e) {}
+    try { localStorage.setItem('op_survivor_meta', JSON.stringify({ beli: meta.beli, upgrades: meta.upgrades, unlocked: meta.unlocked, wins: meta.wins, achievements: meta.achievements, stats: meta.stats, curseUnlocked: meta.curseUnlocked, gear: meta.gear, records: meta.records || {}, collection: meta.collection || {} })); } catch (e) {}
 }
 loadMeta();
 let gameTime = 0, lastTime = performance.now();

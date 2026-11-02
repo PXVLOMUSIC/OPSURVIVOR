@@ -49,7 +49,7 @@ function modeTimeScale() { return (gameState === 'PLAYING' && RUN_MODES[runMode]
 // --- Tabla de récords: la mejor singladura de cada personaje en cada isla ---
 const RECORD_MAPS = ['shelltown', 'syrup', 'baratie', 'arlongpark', 'drum', 'alabasta', 'skypiea', 'water7', 'enieslobby', 'thrillerbark', 'marineford', 'wholecake', 'wano'];
 const RECORD_MAP_NAMES = { shelltown: 'Shell Town', syrup: 'Syrup', drum: 'Drum', arlongpark: 'Arlong Park', baratie: 'Baratie', alabasta: 'Alabasta', skypiea: 'Skypiea', thrillerbark: 'Thriller Bark', enieslobby: 'Enies Lobby', marineford: 'Marineford', water7: 'Water 7', wholecake: 'Whole Cake', wano: 'Wano' };
-const RECORD_CHARS = ['luffy', 'zoro', 'sanji', 'usopp', 'nami', 'chopper', 'robin', 'franky', 'brook', 'jinbe'];
+const RECORD_CHARS = ['luffy', 'zoro', 'usopp', 'sanji', 'nami', 'chopper', 'robin', 'franky', 'brook', 'jinbe']; // orden de desbloqueo
 
 function recordScore(r) { return (r.won ? 1e9 : 0) + (r.curse || 0) * 1e8 + Math.round(r.time) * 1e4 + Math.min(9999, r.kills); }
 function recordRun(won) {

@@ -3,9 +3,11 @@
 # Requisitos: pip install torch spandrel pillow numpy  (CPU basta: ~1,5 min por mapa con 4 núcleos)
 # Modelo: https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth
 # Uso: python3 source-art/escalar_mapas.py RealESRGAN_x4plus_anime_6B.pth source-art/maps/hd/<mapa>.png assets/maps/<mapa>.jpg
-import io, sys, torch, numpy as np
+import io, os, sys, torch, numpy as np
 from PIL import Image
 from spandrel import ModelLoader
+sys.path.insert(0, os.path.dirname(__file__))
+from ajustar_tono import tone, save_jpeg  # ajuste de tono por mapa (Skypiea)
 
 MAX_BYTES = 1_500_000
 mp, src, out = sys.argv[1:4]
@@ -24,7 +26,5 @@ with torch.inference_mode():
 r = Image.fromarray((y[0].permute(1, 2, 0).numpy() * 255 + 0.5).astype(np.uint8))
 if r.size != (W * 2, H * 2):
     r = r.resize((W * 2, H * 2), Image.LANCZOS)  # el modelo es x4: se baja a x2 exacto
-for q in range(90, 59, -2):
-    b = io.BytesIO(); r.save(b, 'JPEG', quality=q, optimize=True, progressive=True, subsampling=0)
-    if b.tell() <= MAX_BYTES: break
-open(out, 'wb').write(b.getvalue()); print(out, r.size, f'q{q}', b.tell())
+r = tone(r, os.path.splitext(os.path.basename(out))[0])
+save_jpeg(r, out, MAX_BYTES)

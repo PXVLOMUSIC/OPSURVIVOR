@@ -33,6 +33,16 @@ const HIT_KIND = {
 let groundDecals = [];
 let _hitFxBudget = 0;
 
+// Generador propio para los efectos: las partículas no gastan números del Math.random de la partida,
+// así la jugabilidad (y el benchmark / bot de balance) no depende de la calidad gráfica ni de las partículas.
+let _vfxSeed = 0x9e3779b9;
+function vfxRand() { _vfxSeed = (_vfxSeed * 1664525 + 1013904223) >>> 0; return _vfxSeed / 4294967296; }
+function vfxIsolated(fn, a, b, c, d) {
+    const r = Math.random;
+    if (r === vfxRand) return fn(a, b, c, d);
+    Math.random = vfxRand;
+    try { return fn(a, b, c, d); } finally { Math.random = r; }
+}
 function vfxMap() { return VFX_MAP[selectedMap] || VFX_MAP.baratie; }
 function vfxQ() { return (windowOpts && windowOpts.fewerParticles) ? 0.5 : 1; }
 function vfxPick(arr) { return arr[(Math.random() * arr.length) | 0]; }
@@ -1095,4 +1105,13 @@ function drawParticle(p) {
                 ctx.globalAlpha = a; ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.7, (p.size || 2) * a), 0, Math.PI * 2); ctx.fill();
         }
+}
+
+// Los efectos que se lanzan desde la actualización usan el generador propio (vfxIsolated)
+{
+    const raw = { vfxOnHit, vfxOnCast, vfxTickAttack, vfxUpdate };
+    vfxOnHit = (atk, e, x, y) => vfxIsolated(raw.vfxOnHit, atk, e, x, y);
+    vfxOnCast = (atk) => vfxIsolated(raw.vfxOnCast, atk);
+    vfxTickAttack = (atk, dt) => vfxIsolated(raw.vfxTickAttack, atk, dt);
+    vfxUpdate = (dt) => vfxIsolated(raw.vfxUpdate, dt);
 }

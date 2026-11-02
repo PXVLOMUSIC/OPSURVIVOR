@@ -3,7 +3,7 @@
 // - HTML, JS, CSS y manifest: red primero y caché si no hay conexión, para que siempre llegue la última versión.
 // - La música (.mp3) no pasa por aquí: el navegador la pide por rangos y la cachea él mismo.
 // Sube CACHE_VER si cambias un asset sin cambiar su nombre y quieres forzar que se descargue de nuevo.
-const CACHE_VER = 'opsurvivor-v20';
+const CACHE_VER = 'opsurvivor-v21';
 
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -16,7 +16,7 @@ self.addEventListener('fetch', e => {
     const sameOrigin = url.origin === self.location.origin;
     const isFont = /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
     if (!sameOrigin && !isFont) return;
-    if (/\.mp3$/.test(url.pathname)) return;
+    if (/\.mp3$/.test(url.pathname) || url.pathname.startsWith('/api/')) return;
     const isAsset = isFont || /\.(png|jpe?g|webp|gif|wav|ogg|woff2?)$/.test(url.pathname);
     if (isAsset) {
         e.respondWith(caches.open(CACHE_VER).then(c => c.match(req).then(hit => hit || fetch(req).then(res => {

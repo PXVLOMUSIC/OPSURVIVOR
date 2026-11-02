@@ -330,10 +330,12 @@
         <div class="wanted-board op-board save-board">
             <div class="op-head">
                 <div class="wanted-title op-title">BITÁCORA</div>
-                <div class="wanted-subtitle">LLEVA TU PARTIDA A OTRO NAVEGADOR</div>
+                <div class="wanted-subtitle">LLEVA TU PARTIDA A OTRO DISPOSITIVO</div>
             </div>
             <div class="op-scroll">
                 <p class="save-current" id="save-current"></p>
+                <div class="op-section"><span>NUBE</span></div>
+                <div id="cloud-box" class="cloud-box"></div>
                 <div class="op-section"><span>EXPORTAR</span></div>
                 <div class="save-row">
                     <button class="op-btn" onclick="saveDownload()"><span class="op-ic" data-ico="up"></span><span>Descargar archivo</span></button>
@@ -370,7 +372,7 @@
                     <div class="op-section"><span>PARTIDA</span></div>
                     <label class="op-row op-toggle"><span class="op-ic" data-ico="pauseIco"></span><span class="op-lbl">Auto-pausa al cambiar de pestaña</span><input type="checkbox" id="opt-autopause" checked><i></i></label>
                     <label class="op-row op-toggle"><span class="op-ic" data-ico="power"></span><span class="op-lbl">Números de daño</span><input type="checkbox" id="opt-dmgnums" checked><i></i></label>
-                    <button class="op-btn" onclick="showSavePanel()"><span class="op-ic" data-ico="ship"></span><span>Exportar / importar partida</span></button>
+                    <button class="op-btn" onclick="showSavePanel()"><span class="op-ic" data-ico="ship"></span><span>Partida y sincronización</span></button>
                 </div>
                 <div class="opt-col">
                     <div class="op-section"><span>GRÁFICOS</span></div>
@@ -413,6 +415,7 @@
 <script src="js/pixicons.js"></script>
 <script src="js/collection.js"></script>
 <script src="js/savefile.js"></script>
+<script src="js/cloudsync.js"></script>
 <script src="js/main.js"></script>
 <button id="gear-btn" onclick="gearActivate()" aria-label="Activar Gear">G2</button>
 <div id="ach-toast"></div>

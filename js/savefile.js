@@ -33,6 +33,7 @@ function showSavePanel() {
     document.getElementById('save-code').value = saveToCode(data);
     document.getElementById('save-current').textContent = 'Partida actual: ' + saveSummary(data.meta || {});
     saveMsg('');
+    if (typeof csRender === 'function') csRender();
     document.getElementById('save-screen').style.display = 'flex';
 }
 function closeSavePanel() { document.getElementById('save-screen').style.display = 'none'; }

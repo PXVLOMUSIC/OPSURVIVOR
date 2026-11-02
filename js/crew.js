@@ -196,16 +196,19 @@ EVOLUTIONS.roseo.name = 'Kokutei Roseo Mirror: Cerezos de Drum';
 const CREW_UPGRADES = [];
 const CREW_HUD = [];
 const CREW_NAMES = {};
+const CREW_SHORT = {}; // nombre corto para las fichas del HUD y de la pausa
 for (const c in CREW_FORMS) {
     const f = CREW_FORMS[c];
     CREW_UPGRADES.push({ id: f.card, type: 'weapon', chars: [c], title: f.title, icon: ICONS[f.card], desc: f.desc });
-    CREW_HUD.push({ id: f.card, icon: ICONS[f.card], name: f.title.replace(/ \(.*\)$/, '') });
+    CREW_SHORT[f.card] = f.title.replace(/ \(.*\)$/, '');
+    CREW_HUD.push({ id: f.card, icon: ICONS[f.card], name: CREW_SHORT[f.card] });
     CREW_NAMES[f.card] = f.title.replace(/ \(.*\)$/, '');
 }
 for (const id of CREW_TECH_IDS) {
     const t = CREW_TECH[id];
     CREW_UPGRADES.push({ id, type: 'weapon', chars: [t.char], title: t.title, icon: ICONS[id], desc: t.desc });
-    CREW_HUD.push({ id, icon: ICONS[id], name: t.title.replace(/^Hissatsu: /, '') });
+    CREW_SHORT[id] = t.title.replace(/^.*: /, '');
+    CREW_HUD.push({ id, icon: ICONS[id], name: CREW_SHORT[id] });
     CREW_NAMES[id] = t.title;
 }
 // Logros que desbloquean el 2.º y 3.er escalón (como Asura / Rey del Infierno de Zoro)

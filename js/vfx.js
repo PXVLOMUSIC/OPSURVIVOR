@@ -1028,6 +1028,13 @@ function drawParticle(p) {
                 ctx.globalAlpha = a * (p.alpha || 0.55); ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.5, p.size), 0, Math.PI * 2); ctx.fill();
                 break;
+            case 'petal': {
+                // pétalo que revolotea (Hana Hana de Robin, huella de cerezo de Chopper, hojas de Usopp)
+                ctx.globalAlpha = Math.min(1, a * 1.6); ctx.fillStyle = p.color;
+                const r = p.rot || 0, sz = p.size;
+                ctx.beginPath(); ctx.ellipse(p.x, p.y, sz, sz * (0.25 + 0.3 * Math.abs(Math.sin(r * 1.7))), r, 0, Math.PI * 2); ctx.fill();
+                break;
+            }
             case 'debris':
                 ctx.globalAlpha = Math.min(1, a * 1.5); ctx.fillStyle = p.color;
                 ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0);

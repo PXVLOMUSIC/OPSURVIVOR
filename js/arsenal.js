@@ -220,19 +220,6 @@ function updateArsenalAttack(atk, dt) {
 
 // Dibujo (se llama desde drawAttackFX en js/vfx.js). Devuelve true si lo ha dibujado.
 function drawArsenalFX(atk) {
-    if (!ARSENAL_TYPES.has(atk.type)) return false;
-    const p = atk.maxLife ? Math.min(1, Math.max(0, 1 - atk.life / atk.maxLife)) : 0;
-    ctx.save();
-    // kabuto, thunder, clutch y el impacto de Roseo se dibujan en js/crewfx.js
-    if (atk.type === 'impact') {
-        const r = atk.radius * (0.3 + 0.7 * p), a = 1 - p;
-        ctx.globalAlpha = 0.25 * a; ctx.fillStyle = atk.evo ? '#fca5a5' : '#e2e8f0';
-        ctx.beginPath(); ctx.ellipse(atk.x, atk.y + 6, r, r * 0.7, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.globalAlpha = 0.9 * a; ctx.strokeStyle = atk.evo ? '#ef4444' : '#f8fafc'; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.ellipse(atk.x, atk.y + 6, r, r * 0.7, 0, 0, Math.PI * 2); ctx.stroke();
-        ctx.lineWidth = 2; ctx.globalAlpha = 0.6 * a;
-        ctx.beginPath(); ctx.ellipse(atk.x, atk.y + 6, r * 0.7, r * 0.49, 0, 0, Math.PI * 2); ctx.stroke();
-    }
-    ctx.restore();
-    return true;
+    // kabuto, thunder, clutch y el impacto de Roseo se dibujan en js/crewfx.js; el Dial en js/arsenalfx.js
+    return ARSENAL_TYPES.has(atk.type);
 }

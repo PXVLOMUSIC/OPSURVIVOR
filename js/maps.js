@@ -385,7 +385,7 @@ const player = {
 };
 
 const skills = {
-    pistol: { level: 1, baseDamage: 28, cooldown: 1.1, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
+    pistol: { level: 1, baseDamage: 30, cooldown: 1.1, timer: 0, range: 250, evolved: false, evolvedName: 'Red Hawk' },
     gatling: { level: 0, baseDamage: 10, cooldown: 3.8, timer: 0, radius: 85, duration: 1.5, evolved: false, evolvedName: 'Jet Gatling' },
     bazooka: { level: 0, baseDamage: 45, cooldown: 5.5, timer: 0, radius: 65, evolved: false },
     gear2: { level: 0, cooldown: 12.0, timer: 0, duration: 6.0, speedBonus: 0.3, active: false, remain: 0, evolved: false },
@@ -401,7 +401,7 @@ const skills = {
     // Zoro: tornado orbitante y cañón de viento perforante
     tatsumaki: { level: 0, baseDamage: 10, cooldown: 3.6, timer: 0, radius: 95, duration: 1.0, evolved: false },
     poundho: { level: 0, baseDamage: 30, cooldown: 3.2, timer: 0, range: 420, speed: 700, evolved: false },
-    diablejambe: { level: 1, baseDamage: 22, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
+    diablejambe: { level: 1, baseDamage: 24, cooldown: 1.0, timer: 0, radius: 50, fire: true, evolved: false },
     collier: { level: 0, baseDamage: 10, cooldown: 0.6, timer: 0, range: 70, evolved: false },
     joueshot: { level: 0, baseDamage: 26, cooldown: 2.8, timer: 0, range: 240, speed: 560, evolved: false },
     // Sanji: patada aérea demoledora y tanda giratoria 360

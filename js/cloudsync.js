@@ -6,7 +6,18 @@
 //   y al volver a la pestaña estando en el menú. Si los dos lados han cambiado, se pregunta cuál conservar.
 const CS_KEY = 'op_survivor_sync';
 const CS_ALPHA = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-const cs = { online: false, busy: false, timer: 0, conflict: null, msg: '', bad: false };
+const cs = { online: false, busy: false, timer: 0, conflict: null, msg: '', bad: false, gLinked: false };
+const G_LOGO = '<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.5 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7-10.1 7-17.5z"/><path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.3.8-4.7l-7.8-6.1C.9 16.6 0 20.2 0 24s.9 7.4 2.6 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.7-4.2-13.6-9.9l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>';
+// Hueco de la pantalla de Opciones (abajo a la derecha): botón de Google o cierre de sesión
+function csRenderGoogle() {
+    const el = document.getElementById('google-slot');
+    if (!el) return;
+    let h;
+    if (!cs.online) h = '<p class="g-note">Disponible en opsurvivor.pages.dev</p>';
+    else if (cs.gLinked) h = '<p class="g-note">Sesión iniciada: tu progreso se sincroniza solo.</p><button class="g-btn g-btn-out" onclick="csLogout()">Cerrar sesión</button>';
+    else h = `<button class="g-btn" onclick="location.href='api/google/start'">${G_LOGO}<span>Iniciar sesión con Google</span></button><p class="g-note">Solo se usa tu identificador. Sin email ni nombre.</p>`;
+    el.innerHTML = h;
+}
 
 function csState() { try { return JSON.parse(localStorage.getItem(CS_KEY)) || null; } catch (e) { return null; } }
 function csSetState(s) { try { s ? localStorage.setItem(CS_KEY, JSON.stringify(s)) : localStorage.removeItem(CS_KEY); } catch (e) {} }
@@ -124,7 +135,7 @@ function csGoogleLink() { if (!csState()) csSetState({ mode: 'google', rev: 0, s
 async function csLogout() {
     if (!confirm('¿Cerrar sesión de Google en este dispositivo? La partida local y la de la nube no se borran.')) return;
     try { await fetch('api/google/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }); } catch (e) {}
-    csSetState(null); cs.conflict = null; csNote('Sesión cerrada.');
+    csSetState(null); cs.conflict = null; cs.gLinked = false; csNote('Sesión cerrada.');
 }
 function csCopy() {
     const s = csState(); if (!s) return;
@@ -135,7 +146,7 @@ function csCopy() {
 
 function csRender() {
     const box = document.getElementById('cloud-box');
-    if (!box) return;
+    if (!box) { csRenderGoogle(); return; }
     const s = csState(), esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     let h;
     if (!cs.online) h = '<p class="cs-note">La sincronización en la nube solo funciona en la web <b>opsurvivor.pages.dev</b>.</p>';
@@ -171,6 +182,7 @@ function csRender() {
     if (cs.msg) h += `<p class="save-msg${cs.bad ? ' bad' : ''}">${esc(cs.msg)}</p>`;
     box.innerHTML = h;
     box.querySelectorAll('[data-ico]').forEach(el => { el.innerHTML = (typeof ICONS !== 'undefined' && ICONS[el.getAttribute('data-ico')]) || ''; });
+    csRenderGoogle();
 }
 
 // Arranque: comprueba si hay servidor (en el artifact o en local sin backend no lo hay)
@@ -184,7 +196,7 @@ function csRender() {
             const q = new URLSearchParams(location.search).get('g');
             if (q) history.replaceState(null, '', location.pathname);
             if (q === 'err') cs.msg = 'No se pudo entrar con Google. Inténtalo de nuevo.', cs.bad = true;
-            try { const me = await fetch('api/google/me', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.json()); if (me.linked) csGoogleLink(); } catch (e) {}
+            try { const me = await fetch('api/google/me', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.json()); cs.gLinked = !!me.linked; if (me.linked) csGoogleLink(); } catch (e) {}
         }
         csRender(); if (cs.online && csState()) csPull();
     }).catch(() => { cs.online = false; csRender(); });

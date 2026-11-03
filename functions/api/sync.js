@@ -1,37 +1,18 @@
 // Sincronización de partida entre dispositivos (Cloudflare Pages Functions + D1, binding «DB»).
-// - Sin cuentas ni datos personales: el código de sincronización (26 caracteres base32, 130 bits
-//   aleatorios generados en el navegador) es la credencial. Llega por HTTPS en la cabecera
-//   Authorization y en D1 solo se guarda su SHA-256, nunca el código.
-// - GET    /api/sync          → { rev, updated, data }  (404 si el código no tiene copia)
+// Credencial: el código de sincronización (Bearer, 130 bits) o la sesión de Google (cookie, functions/api/google).
+// En D1 solo se guarda el hash de la credencial, nunca el código.
+// - GET    /api/sync          → { rev, updated, data }  (404 si no hay copia)
 // - PUT    /api/sync          { baseRev, data } → { rev, updated }; 409 + copia remota si baseRev no es la última
 // - DELETE /api/sync          → borra la copia de la nube
-// - GET    /api/sync?ping=1   → { ok: true } (para saber si hay servidor; no necesita código)
-// Límite: 60 peticiones por minuto e IP, guardado de 64 KB como máximo y validado.
+// - GET    /api/sync?ping=1   → { ok } (no necesita credencial)
+// Límites: 60 peticiones por minuto e IP, guardado de 64 KB como máximo y validado.
+import { ensureSchema, json, sha256Hex, sessionAccount } from '../_lib.js';
+
 const MAX_BYTES = 64 * 1024;
 const RATE_PER_MIN = 60;
 const CODE_RE = /^[0-9A-HJKMNP-TV-Z]{26}$/; // base32 de Crockford
-let schemaReady = false;
 
-const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
-    status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' },
-});
-
-async function ensureSchema(db) {
-    if (schemaReady) return;
-    await db.batch([
-        db.prepare('CREATE TABLE IF NOT EXISTS saves (id TEXT PRIMARY KEY, rev INTEGER NOT NULL, updated INTEGER NOT NULL, data TEXT NOT NULL)'),
-        db.prepare('CREATE TABLE IF NOT EXISTS rate (k TEXT PRIMARY KEY, n INTEGER NOT NULL, t INTEGER NOT NULL)'),
-    ]);
-    schemaReady = true;
-}
-
-async function sha256Hex(s) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// Ventana fija de un minuto por IP (la IP se guarda con hash y la fila se borra al minuto siguiente)
+// Ventana fija de un minuto por IP (la IP se guarda con hash)
 async function rateLimited(db, request) {
     const ip = request.headers.get('cf-connecting-ip') || 'local';
     const minute = Math.floor(Date.now() / 60000);
@@ -60,8 +41,14 @@ export async function onRequest({ request, env }) {
 
     const auth = request.headers.get('authorization') || '';
     const code = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-    if (!CODE_RE.test(code)) return json({ error: 'bad_code' }, 400);
-    const id = await sha256Hex('opsurvivor-sync:' + code);
+    let id;
+    if (code) {
+        if (!CODE_RE.test(code)) return json({ error: 'bad_code' }, 400);
+        id = await sha256Hex('opsurvivor-sync:' + code);
+    } else {
+        id = await sessionAccount(db, request);
+        if (!id) return json({ error: 'auth' }, 401);
+    }
 
     if (request.method === 'GET') {
         const row = await db.prepare('SELECT rev, updated, data FROM saves WHERE id = ?1').bind(id).first();

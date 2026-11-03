@@ -19,10 +19,11 @@ function csNewCode() {
 function csNormalize(t) { return (t || '').toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1').replace(/[^0-9A-Z]/g, ''); }
 function csPretty(c) { return c.replace(/^(.{5})(.{5})(.{5})(.{5})(.{6})$/, '$1-$2-$3-$4-$5'); }
 
+// code = código de sincronización; si es null se usa la sesión de Google (cookie)
 async function csFetch(method, code, body) {
     const res = await fetch('api/sync', {
-        method, cache: 'no-store', keepalive: method === 'PUT' && !!body && body.length < 60000,
-        headers: { authorization: 'Bearer ' + code, ...(body ? { 'content-type': 'application/json' } : {}) },
+        method, cache: 'no-store', credentials: 'same-origin', keepalive: method === 'PUT' && !!body && body.length < 60000,
+        headers: { ...(code ? { authorization: 'Bearer ' + code } : {}), ...(body ? { 'content-type': 'application/json' } : {}) },
         body,
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
@@ -30,7 +31,7 @@ async function csFetch(method, code, body) {
 }
 function csErr(r) {
     return ({ 429: 'Demasiadas peticiones. Espera un minuto.', 413: 'La partida es demasiado grande para la nube.',
-        404: 'No hay ninguna partida con ese código.', 400: 'Código no válido.', 503: 'La nube no está disponible ahora.' })[r.status]
+        404: 'No hay ninguna partida con ese código.', 400: 'Código no válido.', 401: 'Tu sesión de Google ha caducado. Vuelve a entrar.', 503: 'La nube no está disponible ahora.' })[r.status]
         || 'No se pudo conectar con la nube.';
 }
 function csNote(t, bad) { cs.msg = t; cs.bad = !!bad; csRender(); }
@@ -43,7 +44,7 @@ async function csPush(force) {
     if (!local || (!force && local === s.synced)) return;
     cs.busy = true;
     try {
-        const r = await csFetch('PUT', s.code, JSON.stringify({ baseRev: s.rev, data: { game: 'opsurvivor', v: 1, date: new Date().toISOString(), meta: JSON.parse(local) } }));
+        const r = await csFetch('PUT', s.code || null, JSON.stringify({ baseRev: s.rev, data: { game: 'opsurvivor', v: 1, date: new Date().toISOString(), meta: JSON.parse(local) } }));
         if (r.status === 200) { csSetState({ ...s, rev: r.rev, synced: local, at: r.updated }); cs.msg = ''; }
         else if (r.status === 409) csConflict(r);
         else csNote(csErr(r), true);
@@ -58,8 +59,9 @@ async function csPull() {
     if (!s || !cs.online || cs.busy || (typeof gameState !== 'undefined' && gameState !== 'START')) return;
     cs.busy = true;
     let r;
-    try { r = await csFetch('GET', s.code); } catch (e) { cs.busy = false; return; }
+    try { r = await csFetch('GET', s.code || null); } catch (e) { cs.busy = false; return; }
     cs.busy = false;
+    if (r.status === 404 && s.mode === 'google') { csPush(true); return; } // primera vez con Google: se sube lo local
     if (r.status === 404) { csNote('La copia de la nube ya no existe. Desvincula este dispositivo o crea otra.', true); return; }
     if (r.status !== 200) { csNote(csErr(r), true); return; }
     const local = csLocalMeta();
@@ -113,9 +115,16 @@ function csUnlink() {
 async function csDelete() {
     const s = csState();
     if (!s || !confirm('¿Borrar la copia de la nube? La partida de este dispositivo se queda como está.')) return;
-    try { const r = await csFetch('DELETE', s.code); if (r.status !== 200) { csNote(csErr(r), true); return; } }
+    try { const r = await csFetch('DELETE', s.code || null); if (r.status !== 200) { csNote(csErr(r), true); return; } }
     catch (e) { csNote('No se pudo conectar con la nube.', true); return; }
     csSetState(null); cs.conflict = null; csNote('Copia de la nube borrada.');
+}
+// Login con Google: el servidor deja una cookie de sesión; aquí solo se marca el dispositivo como vinculado
+function csGoogleLink() { if (!csState()) csSetState({ mode: 'google', rev: 0, synced: '' }); }
+async function csLogout() {
+    if (!confirm('¿Cerrar sesión de Google en este dispositivo? La partida local y la de la nube no se borran.')) return;
+    try { await fetch('api/google/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }); } catch (e) {}
+    csSetState(null); cs.conflict = null; csNote('Sesión cerrada.');
 }
 function csCopy() {
     const s = csState(); if (!s) return;
@@ -135,6 +144,13 @@ function csRender() {
             '<div class="save-row">' +
             `<button class="op-btn" onclick="csKeepCloud()"><span class="op-ic" data-ico="up"></span><span>Nube<small>${esc(saveSummary(cs.conflict.data.meta))}</small></span></button>` +
             `<button class="op-btn" onclick="csKeepLocal()"><span class="op-ic" data-ico="ship"></span><span>Este dispositivo<small>${esc(saveSummary(meta))}</small></span></button></div>`;
+    } else if (s && s.mode === 'google') {
+        const when = s.at ? new Date(s.at).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+        h = `<p class="cs-note">Sincronizada con Google · última subida ${esc(when)}</p>` +
+            '<div class="save-row">' +
+            '<button class="op-btn" onclick="csPush(true)"><span class="op-ic" data-ico="up"></span><span>Subir ahora</span></button>' +
+            '<button class="op-btn" onclick="csLogout()"><span class="op-ic" data-ico="ship"></span><span>Cerrar sesión</span></button>' +
+            '<button class="op-btn" onclick="csDelete()"><span class="op-ic" data-ico="power"></span><span>Borrar de la nube</span></button></div>';
     } else if (s) {
         const when = s.at ? new Date(s.at).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : '—';
         h = `<p class="cs-note">Sincronizada · última subida ${esc(when)}</p>` +
@@ -146,7 +162,8 @@ function csRender() {
             '<button class="op-btn" onclick="csUnlink()"><span class="op-ic" data-ico="ship"></span><span>Desvincular</span></button>' +
             '<button class="op-btn" onclick="csDelete()"><span class="op-ic" data-ico="power"></span><span>Borrar de la nube</span></button></div>';
     } else {
-        h = '<p class="cs-note">Guarda tu progreso en la nube con un código secreto. Sin email ni contraseña.</p>' +
+        h = '<p class="cs-note">Guarda tu progreso en la nube. Entra con Google (solo se usa tu identificador, sin email ni nombre) o crea un código secreto.</p>' +
+            '<button class="op-btn cs-wide" onclick="location.href=\'api/google/start\'"><span class="op-ic" data-ico="ship"></span><span>Entrar con Google</span></button>' +
             '<button class="op-btn cs-wide" onclick="csCreate()"><span class="op-ic" data-ico="up"></span><span>Crear código de sincronización</span></button>' +
             '<div class="cs-link"><input id="cs-input" class="cs-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXXX" aria-label="Código de sincronización">' +
             '<button class="op-btn" onclick="csLink()"><span class="op-ic" data-ico="play"></span><span>Vincular</span></button></div>';
@@ -160,8 +177,16 @@ function csRender() {
 (function csInit() {
     const base = saveMeta;
     saveMeta = function () { base(); csSchedule(); };
-    const go = () => fetch('api/sync?ping=1', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
-        cs.online = !!(j && j.ok); csRender(); if (cs.online) csPull();
+    const go = () => fetch('api/sync?ping=1', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(async j => {
+        cs.online = !!(j && j.ok);
+        if (cs.online) {
+            // Vuelta del login con Google (?g=ok / ?g=err) o sesión ya existente sin dispositivo vinculado
+            const q = new URLSearchParams(location.search).get('g');
+            if (q) history.replaceState(null, '', location.pathname);
+            if (q === 'err') cs.msg = 'No se pudo entrar con Google. Inténtalo de nuevo.', cs.bad = true;
+            try { const me = await fetch('api/google/me', { cache: 'no-store', credentials: 'same-origin' }).then(r => r.json()); if (me.linked) csGoogleLink(); } catch (e) {}
+        }
+        csRender(); if (cs.online && csState()) csPull();
     }).catch(() => { cs.online = false; csRender(); });
     if (/^https?:$/.test(location.protocol)) go(); else csRender();
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') csPull(); else if (cs.timer) { clearTimeout(cs.timer); csPush(); } });

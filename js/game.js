@@ -15,7 +15,11 @@ function gameLoop(now) {
     if (gameState === 'PLAYING') update(dt * modeTimeScale()); // Modo Haki: todo va más rápido (js/modes.js)
     flushUI();
     // en pausa, mejoras, cofres o Voluntades la escena está quieta: se dibuja una vez y no se repinta cada frame
-    if (gameState === 'PLAYING' || _renderedState !== gameState || _needsRedraw) { render(); _renderedState = gameState; _needsRedraw = false; }
+    if (gameState === 'PLAYING' || _renderedState !== gameState || _needsRedraw) {
+        // un fallo de dibujo no debe congelar el bucle (antes, un radio negativo paraba el juego)
+        try { render(); } catch (e) { ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; console.error(e); }
+        _renderedState = gameState; _needsRedraw = false;
+    }
     perfTick(now);
 
     const _pbShow = gameState === 'PLAYING' ? 'block' : 'none';

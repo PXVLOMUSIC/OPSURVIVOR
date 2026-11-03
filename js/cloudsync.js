@@ -13,7 +13,7 @@ function csRenderGoogle() {
     const el = document.getElementById('google-slot');
     if (!el) return;
     let h;
-    if (!cs.online) h = '<p class="g-note">Disponible en opsurvivor.pages.dev</p>';
+    if (!cs.online) h = '<p class="g-note">Disponible en <a href="https://opsurvivor.pages.dev/" target="_blank" rel="noopener">opsurvivor.pages.dev</a></p>';
     else if (cs.gLinked) h = '<p class="g-note">Sesión iniciada: tu progreso se sincroniza solo.</p><button class="g-btn g-btn-out" onclick="csLogout()">Cerrar sesión</button>';
     else h = `<button class="g-btn" onclick="location.href='api/google/start'">${G_LOGO}<span>Iniciar sesión con Google</span></button><p class="g-note">Solo se usa tu identificador. Sin email ni nombre.</p>`;
     el.innerHTML = h;
@@ -149,7 +149,7 @@ function csRender() {
     if (!box) { csRenderGoogle(); return; }
     const s = csState(), esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     let h;
-    if (!cs.online) h = '<p class="cs-note">La sincronización en la nube solo funciona en la web <b>opsurvivor.pages.dev</b>.</p>';
+    if (!cs.online) h = '<p class="cs-note">La sincronización en la nube solo funciona en la web <b><a href="https://opsurvivor.pages.dev/" target="_blank" rel="noopener">opsurvivor.pages.dev</a></b>. Aquí puedes usar Exportar/Importar partida.</p>';
     else if (cs.conflict) {
         h = '<p class="cs-note">Esta partida ha cambiado aquí y en otro dispositivo. ¿Cuál quieres conservar?</p>' +
             '<div class="save-row">' +

@@ -1019,7 +1019,7 @@ function drawParticle(p) {
             }
             case 'cut': {
                 // línea de corte que se abre y se afina
-                const t = 1 - a, L = p.size * Math.min(1, t * 4 + 0.3);
+                const t = Math.max(0, 1 - a), L = Math.max(0, p.size * Math.min(1, t * 4 + 0.3));
                 ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0);
                 ctx.globalAlpha = a;
                 ctx.fillStyle = 'rgba(134,239,172,0.35)';

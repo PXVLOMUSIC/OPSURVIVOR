@@ -60,6 +60,9 @@ function unlockAudio() {
 })();
 
 // Service worker (PWA): juego sin conexión y carga rápida al volver. Si el entorno no lo permite (iframe, file://) se ignora.
-if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+// Dentro de un iframe (itch.io) no se registra: cada subida tiene su propia ruta y la caché sobraría.
+(function () {
+    let inFrame = false; try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
+    if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol) || inFrame) return;
     window.addEventListener('load', () => { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} });
-}
+})();
